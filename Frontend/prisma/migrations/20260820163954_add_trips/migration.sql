@@ -1,0 +1,43 @@
+-- CreateTable
+CREATE TABLE "Trip" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "shortName" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "destination" TEXT NOT NULL,
+    "image" TEXT NOT NULL DEFAULT '',
+    "galleryImages" JSONB,
+    "pdfPath" TEXT,
+    "sourcePdf" TEXT,
+    "dates" TEXT NOT NULL DEFAULT '',
+    "startDate" TEXT NOT NULL,
+    "endDate" TEXT NOT NULL,
+    "duration" TEXT NOT NULL DEFAULT '',
+    "nights" INTEGER NOT NULL DEFAULT 0,
+    "days" INTEGER NOT NULL DEFAULT 0,
+    "pickupLocation" TEXT NOT NULL DEFAULT '',
+    "dropLocation" TEXT NOT NULL DEFAULT '',
+    "route" TEXT NOT NULL DEFAULT '',
+    "price" INTEGER NOT NULL DEFAULT 0,
+    "currency" TEXT NOT NULL DEFAULT 'INR',
+    "earlyBirdPrice" INTEGER,
+    "singleSupplement" INTEGER,
+    "singleOccupancyPrice" INTEGER,
+    "soldOut" BOOLEAN NOT NULL DEFAULT false,
+    "overview" TEXT NOT NULL DEFAULT '',
+    "highlights" JSONB,
+    "paymentConditions" TEXT NOT NULL DEFAULT '',
+    "notes" JSONB,
+    "itinerary" JSONB,
+    "accommodations" JSONB,
+    "inclusions" JSONB,
+    "exclusions" JSONB,
+    "financialDetails" JSONB,
+    "cancellationLinks" JSONB,
+    "published" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Trip_slug_key" ON "Trip"("slug");

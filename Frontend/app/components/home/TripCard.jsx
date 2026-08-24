@@ -1,9 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
+import { formatDualPrice } from "../../utils/formatPrice";
 
 export default function TripCard({ trip, href = "/upcoming-trips" }) {
   const linkHref = trip.customHref ? trip.customHref : (trip.slug ? `${href}/${trip.slug}` : href);
@@ -24,7 +21,7 @@ export default function TripCard({ trip, href = "/upcoming-trips" }) {
             {trip.name}
           </h3>
           <p className="mt-1.5 text-sm font-semibold text-[#D4AF37]">
-            Starting Price Rs. {currencyFormatter.format(trip.price)}/-
+            Starting Price {formatDualPrice(trip.price)}
           </p>
         </div>
       </Link>

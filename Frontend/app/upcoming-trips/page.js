@@ -1,5 +1,8 @@
 import { UpcomingTripsClient, UpcomingTripsHeader } from "../components/upcoming";
-import { upcomingTripsData } from "../data/upcomingTrips";
+import { buildMonthsFromTrips } from "../lib/data/tripMappers";
+import { getUpcomingTrips } from "../lib/data/trips";
+
+export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/upcoming-trips";
 const heroImage =
@@ -44,7 +47,10 @@ export const metadata = {
   },
 };
 
-export default function UpcomingTripsPage() {
+export default async function UpcomingTripsPage() {
+  const trips = await getUpcomingTrips();
+  const months = buildMonthsFromTrips(trips);
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -68,7 +74,7 @@ export default function UpcomingTripsPage() {
       "@context": "https://schema.org",
       "@type": "ItemList",
       name: "Upcoming Women Travel Packages",
-      itemListElement: upcomingTripsData.map((trip, index) => ({
+      itemListElement: trips.map((trip, index) => ({
         "@type": "ListItem",
         position: index + 1,
         item: {
@@ -99,7 +105,7 @@ export default function UpcomingTripsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <UpcomingTripsHeader />
-      <UpcomingTripsClient />
+      <UpcomingTripsClient trips={trips} months={months} />
     </main>
   );
 }

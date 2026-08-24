@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock } from "lucide-react";
+import { formatDualPrice } from "../../utils/formatPrice";
 
 export default function CuratedEscapeCard({ escape }) {
   return (
@@ -33,7 +34,7 @@ export default function CuratedEscapeCard({ escape }) {
         </div>
 
         <p className="mt-4 text-base font-black text-[#D4AF37]">
-          From: {escape.priceLabel}{" "}
+          From: {formatDualPrice(escape.priceInr)}{" "}
           <span className="text-xs font-semibold text-[#555555]">{escape.priceSuffix}</span>
         </p>
 

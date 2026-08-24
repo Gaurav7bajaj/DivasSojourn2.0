@@ -1,9 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
+import { formatDualPrice } from "../../utils/formatPrice";
 
 export default function IndiaTripsCard({ trip }) {
   return (
@@ -27,9 +24,7 @@ export default function IndiaTripsCard({ trip }) {
           <p className="mt-2 font-semibold text-white">{trip.duration}</p>
           <p className="mt-3 line-clamp-3 text-sm leading-6 text-white">{trip.description}</p>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
-            <span className="font-bold text-[#D4AF37]">
-              Rs. {currencyFormatter.format(trip.price)}/-
-            </span>
+            <span className="font-bold text-[#D4AF37]">{formatDualPrice(trip.price)}</span>
             <span className="font-semibold text-white">{trip.dates}</span>
           </div>
         </div>

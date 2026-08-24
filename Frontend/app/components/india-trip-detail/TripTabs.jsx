@@ -1,18 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, Lock, X } from "lucide-react";
 import { useState } from "react";
+import LockedItinerary from "../auth/LockedItinerary";
+import { useAuth } from "../../context/AuthContext";
+import { formatDualPrice } from "../../utils/formatPrice";
 
 const tabs = ["Overview & Highlights", "Itinerary", "Inclusions", "Exclusions", "Gallery", "Other Info"];
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
-
 export default function TripTabs({ trip }) {
+  const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [openDay, setOpenDay] = useState(1);
+  const isItineraryLocked = !isLoading && !isAuthenticated;
 
   return (
     <section className="overflow-hidden rounded-3xl border border-[#D4AF37]/20 bg-[#F9F9F9] text-[#1A1A1A] shadow-2xl">
@@ -36,7 +37,11 @@ export default function TripTabs({ trip }) {
       <div className="p-4 md:p-6">
         {activeTab === "Overview & Highlights" ? <Overview trip={trip} /> : null}
         {activeTab === "Itinerary" ? (
-          <Itinerary trip={trip} openDay={openDay} setOpenDay={setOpenDay} />
+          isItineraryLocked ? (
+            <LockedItinerary />
+          ) : (
+            <Itinerary trip={trip} openDay={openDay} setOpenDay={setOpenDay} />
+          )
         ) : null}
         {activeTab === "Inclusions" ? (
           <BulletList title="What's Included" items={trip.inclusions} icon="check" />
@@ -77,6 +82,7 @@ function Overview({ trip }) {
   );
 }
 
+// UI-level gate only: itinerary data is still bundled in static JS until an authenticated API is added.
 function Itinerary({ trip, openDay, setOpenDay }) {
   return (
     <div>
@@ -212,23 +218,23 @@ function OtherInfo({ trip }) {
       <section className="rounded-2xl border border-[#D4AF37]/25 bg-white p-5">
         <h2 className="text-2xl font-black">Pricing</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <InfoPill label="Regular Price" value={`Rs. ${currencyFormatter.format(trip.price)}/- per person`} />
+          <InfoPill label="Regular Price" value={`${formatDualPrice(trip.price)} per person`} />
           {trip.earlyBirdPrice ? (
             <InfoPill
               label="Early Bird Discount"
-              value={`Rs. ${currencyFormatter.format(trip.earlyBirdPrice)}/- per person`}
+              value={`${formatDualPrice(trip.earlyBirdPrice)} per person`}
             />
           ) : null}
           {trip.singleOccupancyPrice ? (
             <InfoPill
               label="Single Occupancy"
-              value={`Rs. ${currencyFormatter.format(trip.singleOccupancyPrice)}/- per person`}
+              value={`${formatDualPrice(trip.singleOccupancyPrice)} per person`}
             />
           ) : null}
           {trip.singleSupplement ? (
             <InfoPill
               label="Single Room Supplement"
-              value={`Rs. ${currencyFormatter.format(trip.singleSupplement)}/- extra`}
+              value={`${formatDualPrice(trip.singleSupplement)} extra`}
             />
           ) : null}
         </div>

@@ -114,12 +114,13 @@ export const curatedEscapes = [
 ];
 
 export const navLinks = [
-  { label: "Luxury Experiences", href: "/luxury-experiences" },
   { label: "Upcoming Trips", href: "/upcoming-trips" },
   { label: "Blogs", href: "/blogs" },
   { label: "About Us", href: "/about-us" },
   { label: "FAQs", href: "/faqs" },
   { label: "Payments", href: "/payments" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "Travel Saving Plan", href: "/travel-saving-plan" },
 ];
 
 export const tripMenus = [
@@ -127,4 +128,6 @@ export const tripMenus = [
   { label: "India Trips", href: "/india-trips" },
   { label: "Curated Escapes", href: "/curated-escapes" },
   { label: "Personalize Trip", href: "/personalize-trip" },
+  { label: "Calendar", href: "/calendar" },
 ];
+

@@ -1,20 +1,17 @@
 import { notFound } from "next/navigation";
 import TripDetailPage from "../../components/india-trip-detail/TripDetailPage";
-import { combinedInternationalTripDetails } from "../../data/internationalTripDetails";
+import { getPublishedTrips, getTripBySlug } from "../../lib/data/trips";
+import { formatDualPrice } from "../../utils/formatPrice";
+
+export const dynamic = "force-dynamic";
 
 const pageBaseUrl = "https://divassojourn.com/international-trips";
 
-export function generateStaticParams() {
-  return combinedInternationalTripDetails.map((trip) => ({
-    slug: trip.slug,
-  }));
-}
-
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const trip = combinedInternationalTripDetails.find((item) => item.slug === slug);
+  const trip = await getTripBySlug(slug);
 
-  if (!trip) {
+  if (!trip || !trip.published || trip.destination !== "International") {
     return {
       title: "International Trip Not Found | Divas Sojourn",
     };
@@ -22,7 +19,7 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${trip.title} | International Trips | Divas Sojourn`,
-    description: `${trip.title} by Divas Sojourn. ${trip.dates}, ${trip.duration}. Starting from Rs. ${trip.price}/- per person.`,
+    description: `${trip.title} by Divas Sojourn. ${trip.dates}, ${trip.duration}. Starting from ${formatDualPrice(trip.price)} per person.`,
     keywords: [
       trip.title,
       trip.shortName,
@@ -59,13 +56,16 @@ export async function generateMetadata({ params }) {
 
 export default async function InternationalDestinationPage({ params }) {
   const { slug } = await params;
-  const trip = combinedInternationalTripDetails.find((item) => item.slug === slug);
+  const trip = await getTripBySlug(slug);
 
-  if (!trip) {
+  if (!trip || !trip.published || trip.destination !== "International") {
     notFound();
   }
 
-  const similarTrips = combinedInternationalTripDetails.filter((item) => item.slug !== trip.slug);
+  const similarTrips = (await getPublishedTrips()).filter(
+    (item) => item.destination === "International" && item.slug !== trip.slug,
+  );
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -100,9 +100,12 @@ export default async function InternationalDestinationPage({ params }) {
       url: `${pageBaseUrl}/${trip.slug}`,
       offers: {
         "@type": "Offer",
-        price: String(trip.earlyBirdPrice || trip.price),
+        price: String(trip.price),
         priceCurrency: trip.currency,
-        availability: trip.status === "upcoming" ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+        availability:
+          trip.status === "upcoming"
+            ? "https://schema.org/InStock"
+            : "https://schema.org/SoldOut",
       },
       itinerary: trip.itinerary.map((day) => ({
         "@type": "TouristAttraction",

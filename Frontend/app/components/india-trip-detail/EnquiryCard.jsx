@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { Info } from "lucide-react";
 import { useState } from "react";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
+import { formatDualPrice } from "../../utils/formatPrice";
 
 export default function EnquiryCard({ trip }) {
   const [formData, setFormData] = useState({ name: "", phone: "", email: "" });
@@ -44,7 +41,7 @@ export default function EnquiryCard({ trip }) {
         </p>
         <p className="mt-5 text-sm font-semibold text-[#555555]">Starting from</p>
         <p className="mt-1 text-4xl font-black text-[#D4AF37]">
-          Rs. {currencyFormatter.format(trip.earlyBirdPrice || trip.price)}/-
+          {formatDualPrice(trip.earlyBirdPrice || trip.price)}
         </p>
         <p className="text-sm font-semibold text-[#555555]">per person</p>
         <Link

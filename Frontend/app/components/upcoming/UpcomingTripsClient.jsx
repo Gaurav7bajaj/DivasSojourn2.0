@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import { upcomingMonths, upcomingTripsData } from "../../data/upcomingTrips";
 import FilterSidebar from "./FilterSidebar";
 import MonthFilterButtons from "./MonthFilterButtons";
 import UpcomingTripsGrid from "./UpcomingTripsGrid";
@@ -14,13 +13,13 @@ const defaultFilters = {
   months: [],
 };
 
-export default function UpcomingTripsClient() {
+export default function UpcomingTripsClient({ trips = [], months = [] }) {
   const [draftFilters, setDraftFilters] = useState(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState(defaultFilters);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const filteredTrips = useMemo(() => {
-    return upcomingTripsData.filter((trip) => {
+    return trips.filter((trip) => {
       const tripMonth = trip.startDate.slice(0, 7);
       const destinationMatches =
         appliedFilters.destinations.length === 0 ||
@@ -36,7 +35,7 @@ export default function UpcomingTripsClient() {
 
       return destinationMatches && durationMatches && budgetMatches && monthMatches;
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, trips]);
 
   const toggleArrayValue = (key, value) => {
     setDraftFilters((currentFilters) => {
@@ -61,7 +60,7 @@ export default function UpcomingTripsClient() {
   };
 
   const sidebarProps = {
-    months: upcomingMonths,
+    months,
     draftFilters,
     onDestinationChange: (destination) => toggleArrayValue("destinations", destination),
     onDurationChange: (duration) => setDraftFilters((filters) => ({ ...filters, duration })),
@@ -87,7 +86,7 @@ export default function UpcomingTripsClient() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-5">
           <MonthFilterButtons
-            months={upcomingMonths}
+            months={months}
             selectedMonths={draftFilters.months}
             onToggleMonth={toggleMonthAndApply}
           />
@@ -105,9 +104,9 @@ export default function UpcomingTripsClient() {
 
         <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
           <div className={isFilterOpen ? "block" : "hidden lg:block"}>
-            <FilterSidebar {...sidebarProps} />
+            <FilterSidebar {...sidebarProps} destinationOptions={["India", "International"]} />
           </div>
-          <UpcomingTripsGrid trips={filteredTrips} totalCount={upcomingTripsData.length} />
+          <UpcomingTripsGrid trips={filteredTrips} totalCount={trips.length} />
         </div>
       </div>
     </section>

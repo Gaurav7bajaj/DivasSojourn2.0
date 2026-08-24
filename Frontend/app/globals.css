@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source not "../_DELETE_ME_old_modules";
+@source not "../node_modules_old_trash";
 
 :root {
   color-scheme: dark;

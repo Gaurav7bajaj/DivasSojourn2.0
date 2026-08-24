@@ -2,13 +2,17 @@ import Link from "next/link";
 import {
   BlogsSection,
   ContactForm,
-  DestinationsGrid,
-  InternationalHeroCarousel,
   TravelerReviews,
 } from "../components/international";
+import InternationalTripsHeader from "../components/international/InternationalTripsHeader";
+import InternationalTripsClient from "../components/international/InternationalTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
-import { blogs } from "../data/blogs";
-import { internationalDestinations } from "../data/internationalTrips";
+import { getPublishedBlogs } from "../lib/data/blogs";
+import { toPublicBlogCard } from "../lib/data/mappers";
+import { buildMonthsFromTrips } from "../lib/data/tripMappers";
+import { getTripNavItems, getUpcomingTripsByDestination } from "../lib/data/trips";
+
+export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/international-trips";
 const heroImage =
@@ -66,7 +70,16 @@ export const metadata = {
   },
 };
 
-export default function InternationalTripsPage() {
+export default async function InternationalTripsPage() {
+  const [blogs, trips, internationalNav] = await Promise.all([
+    getPublishedBlogs(),
+    getUpcomingTripsByDestination("International"),
+    getTripNavItems("International"),
+  ]);
+
+  const blogCards = blogs.slice(0, 6).map(toPublicBlogCard);
+  const months = buildMonthsFromTrips(trips);
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -90,19 +103,19 @@ export default function InternationalTripsPage() {
       "@context": "https://schema.org",
       "@type": "ItemList",
       name: "International Trips for Female Travelers",
-      itemListElement: internationalDestinations.map((destination, index) => ({
+      itemListElement: internationalNav.map((destination, index) => ({
         "@type": "ListItem",
         position: index + 1,
         item: {
           "@type": "TouristAttraction",
-          name: `${destination.name} International Trip`,
+          name: `${destination.name || destination.shortName} International Trip`,
           description: destination.description,
           url: `${pageUrl}/${destination.slug}`,
           image: destination.image,
         },
       })),
     },
-    ...blogs.map((blog) => ({
+    ...blogCards.map((blog) => ({
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: blog.title,
@@ -123,7 +136,7 @@ export default function InternationalTripsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <InternationalHeroCarousel />
+      <InternationalTripsHeader />
       <nav className="bg-[#1A1A1A] px-4 py-4 text-sm text-white" aria-label="Breadcrumb">
         <ol className="mx-auto flex max-w-7xl items-center gap-2">
           <li>
@@ -135,11 +148,11 @@ export default function InternationalTripsPage() {
           <li className="font-semibold text-[#D4AF37]">International Trips</li>
         </ol>
       </nav>
-      <DestinationsGrid />
+      <InternationalTripsClient trips={trips} months={months} />
       <TravelerReviews />
-      <BlogsSection />
+      <BlogsSection posts={blogCards} />
       <WhyDivasSection />
-      <ContactForm />
+      <ContactForm destinationOptions={internationalNav} />
     </main>
   );
 }

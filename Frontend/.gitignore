@@ -20,6 +20,26 @@ pnpm-debug.log*
 
 # local env files
 .env*
+!.env.example
+!.env.local.example
+
+# prisma / sqlite local db
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# uploaded admin images (Phase 1 local storage)
+public/uploads/**
+!public/uploads/.gitkeep
+!public/uploads/blogs/.gitkeep
+!public/uploads/gallery/.gitkeep
+!public/uploads/trips/.gitkeep
 
 # vercel
 .vercel/
+
+# leftover cruft — safe to delete from disk
+_DELETE_ME_old_modules/
+node_modules_old_trash/
+*.tsbuildinfo

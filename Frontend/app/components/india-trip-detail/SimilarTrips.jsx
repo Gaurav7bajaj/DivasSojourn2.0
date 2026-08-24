@@ -4,11 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, MapPin } from "lucide-react";
 import { useRef } from "react";
+import { formatDualPrice } from "../../utils/formatPrice";
 import { useCarouselScroll } from "./useCarouselScroll";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
 
 export default function SimilarTrips({ trips, basePath = "/india-trips" }) {
   const scrollRef = useRef(null);
@@ -90,9 +87,9 @@ export default function SimilarTrips({ trips, basePath = "/india-trips" }) {
                     </p>
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-3">
-                    <p className="rounded-full bg-[#D4AF37] px-3 py-2 text-sm font-black text-[#0F0F0F]">
-                      Rs. {currencyFormatter.format(trip.price)}/- Onwards
-                    </p>
+                  <p className="rounded-full bg-[#D4AF37] px-3 py-2 text-sm font-black text-[#0F0F0F]">
+                    {formatDualPrice(trip.price)} Onwards
+                  </p>
                     <span className="flex items-center gap-1 rounded-full bg-[#0F9B9B] px-3 py-2 text-xs font-black text-white transition group-hover:bg-[#0d8585]">
                       View
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />

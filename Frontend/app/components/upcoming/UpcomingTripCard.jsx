@@ -1,10 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
+import { formatDualPrice } from "../../utils/formatPrice";
 
 const dateFormatter = new Intl.DateTimeFormat("en-IN", {
   day: "2-digit",
@@ -64,11 +61,11 @@ export default function UpcomingTripCard({ trip }) {
             <div className="min-w-0 rounded-full bg-[#E8E8E8] px-3 py-1.5">
               {trip.originalPrice ? (
                 <p className="text-[10px] font-bold text-[#B54848] line-through">
-                  Rs. {currencyFormatter.format(trip.originalPrice)}
+                  {formatDualPrice(trip.originalPrice)}
                 </p>
               ) : null}
               <p className="text-xs font-black text-[#1A1A1A]">
-                Rs. {currencyFormatter.format(trip.currentPrice)}
+                {formatDualPrice(trip.currentPrice)}
                 <span className="ml-1 text-[10px] font-semibold text-[#777777]">Onwards</span>
               </p>
             </div>

@@ -1,26 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import HeroImageCarousel from "../HeroImageCarousel";
+import { homeHeroImages } from "../../data/heroImages";
 
 export default function HeroSection() {
   return (
-    <section
-      className="relative flex min-h-[62vh] items-center justify-center overflow-hidden bg-[#0F0F0F] bg-cover bg-center text-center md:min-h-[90vh]"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1800&q=85')",
-      }}
-      aria-label="Luxury travel video for Divas Sojourn travelers"
+    <HeroImageCarousel
+      images={homeHeroImages}
+      className="flex min-h-[62vh] items-center justify-center bg-[#0F0F0F] text-center md:min-h-[90vh]"
+      ariaLabel="Divas Sojourn home hero"
     >
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1800&q=85"
-        aria-hidden="true"
-      >
-        <source src="/home-hero-video.mp4" type="video/mp4" />
-      </video>
       <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/5 to-[#1A1A1A]" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1A1A1A] to-transparent" aria-hidden="true" />
 
@@ -48,6 +38,6 @@ export default function HeroSection() {
           Explore Trips
         </Link>
       </div>
-    </section>
+    </HeroImageCarousel>
   );
 }

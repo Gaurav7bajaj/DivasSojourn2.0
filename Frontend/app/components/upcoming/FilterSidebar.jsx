@@ -1,8 +1,6 @@
 import RangeSlider from "./RangeSlider";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  maximumFractionDigits: 0,
-});
+import { ChevronRight } from "lucide-react";
+import { formatDualPrice } from "../../utils/formatPrice";
 
 export default function FilterSidebar({
   months,
@@ -13,6 +11,7 @@ export default function FilterSidebar({
   onMonthChange,
   onApply,
   onClear,
+  destinationOptions = ["India", "International"],
 }) {
   return (
     <aside className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-[#D4AF37]/30 bg-[#F9F9F9] text-[#1A1A1A] shadow-xl">
@@ -28,16 +27,18 @@ export default function FilterSidebar({
       </div>
 
       <div className="space-y-7 px-5 py-5">
-        <FilterGroup title="Destination">
-          {["India"].map((destination) => (
-            <CheckboxRow
-              key={destination}
-              label={destination}
-              checked={draftFilters.destinations.includes(destination)}
-              onChange={() => onDestinationChange(destination)}
-            />
-          ))}
-        </FilterGroup>
+        {destinationOptions.length > 1 && (
+          <FilterGroup title="Destination">
+            {destinationOptions.map((destination) => (
+              <DestinationRow
+                key={destination}
+                label={destination}
+                checked={draftFilters.destinations.includes(destination)}
+                onChange={() => onDestinationChange(destination)}
+              />
+            ))}
+          </FilterGroup>
+        )}
 
         <RangeSlider
           label="Duration (in nights)"
@@ -55,7 +56,7 @@ export default function FilterSidebar({
           step={1000}
           value={draftFilters.budget}
           onChange={onBudgetChange}
-          formatValue={(value) => `Rs. ${currencyFormatter.format(value)}`}
+          formatValue={(value) => formatDualPrice(value)}
         />
 
         <FilterGroup title="Month">
@@ -117,5 +118,20 @@ function CheckboxRow({ label, checked, onChange }) {
       />
       {label}
     </label>
+  );
+}
+
+function DestinationRow({ label, checked, onChange }) {
+  return (
+    <button
+      type="button"
+      onClick={onChange}
+      className={`flex w-full cursor-pointer items-center justify-between py-2 text-sm font-semibold transition-all ${
+        checked ? "text-[#D4AF37]" : "text-neutral-500 hover:text-[#D4AF37]"
+      }`}
+    >
+      <span>{label}</span>
+      <ChevronRight className={`h-4 w-4 text-neutral-400 transition-all ${checked ? "text-[#D4AF37]" : ""}`} />
+    </button>
   );
 }

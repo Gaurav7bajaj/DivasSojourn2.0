@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { curatedEscapes } from "../../data/curatedEscapes";
+import { formatDualPrice } from "../../utils/formatPrice";
 
 const pageBaseUrl = "https://divassojourn.com/curated-escapes";
 
@@ -79,7 +80,7 @@ export default async function CuratedEscapeCategoryPage({ params }) {
             </p>
             <p className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <span className="block font-black text-white">Starting From</span>
-              <span className="text-[#D4AF37]">{escape.priceLabel}</span> {escape.priceSuffix}
+              <span className="text-[#D4AF37]">{formatDualPrice(escape.priceInr)}</span> {escape.priceSuffix}
             </p>
           </div>
           <p className="mt-6 text-sm leading-7 text-white/70">

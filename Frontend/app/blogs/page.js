@@ -1,8 +1,10 @@
 import { BlogPageHeader, BlogsListingClient, FeaturedBlog } from "../components/blogs";
-import { blogs } from "../data/blogs";
+import { getPublishedBlogs } from "../lib/data/blogs";
+import { toPublicBlogCard } from "../lib/data/mappers";
+
+export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/blogs";
-const featuredImage = blogs.find((blog) => blog.featured)?.image || blogs[0]?.image;
 
 export const metadata = {
   title: "Travel Blog | Tips, Guides & Stories",
@@ -26,26 +28,18 @@ export const metadata = {
       "Explore travel destinations, tips, and stories from experienced women travelers.",
     url: pageUrl,
     type: "website",
-    images: featuredImage
-      ? [
-          {
-            url: featuredImage,
-            width: 1200,
-            height: 630,
-            alt: "Divas Sojourn travel blog stories",
-          },
-        ]
-      : [],
   },
   twitter: {
     card: "summary_large_image",
     title: "Travel Blog | Tips, Guides & Stories | Divas Sojourn",
     description: "Destination guides, travel tips, and stories from the Divas Sojourn community.",
-    images: featuredImage ? [featuredImage] : [],
   },
 };
 
-export default function BlogsPage() {
+export default async function BlogsPage() {
+  const blogs = (await getPublishedBlogs()).map(toPublicBlogCard);
+  const featuredImage = blogs.find((blog) => blog.featured)?.image || blogs[0]?.image;
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -86,6 +80,9 @@ export default function BlogsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
+      {featuredImage ? (
+        <meta property="og:image" content={featuredImage} />
+      ) : null}
       <BlogPageHeader />
       <FeaturedBlog blogs={blogs} />
       <BlogsListingClient blogs={blogs} />

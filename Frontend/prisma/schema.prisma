@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Blog {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  coverImageUrl String   @default("")
+  excerpt       String
+  content       String
+  author        String
+  published     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  category      String?
+  /// Stored as JSON array of strings (string[] in app types)
+  categories    Json?
+  destination   String?
+  readingTime   String?
+  featured      Boolean?
+}
+
+/// Server-side OTP storage. Replaces the old in-memory Map so codes survive
+/// across serverless function invocations / multiple server instances.
+model OtpCode {
+  id        String   @id @default(uuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+/// Generic sliding-window rate limiter, keyed by an arbitrary string
+/// (e.g. "otp:9876543210" or "admin-login:203.0.113.4"). Replaces the old
+/// in-memory Map for the same serverless/multi-instance reason as OtpCode.
+model RateLimit {
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(0)
+}
+
+model GalleryImage {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  caption   String?
+  category  String?
+  createdAt DateTime @default(now())
+}
+
+model Trip {
+  id                   String   @id @default(uuid())
+  title                String
+  shortName            String
+  slug                 String   @unique
+  destination          String
+  image                String   @default("")
+  galleryImages        Json?
+  pdfPath              String?
+  sourcePdf            String?
+  dates                String   @default("")
+  startDate            String
+  endDate              String
+  duration             String   @default("")
+  nights               Int      @default(0)
+  days                 Int      @default(0)
+  pickupLocation       String   @default("")
+  dropLocation         String   @default("")
+  route                String   @default("")
+  price                Int      @default(0)
+  currency             String   @default("INR")
+  earlyBirdPrice       Int?
+  singleSupplement     Int?
+  singleOccupancyPrice Int?
+  soldOut              Boolean  @default(false)
+  overview             String   @default("")
+  highlights           Json?
+  paymentConditions    String   @default("")
+  notes                Json?
+  itinerary            Json?
+  accommodations       Json?
+  inclusions           Json?
+  exclusions           Json?
+  financialDetails     Json?
+  cancellationLinks    Json?
+  published            Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

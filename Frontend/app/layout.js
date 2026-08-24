@@ -1,7 +1,8 @@
 import "./globals.css";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import WhatsAppButton from "./components/WhatsAppButton";
+import AppShell from "./components/AppShell";
+import { getTripNavItems } from "./lib/data/trips";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   metadataBase: new URL("https://divassojourn.com"),
@@ -56,14 +57,18 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const [indiaTrips, internationalTrips] = await Promise.all([
+    getTripNavItems("India"),
+    getTripNavItems("International"),
+  ]);
+
   return (
     <html lang="en-IN" data-scroll-behavior="smooth">
       <body>
-        <Navbar />
-        {children}
-        <Footer />
-        <WhatsAppButton />
+        <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
+          {children}
+        </AppShell>
       </body>
     </html>
   );

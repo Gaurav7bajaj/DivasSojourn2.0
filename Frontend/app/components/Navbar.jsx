@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, Phone, Search, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
-import { indiaTripsData } from "../data/indiaTrips";
-import { internationalDestinations } from "../data/internationalTrips";
+import { useAuth } from "../context/AuthContext";
+import { maskPhone } from "../lib/auth/sessionClient";
 import { curatedEscapes } from "../data/curatedEscapes";
 import { navLinks, tripMenus } from "../data/mockData";
 
-export default function Navbar() {
+export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function Navbar() {
       style={{ backgroundColor: "#000000" }}
     >
       <nav
-        className="mx-auto flex max-w-7xl items-center gap-4 bg-[#000000] px-4 py-3 lg:px-8"
+        className="mx-auto flex max-w-7xl items-center gap-3 py-3 pl-4 pr-4 lg:pl-5 lg:pr-6"
         aria-label="Primary navigation"
         style={{ backgroundColor: "#000000" }}
       >
@@ -37,22 +38,15 @@ export default function Navbar() {
           />
         </Link>
 
-        <label className="hidden min-w-64 flex-1 items-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-sm text-[#1A1A1A] md:flex lg:max-w-sm">
-          <Search className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-          <span className="sr-only">Search destinations</span>
-          <input
-            type="search"
-            placeholder="Where do you want to go?"
-            className="w-full bg-transparent outline-none placeholder:text-neutral-500"
-          />
-        </label>
-
-        <div className="ml-auto hidden items-center gap-5 text-sm font-medium xl:flex" style={{ color: "#FFFFFF" }}>
+        <div
+          className="hidden min-w-0 flex-1 items-center justify-between px-4 text-sm font-medium xl:flex lg:px-6"
+          style={{ color: "#FFFFFF" }}
+        >
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="transition hover:text-[#D4AF37]"
+              className="whitespace-nowrap transition hover:text-[#D4AF37]"
               style={{ color: "#FFFFFF" }}
             >
               {link.label}
@@ -60,23 +54,46 @@ export default function Navbar() {
           ))}
         </div>
 
-        <Link
-          href="tel:+919990022835"
-          className="hidden items-center gap-2 rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition-all duration-300 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)] lg:flex"
-        >
-          <Phone className="h-4 w-4" aria-hidden="true" />
-          +91-99900 22835
-        </Link>
+        <div className="ml-auto flex shrink-0 items-center gap-3 xl:ml-0">
+          <Link
+            href="tel:+919990022835"
+            className="hidden items-center gap-2 rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition-all duration-300 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)] lg:flex"
+          >
+            <Phone className="h-4 w-4" aria-hidden="true" />
+            +91-99900 22835
+          </Link>
+          {!isLoading && isAuthenticated ? (
+            <div className="hidden items-center gap-3 lg:flex">
+              <span className="text-sm font-semibold text-white/90">{maskPhone(user?.phone)}</span>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Logout
+              </button>
+            </div>
+          ) : null}
+          {!isLoading && !isAuthenticated ? (
+            <Link
+              href="/auth"
+              className="hidden rounded-full border border-[#D4AF37]/50 px-4 py-2 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F] lg:inline-flex"
+            >
+              Sign up / Login
+            </Link>
+          ) : null}
 
-        <button
-          type="button"
-          onClick={() => setIsOpen((value) => !value)}
-          className="ml-auto rounded-full border border-white/15 p-2 text-white xl:hidden"
-          aria-expanded={isOpen}
-          aria-label="Toggle navigation menu"
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+          <button
+            type="button"
+            onClick={() => setIsOpen((value) => !value)}
+            className="rounded-full border border-white/15 p-2 text-white xl:hidden"
+            aria-expanded={isOpen}
+            aria-label="Toggle navigation menu"
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </nav>
 
       <nav
@@ -103,13 +120,13 @@ export default function Navbar() {
 
                 <div className="invisible absolute left-1/2 top-full w-[620px] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
                   <div className="grid grid-cols-3 gap-2">
-                    {internationalDestinations.map((destination) => (
+                    {internationalTrips.map((destination) => (
                       <Link
                         key={destination.slug}
                         href={`/international-trips/${destination.slug}`}
                         className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
                       >
-                        {destination.name}
+                        {destination.name || destination.shortName}
                       </Link>
                     ))}
                   </div>
@@ -132,7 +149,7 @@ export default function Navbar() {
 
                 <div className="invisible absolute left-1/2 top-full w-[720px] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
                   <div className="grid grid-cols-3 gap-2">
-                    {indiaTripsData.map((trip) => (
+                    {indiaTrips.map((trip) => (
                       <Link
                         key={trip.slug}
                         href={`/india-trips/${trip.slug}`}
@@ -181,7 +198,6 @@ export default function Navbar() {
                 style={{ color: "#FFFFFF" }}
               >
                 {item.label}
-                <ChevronDown className="h-4 w-4 transition group-hover:rotate-180" aria-hidden="true" />
                 <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-24" />
               </Link>
             ),
@@ -194,16 +210,6 @@ export default function Navbar() {
           className="space-y-5 border-t border-white/10 bg-[#000000] px-4 py-5 xl:hidden"
           style={{ backgroundColor: "#000000" }}
         >
-          <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white px-4 py-2 text-sm text-[#1A1A1A]">
-            <Search className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-            <span className="sr-only">Search destinations</span>
-            <input
-              type="search"
-              placeholder="Where do you want to go?"
-              className="w-full bg-transparent outline-none placeholder:text-neutral-500"
-            />
-          </label>
-
           <div className="grid gap-3 text-sm font-medium text-white">
             {navLinks.map((link) => (
               <Link
@@ -240,14 +246,14 @@ export default function Navbar() {
                       >
                         View all International Trips
                       </Link>
-                      {internationalDestinations.map((destination) => (
+                      {internationalTrips.map((destination) => (
                         <Link
                           key={destination.slug}
                           href={`/international-trips/${destination.slug}`}
                           onClick={() => setIsOpen(false)}
                           className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
                         >
-                          {destination.name}
+                          {destination.name || destination.shortName}
                         </Link>
                       ))}
                     </div>
@@ -276,7 +282,7 @@ export default function Navbar() {
                       >
                         View all India Trips
                       </Link>
-                      {indiaTripsData.map((trip) => (
+                      {indiaTrips.map((trip) => (
                         <Link
                           key={trip.slug}
                           href={`/india-trips/${trip.slug}`}
@@ -345,6 +351,31 @@ export default function Navbar() {
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
           </Link>
+          {!isLoading && isAuthenticated ? (
+            <div className="space-y-3 rounded-xl border border-white/10 p-4">
+              <p className="text-sm font-semibold text-white/90">{maskPhone(user?.phone)}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
+              >
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Logout
+              </button>
+            </div>
+          ) : null}
+          {!isLoading && !isAuthenticated ? (
+            <Link
+              href="/auth"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-center rounded-full border border-[#D4AF37]/50 px-4 py-3 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
+            >
+              Sign up / Login
+            </Link>
+          ) : null}
         </div>
       )}
     </header>

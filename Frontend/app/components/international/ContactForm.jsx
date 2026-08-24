@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Calendar, Mail, MessageSquare, Phone, Send, User, Users } from "lucide-react";
-import { internationalDestinations } from "../../data/internationalTrips";
 
 const initialValues = {
   name: "",
@@ -17,7 +16,7 @@ const initialValues = {
 export default function ContactForm({
   eyebrow = "Not Sure What To Do? We Will Give You A Call Back!",
   title = "Contact Form",
-  destinationOptions = internationalDestinations,
+  destinationOptions = [],
   storageKey = "divasInternationalLeads",
 }) {
   const [values, setValues] = useState(initialValues);

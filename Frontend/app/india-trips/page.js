@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { BlogsSection, ContactForm, TravelerReviews } from "../components/international";
-import { IndiaHeroSection, IndiaTripsGrid } from "../components/india";
+import IndiaTripsHeader from "../components/india/IndiaTripsHeader";
+import IndiaTripsClient from "../components/india/IndiaTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
-import { indiaBlogs, indiaReviews, indiaTripsData } from "../data/indiaTrips";
+import { indiaReviews } from "../data/indiaTrips";
+import { getPublishedBlogs } from "../lib/data/blogs";
+import { toPublicBlogCard } from "../lib/data/mappers";
+import { buildMonthsFromTrips } from "../lib/data/tripMappers";
+import { getTripNavItems, getUpcomingTripsByDestination } from "../lib/data/trips";
+
+export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/india-trips";
 const heroImage =
@@ -51,7 +58,20 @@ export const metadata = {
   },
 };
 
-export default function IndiaTripsPage() {
+export default async function IndiaTripsPage() {
+  const [indiaBlogs, trips, indiaNav] = await Promise.all([
+    getPublishedBlogs(),
+    getUpcomingTripsByDestination("India"),
+    getTripNavItems("India"),
+  ]);
+
+  const blogCards = indiaBlogs
+    .filter((blog) => blog.destination === "India" || blog.categories?.includes("India"))
+    .slice(0, 6)
+    .map(toPublicBlogCard);
+
+  const months = buildMonthsFromTrips(trips);
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -75,7 +95,7 @@ export default function IndiaTripsPage() {
       "@context": "https://schema.org",
       "@type": "ItemList",
       name: "India Trips for Female Travelers",
-      itemListElement: indiaTripsData.map((trip, index) => ({
+      itemListElement: indiaNav.map((trip, index) => ({
         "@type": "ListItem",
         position: index + 1,
         item: {
@@ -87,7 +107,7 @@ export default function IndiaTripsPage() {
         },
       })),
     },
-    ...indiaBlogs.map((blog) => ({
+    ...blogCards.map((blog) => ({
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: blog.title,
@@ -108,7 +128,7 @@ export default function IndiaTripsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <IndiaHeroSection />
+      <IndiaTripsHeader />
       <nav className="bg-[#1A1A1A] px-4 py-4 text-sm text-white" aria-label="Breadcrumb">
         <ol className="mx-auto flex max-w-7xl items-center gap-2">
           <li>
@@ -120,17 +140,17 @@ export default function IndiaTripsPage() {
           <li className="font-semibold text-[#D4AF37]">India Trips</li>
         </ol>
       </nav>
-      <IndiaTripsGrid />
+      <IndiaTripsClient trips={trips} months={months} />
       {indiaReviews.length > 0 ? <TravelerReviews reviews={indiaReviews} /> : null}
-      {indiaBlogs.length > 0 ? (
+      {blogCards.length > 0 ? (
         <BlogsSection
-          posts={indiaBlogs}
+          posts={blogCards}
           title="Latest India Travel Stories"
           subtitle="Tips, Stories & Inspiration From India Trips"
         />
       ) : null}
       <WhyDivasSection />
-      <ContactForm destinationOptions={indiaTripsData} storageKey="divasIndiaLeads" />
+      <ContactForm destinationOptions={indiaNav} storageKey="divasIndiaLeads" />
     </main>
   );
 }

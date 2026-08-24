@@ -1,11 +1,14 @@
-import { blogs } from "../../data/blogs";
 import BlogCard from "./BlogCard";
 
 export default function BlogsSection({
-  posts = blogs,
+  posts = [],
   title = "Latest Travel Stories",
   subtitle = "Tips, Stories & Inspiration From Our Trips",
 }) {
+  if (!posts.length) {
+    return null;
+  }
+
   return (
     <section className="bg-[#1A1A1A] px-4 py-16" aria-labelledby="blogs-heading">
       <div className="mx-auto max-w-7xl">

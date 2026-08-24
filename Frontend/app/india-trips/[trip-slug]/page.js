@@ -1,20 +1,17 @@
 import { notFound } from "next/navigation";
 import TripDetailPage from "../../components/india-trip-detail/TripDetailPage";
-import { indiaTripDetails } from "../../data/indiaTripDetails";
+import { getPublishedTrips, getTripBySlug } from "../../lib/data/trips";
+import { formatDualPrice } from "../../utils/formatPrice";
+
+export const dynamic = "force-dynamic";
 
 const pageBaseUrl = "https://divassojourn.com/india-trips";
 
-export function generateStaticParams() {
-  return indiaTripDetails.map((trip) => ({
-    "trip-slug": trip.slug,
-  }));
-}
-
 export async function generateMetadata({ params }) {
   const { "trip-slug": tripSlug } = await params;
-  const trip = indiaTripDetails.find((item) => item.slug === tripSlug);
+  const trip = await getTripBySlug(tripSlug);
 
-  if (!trip) {
+  if (!trip || !trip.published || trip.destination !== "India") {
     return {
       title: "India Trip Not Found | Divas Sojourn",
     };
@@ -22,7 +19,7 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${trip.title} | India Trips | Divas Sojourn`,
-    description: `${trip.title} by Divas Sojourn. ${trip.dates}, ${trip.duration}. Starting from Rs. ${trip.price}/- per person.`,
+    description: `${trip.title} by Divas Sojourn. ${trip.dates}, ${trip.duration}. Starting from ${formatDualPrice(trip.price)} per person.`,
     keywords: [
       trip.title,
       trip.shortName,
@@ -59,13 +56,16 @@ export async function generateMetadata({ params }) {
 
 export default async function IndiaTripDetailRoute({ params }) {
   const { "trip-slug": tripSlug } = await params;
-  const trip = indiaTripDetails.find((item) => item.slug === tripSlug);
+  const trip = await getTripBySlug(tripSlug);
 
-  if (!trip) {
+  if (!trip || !trip.published || trip.destination !== "India") {
     notFound();
   }
 
-  const similarTrips = indiaTripDetails.filter((item) => item.slug !== trip.slug);
+  const similarTrips = (await getPublishedTrips()).filter(
+    (item) => item.destination === "India" && item.slug !== trip.slug,
+  );
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -102,7 +102,10 @@ export default async function IndiaTripDetailRoute({ params }) {
         "@type": "Offer",
         price: String(trip.price),
         priceCurrency: trip.currency,
-        availability: trip.status === "upcoming" ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+        availability:
+          trip.status === "upcoming"
+            ? "https://schema.org/InStock"
+            : "https://schema.org/SoldOut",
       },
       itinerary: trip.itinerary.map((day) => ({
         "@type": "TouristAttraction",

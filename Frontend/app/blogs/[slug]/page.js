@@ -1,19 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { blogs } from "../../data/blogs";
+import { getBlogBySlug, getPublishedBlogs } from "../../lib/data/blogs";
+import { toPublicBlogCard } from "../../lib/data/mappers";
+
+export const dynamic = "force-dynamic";
 
 const pageBaseUrl = "https://divassojourn.com/blogs";
 
-export function generateStaticParams() {
-  return blogs.map((blog) => ({
-    slug: blog.slug,
-  }));
-}
-
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const blog = blogs.find((item) => item.slug === slug);
+  const record = await getBlogBySlug(slug);
+  const blog = record?.published ? toPublicBlogCard(record) : null;
 
   if (!blog) {
     return {
@@ -45,11 +43,17 @@ export async function generateMetadata({ params }) {
 
 export default async function BlogDetailPage({ params }) {
   const { slug } = await params;
-  const blog = blogs.find((item) => item.slug === slug);
+  const record = await getBlogBySlug(slug);
 
-  if (!blog) {
+  if (!record || !record.published) {
     notFound();
   }
+
+  const blog = toPublicBlogCard(record);
+  const related = (await getPublishedBlogs())
+    .filter((item) => item.slug !== blog.slug)
+    .slice(0, 3)
+    .map(toPublicBlogCard);
 
   const schema = {
     "@context": "https://schema.org",
@@ -96,10 +100,9 @@ export default async function BlogDetailPage({ params }) {
         <section className="px-4 py-14">
           <div className="mx-auto max-w-4xl rounded-3xl border border-[#D4AF37]/25 bg-[#0F0F0F] p-6 shadow-2xl md:p-10">
             <p className="text-lg leading-9 text-white/85">{blog.excerpt}</p>
-            <p className="mt-6 leading-8 text-white/75">
-              Full article content will be added soon. This placeholder route is ready for the blog
-              detail page and keeps all blog links working across the website.
-            </p>
+            <div className="mt-6 space-y-4 text-base leading-8 text-white/75 whitespace-pre-line">
+              {blog.content}
+            </div>
             <Link
               href="/blogs"
               className="mt-8 inline-flex rounded-full bg-[#D4AF37] px-6 py-3 text-sm font-black uppercase tracking-wide text-[#0F0F0F] transition hover:bg-[#E8C547]"
@@ -107,6 +110,21 @@ export default async function BlogDetailPage({ params }) {
               Back to Blogs
             </Link>
           </div>
+
+          {related.length > 0 ? (
+            <div className="mx-auto mt-12 max-w-4xl">
+              <h2 className="text-2xl font-black">More stories</h2>
+              <ul className="mt-4 space-y-3">
+                {related.map((item) => (
+                  <li key={item.slug}>
+                    <Link href={`/blogs/${item.slug}`} className="font-semibold text-[#D4AF37] hover:underline">
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </section>
       </article>
     </main>
