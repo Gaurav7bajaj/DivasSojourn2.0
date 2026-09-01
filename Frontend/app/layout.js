@@ -64,15 +64,16 @@ export default async function RootLayout({ children }) {
     getTripNavItems("International"),
   ]);
 
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
+  const shell = (
+    <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
+      {children}
+    </AppShell>
+  );
+
   return (
     <html lang="en-IN" data-scroll-behavior="smooth">
-      <body>
-        <ClerkProvider>
-          <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
-            {children}
-          </AppShell>
-        </ClerkProvider>
-      </body>
+      <body>{clerkEnabled ? <ClerkProvider>{shell}</ClerkProvider> : shell}</body>
     </html>
   );
 }

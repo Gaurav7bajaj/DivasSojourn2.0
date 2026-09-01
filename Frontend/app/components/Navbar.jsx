@@ -13,6 +13,7 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
   const [isCuratedOpen, setIsCuratedOpen] = useState(false);
+  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
     <header
@@ -61,29 +62,47 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             +91-99900 22835
           </Link>
           <div className="hidden items-center gap-2 lg:flex">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button
-                  type="button"
+            {clerkEnabled ? (
+              <>
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      className="rounded-full border border-[#D4AF37]/50 px-4 py-2 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
+                    >
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
+                    <button
+                      type="button"
+                      className="rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
+                    >
+                      Sign up
+                    </button>
+                  </SignUpButton>
+                </Show>
+                <Show when="signed-in">
+                  <UserButton afterSignOutUrl="/" />
+                </Show>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
                   className="rounded-full border border-[#D4AF37]/50 px-4 py-2 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
                 >
                   Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
-                <button
-                  type="button"
+                </Link>
+                <Link
+                  href="/sign-up"
                   className="rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
                 >
                   Sign up
-                </button>
-              </SignUpButton>
-            </Show>
-            <Show when="signed-in">
-              <UserButton afterSignOutUrl="/" />
-            </Show>
+                </Link>
+              </>
+            )}
           </div>
-
           <button
             type="button"
             onClick={() => setIsOpen((value) => !value)}
@@ -352,33 +371,53 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             +91-99900 22835
           </Link>
           <div className="flex flex-col gap-3">
-            <Show when="signed-out">
-              <SignInButton mode="modal">
-                <button
-                  type="button"
+            {clerkEnabled ? (
+              <>
+                <Show when="signed-out">
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center justify-center rounded-full border border-[#D4AF37]/50 px-4 py-3 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
+                    >
+                      Sign in
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center justify-center rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
+                    >
+                      Sign up
+                    </button>
+                  </SignUpButton>
+                </Show>
+                <Show when="signed-in">
+                  <div className="flex items-center justify-center rounded-xl border border-white/10 p-4">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </Show>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
                   onClick={() => setIsOpen(false)}
                   className="flex w-full items-center justify-center rounded-full border border-[#D4AF37]/50 px-4 py-3 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
                 >
                   Sign in
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
-                <button
-                  type="button"
+                </Link>
+                <Link
+                  href="/sign-up"
                   onClick={() => setIsOpen(false)}
                   className="flex w-full items-center justify-center rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
                 >
                   Sign up
-                </button>
-              </SignUpButton>
-            </Show>
-            <Show when="signed-in">
-              <div className="flex items-center justify-center rounded-xl border border-white/10 p-4">
-                <UserButton afterSignOutUrl="/" />
-              </div>
-            </Show>
-          </div>
-        </div>
+                </Link>
+              </>
+            )}
+          </div>        </div>
       )}
     </header>
   );

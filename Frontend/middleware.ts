@@ -1,6 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import type { NextFetchEvent, NextRequest } from "next/server";
 
 const ADMIN_COOKIE_NAME = "divasAdminSession";
 
@@ -14,6 +14,13 @@ function getSecret(): string | undefined {
   const secret = process.env.ADMIN_AUTH_SECRET || process.env.AUTH_SECRET;
   if (secret) return secret;
   return process.env.NODE_ENV === "production" ? undefined : DEV_FALLBACK_SECRET;
+}
+
+function isClerkConfigured(): boolean {
+  return Boolean(
+    process.env.CLERK_SECRET_KEY?.trim() &&
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim(),
+  );
 }
 
 function base64UrlToBytes(value: string): Uint8Array {
@@ -100,11 +107,22 @@ async function handleAdminAuth(request: NextRequest) {
   return null;
 }
 
-export default clerkMiddleware(async (_auth, request) => {
+async function withAdminAuth(request: NextRequest) {
   const adminResponse = await handleAdminAuth(request);
   if (adminResponse) return adminResponse;
   return NextResponse.next();
-});
+}
+
+// Clerk crashes middleware when keys are missing on Vercel. Keep admin auth
+// working for the client preview even if Clerk env vars are not set yet.
+const clerkHandler = clerkMiddleware(async (_auth, request) => withAdminAuth(request));
+
+export default function middleware(request: NextRequest, event: NextFetchEvent) {
+  if (!isClerkConfigured()) {
+    return withAdminAuth(request);
+  }
+  return clerkHandler(request, event);
+}
 
 export const config = {
   matcher: [
