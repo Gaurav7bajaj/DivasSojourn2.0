@@ -46,6 +46,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
+    if (!process.env.ADMIN_AUTH_SECRET && !process.env.AUTH_SECRET) {
+      console.error("Admin login blocked: ADMIN_AUTH_SECRET is not configured.");
+      return NextResponse.json(
+        {
+          error:
+            "Admin session secret is not configured. Set ADMIN_AUTH_SECRET on the server and redeploy.",
+        },
+        { status: 503 },
+      );
+    }
+
     const token = createAdminToken(credentials.email);
     const response = NextResponse.json({ success: true, email: credentials.email });
     response.cookies.set(ADMIN_COOKIE_NAME, token, adminCookieOptions());
