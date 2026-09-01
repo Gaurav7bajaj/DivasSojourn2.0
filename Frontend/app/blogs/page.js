@@ -1,4 +1,5 @@
 import { BlogPageHeader, BlogsListingClient, FeaturedBlog } from "../components/blogs";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
 
@@ -86,6 +87,7 @@ export default async function BlogsPage() {
       <BlogPageHeader />
       <FeaturedBlog blogs={blogs} />
       <BlogsListingClient blogs={blogs} />
+      <ShortContactForm pageLabel="Blogs" storageKey="divasBlogLeads" />
     </main>
   );
 }

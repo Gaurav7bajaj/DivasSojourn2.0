@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, LogOut, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { maskPhone } from "../lib/auth/sessionClient";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import { curatedEscapes } from "../data/curatedEscapes";
 import { navLinks, tripMenus } from "../data/mockData";
 
 export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
-  const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
@@ -62,27 +60,29 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
           </Link>
-          {!isLoading && isAuthenticated ? (
-            <div className="hidden items-center gap-3 lg:flex">
-              <span className="text-sm font-semibold text-white/90">{maskPhone(user?.phone)}</span>
-              <button
-                type="button"
-                onClick={logout}
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                Logout
-              </button>
-            </div>
-          ) : null}
-          {!isLoading && !isAuthenticated ? (
-            <Link
-              href="/auth"
-              className="hidden rounded-full border border-[#D4AF37]/50 px-4 py-2 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F] lg:inline-flex"
-            >
-              Sign up / Login
-            </Link>
-          ) : null}
+          <div className="hidden items-center gap-2 lg:flex">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  className="rounded-full border border-[#D4AF37]/50 px-4 py-2 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
+                >
+                  Sign in
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
+                <button
+                  type="button"
+                  className="rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
+                >
+                  Sign up
+                </button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton afterSignOutUrl="/" />
+            </Show>
+          </div>
 
           <button
             type="button"
@@ -351,31 +351,33 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
           </Link>
-          {!isLoading && isAuthenticated ? (
-            <div className="space-y-3 rounded-xl border border-white/10 p-4">
-              <p className="text-sm font-semibold text-white/90">{maskPhone(user?.phone)}</p>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  setIsOpen(false);
-                }}
-                className="flex w-full items-center justify-center gap-2 rounded-full border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-                Logout
-              </button>
-            </div>
-          ) : null}
-          {!isLoading && !isAuthenticated ? (
-            <Link
-              href="/auth"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center justify-center rounded-full border border-[#D4AF37]/50 px-4 py-3 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
-            >
-              Sign up / Login
-            </Link>
-          ) : null}
+          <div className="flex flex-col gap-3">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="flex w-full items-center justify-center rounded-full border border-[#D4AF37]/50 px-4 py-3 text-sm font-bold text-[#D4AF37] transition hover:bg-[#D4AF37] hover:text-[#0F0F0F]"
+                >
+                  Sign in
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal" forceRedirectUrl="/" fallbackRedirectUrl="/">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="flex w-full items-center justify-center rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F] transition hover:bg-[#E8C547]"
+                >
+                  Sign up
+                </button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <div className="flex items-center justify-center rounded-xl border border-white/10 p-4">
+                <UserButton afterSignOutUrl="/" />
+              </div>
+            </Show>
+          </div>
         </div>
       )}
     </header>

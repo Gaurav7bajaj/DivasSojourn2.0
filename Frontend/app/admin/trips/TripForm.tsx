@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Trip, TripAccommodation, TripItineraryDay } from "@/app/lib/data/types";
 import { slugify } from "@/app/lib/slugify";
+
+const fileButtonClass =
+  "inline-flex cursor-pointer items-center justify-center rounded-full bg-[#2563EB] px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-[#1D4ED8]";
 
 type TripFormProps = {
   mode: "create" | "edit";
@@ -51,7 +54,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
   const [pdfPath, setPdfPath] = useState(initial?.pdfPath || "");
   const [sourcePdf, setSourcePdf] = useState(initial?.sourcePdf || "");
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [galleryFiles, setGalleryFiles] = useState<FileList | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [dates, setDates] = useState(initial?.dates || "");
   const [startDate, setStartDate] = useState(initial?.startDate || "");
@@ -105,6 +108,25 @@ export default function TripForm({ mode, initial }: TripFormProps) {
   // react-hooks/set-state-in-effect and fails `next build`'s lint step).
   const displaySlug = slugTouched ? slug : slugify(title);
 
+  const coverPreviewUrl = useMemo(() => {
+    if (coverFile) return URL.createObjectURL(coverFile);
+    return image || "";
+  }, [coverFile, image]);
+
+  const galleryPendingPreviews = useMemo(
+    () => galleryFiles.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    [galleryFiles],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (coverFile && coverPreviewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(coverPreviewUrl);
+      }
+      galleryPendingPreviews.forEach((item) => URL.revokeObjectURL(item.url));
+    };
+  }, [coverFile, coverPreviewUrl, galleryPendingPreviews]);
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
@@ -152,9 +174,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
       const formData = new FormData();
       formData.set("payload", JSON.stringify(payload));
       if (coverFile) formData.set("coverImage", coverFile);
-      if (galleryFiles) {
-        Array.from(galleryFiles).forEach((file) => formData.append("galleryImages", file));
-      }
+      galleryFiles.forEach((file) => formData.append("galleryImages", file));
       if (pdfFile) formData.set("pdf", pdfFile);
 
       const response = await fetch(
@@ -236,37 +256,146 @@ export default function TripForm({ mode, initial }: TripFormProps) {
         </div>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-5">
         <h2 className="text-lg font-black">Media</h2>
-        <label className="block text-sm font-bold">
-          Cover image
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} className="mt-2 block w-full text-sm" />
-        </label>
-        {image ? <p className="text-xs text-[#666666]">Current: {image}</p> : null}
-        <label className="block text-sm font-bold">
-          Gallery images (add more)
-          <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={(e) => setGalleryFiles(e.target.files)} className="mt-2 block w-full text-sm" />
-        </label>
-        {galleryImages.length ? (
-          <div className="flex flex-wrap gap-2">
-            {galleryImages.map((url) => (
-              <button
-                key={url}
-                type="button"
-                onClick={() => setGalleryImages((prev) => prev.filter((item) => item !== url))}
-                className="rounded-full bg-[#F5F5F5] px-3 py-1 text-xs font-semibold hover:bg-red-50 hover:text-red-600"
-                title="Remove from gallery"
-              >
-                Remove image
-              </button>
-            ))}
+
+        <div className="space-y-3">
+          <p className="text-sm font-bold">Cover image</p>
+          {coverPreviewUrl ? (
+            <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-[#FAFAFA]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={coverPreviewUrl}
+                alt="Cover preview"
+                className="h-52 w-full object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 bg-black/55 px-3 py-2 text-xs text-white">
+                <span className="truncate font-semibold">
+                  {coverFile ? `New: ${coverFile.name}` : "Current cover"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoverFile(null);
+                    setImage("");
+                  }}
+                  className="rounded-full bg-red-600 px-3 py-1 font-bold hover:bg-red-500"
+                >
+                  Remove cover
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-black/15 bg-[#FAFAFA] text-sm text-[#777777]">
+              No cover image selected
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <label className={fileButtonClass}>
+              {coverPreviewUrl ? "Change cover photo" : "Choose cover photo"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => setCoverFile(e.target.files?.[0] || null)}
+              />
+            </label>
+            {coverFile ? (
+              <span className="text-xs font-semibold text-[#2563EB]">Ready to upload on save</span>
+            ) : null}
           </div>
-        ) : null}
-        <label className="block text-sm font-bold">
-          Trip PDF (optional)
-          <input type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files?.[0] || null)} className="mt-2 block w-full text-sm" />
-        </label>
-        {pdfPath ? <p className="text-xs text-[#666666]">Current PDF: {sourcePdf || pdfPath}</p> : null}
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-sm font-bold">Gallery images</p>
+          {galleryImages.length || galleryPendingPreviews.length ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {galleryImages.map((url) => (
+                <div
+                  key={url}
+                  className="group relative overflow-hidden rounded-xl border border-black/10 bg-[#FAFAFA]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="Gallery" className="h-32 w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setGalleryImages((prev) => prev.filter((item) => item !== url))}
+                    className="absolute right-2 top-2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-bold text-white opacity-95 shadow hover:bg-red-500"
+                    title="Remove from gallery"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              {galleryPendingPreviews.map(({ file, url }) => (
+                <div
+                  key={url}
+                  className="group relative overflow-hidden rounded-xl border-2 border-[#2563EB] bg-[#FAFAFA]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={file.name} className="h-32 w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-[#2563EB]/90 px-2 py-1 text-[10px] font-bold text-white">
+                    New · {file.name}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setGalleryFiles((prev) => prev.filter((item) => item !== file))
+                    }
+                    className="absolute right-2 top-2 rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-bold text-white shadow hover:bg-red-500"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-black/15 bg-[#FAFAFA] text-sm text-[#777777]">
+              No gallery photos yet
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <label className={fileButtonClass}>
+              Add gallery photos
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="sr-only"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (!files.length) return;
+                  setGalleryFiles((prev) => [...prev, ...files]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {galleryPendingPreviews.length ? (
+              <span className="text-xs font-semibold text-[#2563EB]">
+                {galleryPendingPreviews.length} new photo
+                {galleryPendingPreviews.length === 1 ? "" : "s"} will upload on save
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-bold">Trip PDF (optional)</p>
+          <label className={fileButtonClass}>
+            {pdfFile || pdfPath ? "Change PDF" : "Choose PDF"}
+            <input
+              type="file"
+              accept="application/pdf"
+              className="sr-only"
+              onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+            />
+          </label>
+          {pdfFile ? (
+            <p className="text-xs font-semibold text-[#2563EB]">New PDF: {pdfFile.name}</p>
+          ) : pdfPath ? (
+            <p className="text-xs text-[#666666]">Current PDF: {sourcePdf || pdfPath}</p>
+          ) : null}
+        </div>
       </section>
 
       <section className="space-y-4">

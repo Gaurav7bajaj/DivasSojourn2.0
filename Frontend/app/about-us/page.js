@@ -8,6 +8,7 @@ import {
   PhotoGallery,
   AboutCTA,
 } from "../components/about";
+import ShortContactForm from "../components/international/ShortContactForm";
 
 export const metadata = {
   title: "About Us",
@@ -31,6 +32,7 @@ export default function AboutUsPage() {
       <ValuesSection />
       <PhotoGallery />
       <AboutCTA />
+      <ShortContactForm pageLabel="About Us" storageKey="divasAboutLeads" />
     </main>
   );
 }

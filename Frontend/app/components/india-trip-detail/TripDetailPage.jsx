@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, Clock3, MapPin, Plane, Star } from "lucide-react";
+import ShortContactForm from "../international/ShortContactForm";
 import EnquiryCard from "./EnquiryCard";
 import JourneyFrames from "./JourneyFrames";
 import SimilarTrips from "./SimilarTrips";
@@ -59,6 +60,12 @@ export default function TripDetailPage({
       <ReviewsNotice />
       <JourneyFrames trip={trip} />
       <SimilarTrips trips={similarTrips} basePath={basePath} />
+      <ShortContactForm
+        pageLabel={trip.shortName || trip.title}
+        storageKey="divasTripDetailLeads"
+        eyebrow="Planning This Trip?"
+        title="Reach Out to Us"
+      />
     </main>
   );
 }

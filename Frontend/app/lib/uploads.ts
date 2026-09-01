@@ -1,7 +1,10 @@
 /**
  * Phase 1 local image uploads.
- * Phase 2: swap this helper for Cloudinary / S3 (or similar). No UI/API changes needed
- * beyond returning a public URL string the same way.
+ * Phase 2: swap this helper for Cloudinary / S3 / Vercel Blob (or similar).
+ * No UI/API changes needed beyond returning a public URL string the same way.
+ *
+ * On Vercel (serverless), writing under public/uploads does not persist.
+ * Prefer HTTPS image URLs in admin forms until cloud storage is wired.
  */
 
 import { randomUUID } from "crypto";
@@ -15,6 +18,14 @@ export type UploadFolder = "blogs" | "gallery" | "trips";
 
 const ALLOWED_PDF = new Set(["application/pdf"]);
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
+
+function isServerlessReadOnlyFs(): boolean {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
+function serverlessUploadError(): string {
+  return "File uploads to local disk are not available on this host. Paste an HTTPS image URL instead, or configure cloud storage.";
+}
 
 export function validateImageFile(file: File): string | null {
   if (!ALLOWED_TYPES.has(file.type)) {
@@ -36,6 +47,10 @@ export async function saveUploadedImage(
   file: File,
   folder: UploadFolder,
 ): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
+  if (isServerlessReadOnlyFs()) {
+    return { error: serverlessUploadError() };
+  }
+
   const validationError = validateImageFile(file);
   if (validationError) {
     return { error: validationError };
@@ -55,6 +70,10 @@ export async function saveUploadedImage(
 export async function saveUploadedPdf(
   file: File,
 ): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
+  if (isServerlessReadOnlyFs()) {
+    return { error: serverlessUploadError() };
+  }
+
   if (!ALLOWED_PDF.has(file.type) && !file.name.toLowerCase().endsWith(".pdf")) {
     return { error: "Only PDF files are allowed." };
   }
@@ -72,7 +91,7 @@ export async function saveUploadedPdf(
 }
 
 export async function deleteUploadedFileIfLocal(imageUrl: string): Promise<void> {
-  if (!imageUrl.startsWith("/uploads/")) {
+  if (!imageUrl.startsWith("/uploads/") || isServerlessReadOnlyFs()) {
     return;
   }
 

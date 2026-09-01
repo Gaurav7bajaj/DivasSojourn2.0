@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FaqAccordion, FaqHero } from "../components/faqs";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { faqItems } from "../data/faqs";
 
 export const metadata = {
@@ -67,6 +68,13 @@ export default function FaqsPage() {
           <FaqAccordion items={faqItems} />
         </div>
       </section>
+
+      <ShortContactForm
+        pageLabel="FAQs"
+        storageKey="divasFaqLeads"
+        eyebrow="Still Have Questions?"
+        title="Reach Out to Us"
+      />
     </main>
   );
 }

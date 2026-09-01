@@ -1,13 +1,15 @@
-import { internationalDestinations } from "../../data/internationalTrips";
 import TripSection from "./TripSection";
+import { getTripNavItems } from "../../lib/data/trips";
 
-export default function InternationalTripsSection() {
-  const featuredTrips = internationalDestinations.slice(0, 4).map((trip) => ({
+export default async function InternationalTripsSection() {
+  const trips = (await getTripNavItems("International")).slice(0, 8).map((trip) => ({
     id: trip.id,
-    name: trip.name,
+    name: trip.name || trip.shortName || trip.title,
     image: trip.image,
-    price: trip.startingPrice,
+    price: trip.startingPrice || trip.price,
     description: trip.description,
+    slug: trip.slug,
+    customHref: `/international-trips/${trip.slug}`,
   }));
 
   return (
@@ -20,7 +22,7 @@ export default function InternationalTripsSection() {
       heroImage="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80"
       heroVideo="https://videos.pexels.com/video-files/3248250/3248250-uhd_2560_1440_25fps.mp4"
       heroAlt="Scenic international train journey across a mountain bridge"
-      trips={featuredTrips}
+      trips={trips}
     />
   );
 }

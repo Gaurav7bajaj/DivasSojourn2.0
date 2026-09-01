@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon on Vercel injects DATABASE_URL_UNPOOLED for migrations / db push
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model Blog {
@@ -93,4 +95,19 @@ model Trip {
   published            Boolean  @default(true)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+/// Traveler profile collected after Clerk sign-up (name + phone for leads).
+model CustomerProfile {
+  id          String   @id @default(uuid())
+  clerkUserId String   @unique
+  email       String   @default("")
+  firstName   String
+  lastName    String
+  phone       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([phone])
+  @@index([email])
 }

@@ -2,6 +2,7 @@ import {
   PaymentMethodsSection,
   PaymentPolicySection,
 } from "../components/payments";
+import ShortContactForm from "../components/international/ShortContactForm";
 
 export const metadata = {
   title: "Payment Methods & Policy | Divas Sojourn",
@@ -73,6 +74,7 @@ export default function PaymentsPage() {
       />
       <PaymentMethodsSection />
       <PaymentPolicySection />
+      <ShortContactForm pageLabel="Payments" storageKey="divasPaymentLeads" />
     </main>
   );
 }

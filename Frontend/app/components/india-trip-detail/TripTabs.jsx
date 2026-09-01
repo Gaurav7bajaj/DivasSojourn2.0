@@ -4,16 +4,16 @@ import Image from "next/image";
 import { Check, Lock, X } from "lucide-react";
 import { useState } from "react";
 import LockedItinerary from "../auth/LockedItinerary";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@clerk/nextjs";
 import { formatDualPrice } from "../../utils/formatPrice";
 
 const tabs = ["Overview & Highlights", "Itinerary", "Inclusions", "Exclusions", "Gallery", "Other Info"];
 
 export default function TripTabs({ trip }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [openDay, setOpenDay] = useState(1);
-  const isItineraryLocked = !isLoading && !isAuthenticated;
+  const isItineraryLocked = isLoaded && !isSignedIn;
 
   return (
     <section className="overflow-hidden rounded-3xl border border-[#D4AF37]/20 bg-[#F9F9F9] text-[#1A1A1A] shadow-2xl">

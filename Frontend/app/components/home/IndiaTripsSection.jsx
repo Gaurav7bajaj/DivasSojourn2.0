@@ -1,7 +1,17 @@
-import { indiaTrips } from "../../data/mockData";
 import TripSection from "./TripSection";
+import { getTripNavItems } from "../../lib/data/trips";
 
-export default function IndiaTripsSection() {
+export default async function IndiaTripsSection() {
+  const trips = (await getTripNavItems("India")).slice(0, 8).map((trip) => ({
+    id: trip.id,
+    name: trip.shortName || trip.name || trip.title,
+    image: trip.image,
+    price: trip.price,
+    description: trip.description,
+    slug: trip.slug,
+    customHref: `/india-trips/${trip.slug}`,
+  }));
+
   return (
     <TripSection
       id="india-trips"
@@ -12,7 +22,7 @@ export default function IndiaTripsSection() {
       heroImage="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80"
       heroVideo="https://videos.pexels.com/video-files/3724873/3724873-uhd_2560_1440_25fps.mp4"
       heroAlt="Lush waterfall and green Indian landscape"
-      trips={indiaTrips}
+      trips={trips}
     />
   );
 }

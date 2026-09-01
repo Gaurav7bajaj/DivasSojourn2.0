@@ -33,7 +33,7 @@ export default function CuratedEscapeCard({ escape }) {
           <span>Typical Duration: {escape.duration}</span>
         </div>
 
-        <p className="mt-4 text-base font-black text-[#D4AF37]">
+        <p className="mt-4 text-base font-black text-black">
           From: {formatDualPrice(escape.priceInr)}{" "}
           <span className="text-xs font-semibold text-[#555555]">{escape.priceSuffix}</span>
         </p>

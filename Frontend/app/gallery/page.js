@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 import { PhotoGallery } from "../components/about";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { getGalleryImages } from "../lib/data/gallery";
 import { toPublicGalleryItem } from "../lib/data/mappers";
 
@@ -52,6 +53,7 @@ export default async function GalleryPage() {
       </section>
 
       <PhotoGallery images={images} />
+      <ShortContactForm pageLabel="Gallery" storageKey="divasGalleryLeads" />
     </main>
   );
 }

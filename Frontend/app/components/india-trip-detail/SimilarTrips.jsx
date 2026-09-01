@@ -87,7 +87,7 @@ export default function SimilarTrips({ trips, basePath = "/india-trips" }) {
                     </p>
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-3">
-                  <p className="rounded-full bg-[#D4AF37] px-3 py-2 text-sm font-black text-[#0F0F0F]">
+                  <p className="rounded-full bg-white px-3 py-2 text-sm font-black text-black">
                     {formatDualPrice(trip.price)} Onwards
                   </p>
                     <span className="flex items-center gap-1 rounded-full bg-[#0F9B9B] px-3 py-2 text-xs font-black text-white transition group-hover:bg-[#0d8585]">

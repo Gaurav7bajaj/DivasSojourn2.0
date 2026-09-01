@@ -20,7 +20,7 @@ export default function TripCard({ trip, href = "/upcoming-trips" }) {
           <h3 className="text-xl font-bold text-white tracking-wide transition duration-300 group-hover:text-[#D4AF37]">
             {trip.name}
           </h3>
-          <p className="mt-1.5 text-sm font-semibold text-[#D4AF37]">
+          <p className="mt-2 rounded-full bg-white px-3 py-1 text-sm font-semibold text-black">
             Starting Price {formatDualPrice(trip.price)}
           </p>
         </div>

@@ -18,8 +18,12 @@ export default function ContactForm({
   title = "Contact Form",
   destinationOptions = [],
   storageKey = "divasInternationalLeads",
+  defaultInterestedIn = "",
 }) {
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState({
+    ...initialValues,
+    interestedIn: defaultInterestedIn,
+  });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -68,7 +72,7 @@ export default function ContactForm({
     window.localStorage.setItem(storageKey, JSON.stringify([...storedEntries, formEntry]));
 
     window.setTimeout(() => {
-      setValues(initialValues);
+      setValues({ ...initialValues, interestedIn: defaultInterestedIn });
       setIsSubmitting(false);
       setSuccessMessage("Thank you! Our team will call you back soon.");
     }, 600);

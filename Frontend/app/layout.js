@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import AppShell from "./components/AppShell";
 import { getTripNavItems } from "./lib/data/trips";
 
@@ -66,9 +67,11 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en-IN" data-scroll-behavior="smooth">
       <body>
-        <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
-          {children}
-        </AppShell>
+        <ClerkProvider>
+          <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
+            {children}
+          </AppShell>
+        </ClerkProvider>
       </body>
     </html>
   );

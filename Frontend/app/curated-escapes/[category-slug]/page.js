@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ContactForm from "../../components/international/ContactForm";
 import { curatedEscapes } from "../../data/curatedEscapes";
 import { formatDualPrice } from "../../utils/formatPrice";
 
@@ -80,7 +81,10 @@ export default async function CuratedEscapeCategoryPage({ params }) {
             </p>
             <p className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <span className="block font-black text-white">Starting From</span>
-              <span className="text-[#D4AF37]">{formatDualPrice(escape.priceInr)}</span> {escape.priceSuffix}
+              <span className="rounded-full bg-white px-3 py-1 font-black text-black">
+                {formatDualPrice(escape.priceInr)}
+              </span>{" "}
+              {escape.priceSuffix}
             </p>
           </div>
           <p className="mt-6 text-sm leading-7 text-white/70">
@@ -94,6 +98,14 @@ export default async function CuratedEscapeCategoryPage({ params }) {
           </Link>
         </div>
       </section>
+
+      <ContactForm
+        eyebrow="Planning This Escape? We Will Give You A Call Back!"
+        title="Enquire About This Escape"
+        destinationOptions={curatedEscapes}
+        defaultInterestedIn={escape.name}
+        storageKey="divasCuratedEscapeLeads"
+      />
     </main>
   );
 }

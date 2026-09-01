@@ -1,4 +1,5 @@
 import TripCalendar from "../components/calendar/TripCalendar";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { getPublishedTrips } from "../lib/data/trips";
 
 export const dynamic = "force-dynamic";
@@ -100,6 +101,8 @@ export default async function CalendarPage() {
       <section className="bg-[#1A1A1A] relative z-10 -mt-4 rounded-t-3xl pt-4">
         <TripCalendar trips={trips} />
       </section>
+
+      <ShortContactForm pageLabel="Calendar" storageKey="divasCalendarLeads" />
     </main>
   );
 }

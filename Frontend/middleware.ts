@@ -1,3 +1,4 @@
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -43,7 +44,6 @@ async function isValidAdminToken(token: string | undefined): Promise<boolean> {
 
   const secret = getSecret();
   if (!secret) {
-    // Fail closed: no configured secret means no one can be authenticated.
     return false;
   }
 
@@ -73,7 +73,7 @@ async function isValidAdminToken(token: string | undefined): Promise<boolean> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+async function handleAdminAuth(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
   const authenticated = await isValidAdminToken(token);
@@ -97,9 +97,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.next();
+  return null;
 }
 
+export default clerkMiddleware(async (_auth, request) => {
+  const adminResponse = await handleAdminAuth(request);
+  if (adminResponse) return adminResponse;
+  return NextResponse.next();
+});
+
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    // Skip Next.js internals and static files
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+    "/__clerk/:path*",
+  ],
 };

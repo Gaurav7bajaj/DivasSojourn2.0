@@ -40,7 +40,7 @@ export default function EnquiryCard({ trip }) {
           Partial payment will be enabled on final payment page.
         </p>
         <p className="mt-5 text-sm font-semibold text-[#555555]">Starting from</p>
-        <p className="mt-1 text-4xl font-black text-[#D4AF37]">
+        <p className="mt-1 text-4xl font-black text-black">
           {formatDualPrice(trip.earlyBirdPrice || trip.price)}
         </p>
         <p className="text-sm font-semibold text-[#555555]">per person</p>

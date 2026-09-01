@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export default function HeroImageCarousel({
   images,
-  intervalMs = 4000,
+  intervalMs = 2000,
   className = "",
   imageClassName = "object-cover object-center",
   children,
@@ -56,7 +56,7 @@ export default function HeroImageCarousel({
           fill
           priority={index === 0}
           sizes="100vw"
-          className={`transition-opacity duration-1000 ${imageClassName} ${
+          className={`transition-opacity duration-500 ${imageClassName} ${
             index === activeIndex ? "opacity-100" : "opacity-0"
           }`}
         />

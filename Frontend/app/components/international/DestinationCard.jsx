@@ -24,7 +24,9 @@ export default function DestinationCard({ destination }) {
           <p className="mt-2 font-semibold text-white">{destination.subtitle}</p>
           <p className="mt-3 line-clamp-3 text-sm leading-6 text-white">{destination.description}</p>
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
-            <span className="font-bold text-[#D4AF37]">{formatDualPrice(destination.startingPrice)}</span>
+            <span className="rounded-full bg-white px-3 py-1 font-bold text-black">
+              {formatDualPrice(destination.startingPrice)}
+            </span>
             <span className="font-semibold text-white">{destination.duration}</span>
           </div>
         </div>

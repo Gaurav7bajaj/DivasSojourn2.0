@@ -2,6 +2,7 @@ import {
   CuratedEscapesGrid,
   CuratedEscapesHero,
 } from "../components/curated-escapes";
+import ContactForm from "../components/international/ContactForm";
 import { curatedEscapes, curatedEscapesHero } from "../data/curatedEscapes";
 
 const pageUrl = "https://divassojourn.com/curated-escapes";
@@ -92,6 +93,12 @@ export default function CuratedEscapesPage() {
       />
       <CuratedEscapesHero />
       <CuratedEscapesGrid />
+      <ContactForm
+        eyebrow="Not Sure Which Escape Fits You? We Will Give You A Call Back!"
+        title="Contact Form"
+        destinationOptions={curatedEscapes}
+        storageKey="divasCuratedEscapeLeads"
+      />
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TravelSavingHero } from "../components/travel-saving-plan";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { formatDualPrice } from "../utils/formatPrice";
 import {
   howItWorksSteps,
@@ -110,7 +111,7 @@ export default function TravelSavingPlanPage() {
                       <td className="px-4 py-4 font-black text-[#0F9B9B]">
                         {formatDualPrice(plan.packageValueInr)}
                       </td>
-                      <td className="px-4 py-4 font-black text-[#D4AF37]">
+                      <td className="px-4 py-4 font-black text-black">
                         +{formatDualPrice(plan.bonusInr)}
                       </td>
                     </tr>
@@ -193,6 +194,13 @@ export default function TravelSavingPlanPage() {
           </div>
         </div>
       </section>
+
+      <ShortContactForm
+        pageLabel="Travel Saving Plan"
+        storageKey="divasSavingPlanLeads"
+        eyebrow="Ready to Enrol?"
+        title="Reach Out to Us"
+      />
     </main>
   );
 }

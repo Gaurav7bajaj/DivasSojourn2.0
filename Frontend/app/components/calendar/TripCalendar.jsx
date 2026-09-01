@@ -318,7 +318,7 @@ export default function TripCalendar({ trips = [] }) {
                       {trip.dates}
                     </p>
                     <div className="flex items-center justify-between mt-3">
-                      <span className="text-xs font-semibold text-[#D4AF37]">
+                      <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-black">
                         {formatDualPrice(trip.price, { useRupeeSymbol: true })}
                       </span>
                       <Link
@@ -406,7 +406,7 @@ export default function TripCalendar({ trips = [] }) {
                         <div className="mt-2.5 flex items-center justify-between">
                           <div className="flex items-baseline gap-0.5">
                             <span className="text-[10px] font-semibold text-white/40">From</span>
-                            <span className="text-sm font-extrabold text-white">
+                            <span className="rounded-full bg-white px-2.5 py-0.5 text-sm font-extrabold text-black">
                               {formatDualPrice(trip.price, { useRupeeSymbol: true })}
                             </span>
                           </div>

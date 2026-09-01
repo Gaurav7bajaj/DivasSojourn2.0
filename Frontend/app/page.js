@@ -7,6 +7,7 @@ import {
   UpcomingTripsSection,
   WhyDivasSection,
 } from "./components/home";
+import ShortContactForm from "./components/international/ShortContactForm";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <InternationalTripsSection />
       <RomanceEscapesSection />
       <WhyDivasSection />
+      <ShortContactForm pageLabel="Home" storageKey="divasHomeLeads" />
     </main>
   );
 }
