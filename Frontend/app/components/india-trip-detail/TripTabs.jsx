@@ -8,12 +8,25 @@ import { useAuth } from "@clerk/nextjs";
 import { formatDualPrice } from "../../utils/formatPrice";
 
 const tabs = ["Overview & Highlights", "Itinerary", "Inclusions", "Exclusions", "Gallery", "Other Info"];
+const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default function TripTabs({ trip }) {
+  // useAuth() crashes when ClerkProvider is absent (no Clerk keys on Vercel).
+  if (clerkEnabled) {
+    return <TripTabsWithClerk trip={trip} />;
+  }
+  return <TripTabsView trip={trip} isItineraryLocked={false} />;
+}
+
+function TripTabsWithClerk({ trip }) {
   const { isLoaded, isSignedIn } = useAuth();
+  const isItineraryLocked = isLoaded && !isSignedIn;
+  return <TripTabsView trip={trip} isItineraryLocked={isItineraryLocked} />;
+}
+
+function TripTabsView({ trip, isItineraryLocked }) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [openDay, setOpenDay] = useState(1);
-  const isItineraryLocked = isLoaded && !isSignedIn;
 
   return (
     <section className="overflow-hidden rounded-3xl border border-[#D4AF37]/20 bg-[#F9F9F9] text-[#1A1A1A] shadow-2xl">

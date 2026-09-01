@@ -48,6 +48,10 @@ export default function TripHero({ trip }) {
 }
 
 function HeroAction({ href, download, label }) {
+  if (!href) {
+    return null;
+  }
+
   return (
     <a
       href={href}
