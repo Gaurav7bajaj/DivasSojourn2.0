@@ -86,33 +86,6 @@ export const internationalTrips = [
   },
 ];
 
-export const curatedEscapes = [
-  {
-    id: 9,
-    name: "Luxury Wellness Retreat",
-    image:
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
-    price: 45999,
-    description: "Mindful days designed around rest, spa and renewal.",
-  },
-  {
-    id: 10,
-    name: "Desert Glamping",
-    image:
-      "https://images.unsplash.com/photo-1532015917327-c7c46aa1d930?auto=format&fit=crop&w=900&q=80",
-    price: 38999,
-    description: "Boutique camps, starlit dinners and soulful silence.",
-  },
-  {
-    id: 11,
-    name: "Food & Culture Trail",
-    image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
-    price: 32999,
-    description: "Local kitchens, markets and hands-on cultural moments.",
-  },
-];
-
 export const navLinks = [
   { label: "Upcoming Trips", href: "/upcoming-trips" },
   { label: "Blogs", href: "/blogs" },
@@ -126,7 +99,7 @@ export const navLinks = [
 export const tripMenus = [
   { label: "International Trips", href: "/international-trips" },
   { label: "India Trips", href: "/india-trips" },
-  { label: "Curated Escapes", href: "/curated-escapes" },
+  { label: "Tailored Trips", href: "/tailored-trips" },
   { label: "Personalize Trip", href: "/personalize-trip" },
   { label: "Calendar", href: "/calendar" },
 ];

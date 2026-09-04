@@ -36,15 +36,15 @@ export const metadata = {
 
 export default function TravelSavingPlanPage() {
   return (
-    <main className="bg-[#F5F5F5]">
+    <main className="bg-[#1A1A1A]">
       <TravelSavingHero />
 
       <section className="px-4 py-12">
         <div className="mx-auto max-w-5xl">
-          <nav className="mb-8 text-sm text-[#555555]" aria-label="Breadcrumb">
+          <nav className="mb-8 text-sm text-white/70" aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-2">
               <li>
-                <Link href="/" className="transition hover:text-[#0F9B9B]">
+                <Link href="/" className="transition hover:text-[#D4AF37]">
                   Home
                 </Link>
               </li>
@@ -119,7 +119,7 @@ export default function TravelSavingPlanPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-4 text-sm font-semibold text-[#555555]">
+            <p className="mt-4 text-sm font-semibold text-white/70">
               All amounts are in Indian Rupees (₹). Choose the plan that best matches your savings goal and travel
               timeline.
             </p>
@@ -176,11 +176,11 @@ export default function TravelSavingPlanPage() {
             </div>
           </section>
 
-          <div className="mt-10 rounded-3xl border border-[#0F9B9B]/30 bg-[#0F9B9B]/10 p-6 text-center md:p-8">
-            <h2 className="text-2xl font-black text-[#1A1A1A]">Ready to start saving for your next trip?</h2>
-            <p className="mt-3 text-sm leading-7 text-[#333333] md:text-base">
+          <div className="mt-10 rounded-3xl border border-[#0F9B9B]/30 bg-[#0F9B9B]/15 p-6 text-center md:p-8">
+            <h2 className="text-2xl font-black text-white">Ready to start saving for your next trip?</h2>
+            <p className="mt-3 text-sm leading-7 text-white/80 md:text-base">
               Call us at{" "}
-              <Link href="tel:+919990022835" className="font-black text-[#0F9B9B] hover:underline">
+              <Link href="tel:+919990022835" className="font-black text-[#D4AF37] hover:underline">
                 +91-99900 22835
               </Link>{" "}
               to enrol in the Travel Saving Plan.

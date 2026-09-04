@@ -64,7 +64,7 @@ export default function EnquiryCard({ trip }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g. John Smith"
+              placeholder="e.g. Jennifer Aniston"
               className="mt-2 w-full rounded-2xl border border-[#D4AF37]/25 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
               required
             />
@@ -89,7 +89,7 @@ export default function EnquiryCard({ trip }) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="john@example.com"
+              placeholder="jenniferaniston@example.com"
               className="mt-2 w-full rounded-2xl border border-[#D4AF37]/25 bg-white px-4 py-3 text-sm outline-none transition focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
               required
             />

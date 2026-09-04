@@ -16,19 +16,19 @@ export default function HeroSection() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-4">
         <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[#D4AF37]">
-          Connecting People
+          Empowering Women Since 2015
         </p>
         <h1
           className="text-4xl font-black leading-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.85)] md:text-6xl lg:text-7xl"
           style={{ color: "#FFFFFF" }}
         >
-          Global Women&apos;s Community of Travelers
+          Global Community of Solo Women Travellers
         </h1>
         <p
           className="mx-auto mt-6 max-w-2xl text-base leading-7 drop-shadow-[0_3px_12px_rgba(0,0,0,0.9)] md:text-lg"
           style={{ color: "#FFFFFF" }}
         >
-          Curated journeys for women who want comfort, connection and memorable adventures across India
+          Curated journeys for women seeking comfort, connection and memorable adventures across India
           and the world.
         </p>
         <Link

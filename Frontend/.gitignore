@@ -43,3 +43,4 @@ public/uploads/**
 _DELETE_ME_old_modules/
 node_modules_old_trash/
 *.tsbuildinfo
+.vercel

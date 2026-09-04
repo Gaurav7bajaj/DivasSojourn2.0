@@ -5,14 +5,12 @@ import Image from "next/image";
 import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import { curatedEscapes } from "../data/curatedEscapes";
 import { navLinks, tripMenus } from "../data/mockData";
 
 export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
-  const [isCuratedOpen, setIsCuratedOpen] = useState(false);
   const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
   return (
@@ -180,35 +178,6 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                   </div>
                 </div>
               </div>
-            ) : item.href === "/curated-escapes" ? (
-              <div key={item.href} className="group relative">
-                <Link
-                  href={item.href}
-                  className="relative flex items-center gap-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
-                  style={{ color: "#FFFFFF" }}
-                >
-                  {item.label}
-                  <ChevronDown
-                    className="h-4 w-4 transition group-hover:rotate-180"
-                    aria-hidden="true"
-                  />
-                  <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-28" />
-                </Link>
-
-                <div className="invisible absolute left-1/2 top-full w-[640px] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
-                  <div className="grid grid-cols-2 gap-2">
-                    {curatedEscapes.map((escape) => (
-                      <Link
-                        key={escape.slug}
-                        href={`/curated-escapes/${escape.slug}`}
-                        className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
-                      >
-                        {escape.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
             ) : (
               <Link
                 key={item.href}
@@ -309,42 +278,6 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                           className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
                         >
                           {trip.shortName}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : link.href === "/curated-escapes" ? (
-                <div key={link.href} className="rounded-xl border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setIsCuratedOpen((value) => !value)}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:text-[#D4AF37]"
-                    aria-expanded={isCuratedOpen}
-                  >
-                    <span>{link.label}</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition ${isCuratedOpen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {isCuratedOpen && (
-                    <div className="grid gap-2 border-t border-white/10 bg-black p-3 sm:grid-cols-2">
-                      <Link
-                        href={link.href}
-                        onClick={() => setIsOpen(false)}
-                        className="rounded-xl px-3 py-2 text-[#D4AF37]"
-                      >
-                        View all Curated Escapes
-                      </Link>
-                      {curatedEscapes.map((escape) => (
-                        <Link
-                          key={escape.slug}
-                          href={`/curated-escapes/${escape.slug}`}
-                          onClick={() => setIsOpen(false)}
-                          className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
-                        >
-                          {escape.name}
                         </Link>
                       ))}
                     </div>

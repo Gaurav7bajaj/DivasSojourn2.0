@@ -11,6 +11,9 @@
     "build": "prisma generate && next build --webpack",
     "vercel-build": "prisma generate && prisma db push && next build --webpack",
     "env:pull": "vercel env pull .env.development.local",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:sync": "prisma db push && prisma db seed",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"

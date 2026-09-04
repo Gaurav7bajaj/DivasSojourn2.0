@@ -1,5 +1,4 @@
 import {
-  RomanceEscapesSection,
   HeroSection,
   IndiaTripsSection,
   InternationalTripsSection,
@@ -17,7 +16,6 @@ export default function Home() {
       <UpcomingTripsSection />
       <IndiaTripsSection />
       <InternationalTripsSection />
-      <RomanceEscapesSection />
       <WhyDivasSection />
       <ShortContactForm pageLabel="Home" storageKey="divasHomeLeads" />
     </main>

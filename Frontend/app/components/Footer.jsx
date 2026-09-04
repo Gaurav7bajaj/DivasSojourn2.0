@@ -33,8 +33,8 @@ export default function Footer() {
             </p>
             <p className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-              <Link href="mailto:hello@divassojourn.com" className="hover:text-[#D4AF37] transition">
-                hello@divassojourn.com
+              <Link href="mailto:contact@divassojourn.com" className="hover:text-[#D4AF37] transition">
+                contact@divassojourn.com
               </Link>
             </p>
             <p className="flex items-center gap-3">
