@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { reviews as defaultReviews } from "../../data/mockData";
 
 const platformLogos = {
   Google: (
@@ -22,7 +23,7 @@ const platformLogos = {
 };
 
 export default function ReviewsSection({
-  reviews = [],
+  reviews = defaultReviews,
   mapsUri = null,
   attributionLabel = null,
 }) {

@@ -7,20 +7,22 @@ import {
   WhyDivasSection,
 } from "./components/home";
 import ShortContactForm from "./components/international/ShortContactForm";
-import TravelerReviews from "./components/international/TravelerReviews";
-import {
-  getGoogleReviewsForUi,
-  mergePlatformReviewsWithGoogle,
-} from "./lib/data/googleReviews";
+// Google reviews (disabled for now — re-enable when Places billing/API is ready)
+// import TravelerReviews from "./components/international/TravelerReviews";
+// import {
+//   getGoogleReviewsForUi,
+//   mergePlatformReviewsWithGoogle,
+// } from "./lib/data/googleReviews";
 
-export default async function Home() {
-  const google = await getGoogleReviewsForUi();
-  const platformReviews = mergePlatformReviewsWithGoogle(google);
+export default function Home() {
+  // const google = await getGoogleReviewsForUi();
+  // const platformReviews = mergePlatformReviewsWithGoogle(google);
 
   return (
     <main>
       <HeroSection />
-      <ReviewsSection
+      <ReviewsSection />
+      {/* <ReviewsSection
         reviews={platformReviews}
         mapsUri={google.source === "google" ? google.mapsUri : null}
         attributionLabel={
@@ -36,7 +38,7 @@ export default async function Home() {
           subtitle="Real Google reviews from the Divas Sojourn community"
           mapsUri={google.source === "google" ? google.mapsUri : null}
         />
-      ) : null}
+      ) : null} */}
       <UpcomingTripsSection />
       <IndiaTripsSection />
       <InternationalTripsSection />

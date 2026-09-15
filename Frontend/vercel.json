@@ -2,11 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "npm run vercel-build",
-  "installCommand": "npm install",
-  "crons": [
-    {
-      "path": "/api/cron/google-reviews",
-      "schedule": "0 3 * * *"
-    }
-  ]
+  "installCommand": "npm install"
 }
