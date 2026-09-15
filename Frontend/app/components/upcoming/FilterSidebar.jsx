@@ -51,8 +51,8 @@ export default function FilterSidebar({
 
         <RangeSlider
           label="Budget (per person)"
-          min={8000}
-          max={400000}
+          min={23000}
+          max={1000000}
           step={1000}
           value={draftFilters.budget}
           onChange={onBudgetChange}

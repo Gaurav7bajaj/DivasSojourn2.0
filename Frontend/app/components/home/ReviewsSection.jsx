@@ -1,5 +1,4 @@
 import { Star } from "lucide-react";
-import { reviews } from "../../data/mockData";
 
 const platformLogos = {
   Google: (
@@ -22,7 +21,11 @@ const platformLogos = {
   ),
 };
 
-export default function ReviewsSection() {
+export default function ReviewsSection({
+  reviews = [],
+  mapsUri = null,
+  attributionLabel = null,
+}) {
   return (
     <section className="bg-[#1A1A1A] px-4 py-10" aria-labelledby="reviews-heading">
       <h2 id="reviews-heading" className="sr-only">
@@ -45,14 +48,27 @@ export default function ReviewsSection() {
               {Array.from({ length: 5 }).map((_, index) => (
                 <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
               ))}
-              <span className="ml-2 font-bold text-white">{review.rating.toFixed(1)}</span>
+              <span className="ml-2 font-bold text-white">{Number(review.rating).toFixed(1)}</span>
             </div>
             <p className="mt-2 text-sm text-white">
-              ({review.count.toLocaleString("en-IN")} reviews)
+              ({Number(review.count).toLocaleString("en-IN")} reviews)
             </p>
           </article>
         ))}
       </div>
+      {mapsUri ? (
+        <p className="mx-auto mt-5 max-w-6xl text-center text-xs text-white/60">
+          {attributionLabel || "Google rating and reviews"}{" "}
+          <a
+            href={mapsUri}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-[#D4AF37] underline-offset-2 hover:underline"
+          >
+            View on Google
+          </a>
+        </p>
+      ) : null}
     </section>
   );
 }

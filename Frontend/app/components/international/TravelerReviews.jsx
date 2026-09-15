@@ -5,6 +5,7 @@ export default function TravelerReviews({
   reviews = travelerReviews,
   title = "Hear From Travelers Like You",
   subtitle = "Real Stories From Our Community",
+  mapsUri = null,
 }) {
   return (
     <section className="bg-[#1A1A1A] px-4 py-16" aria-labelledby="traveler-reviews-heading">
@@ -22,6 +23,20 @@ export default function TravelerReviews({
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>
+
+        {mapsUri ? (
+          <p className="mt-8 text-center text-xs text-white/60">
+            Reviews from Google.{" "}
+            <a
+              href={mapsUri}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#D4AF37] underline-offset-2 hover:underline"
+            >
+              See all reviews on Google
+            </a>
+          </p>
+        ) : null}
       </div>
     </section>
   );

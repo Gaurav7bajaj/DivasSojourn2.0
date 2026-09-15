@@ -40,6 +40,7 @@ function mapLegacyTrip(trip: LegacyTrip, destination: "India" | "International",
     accommodations: Array.isArray(trip.accommodations) ? trip.accommodations : [],
     inclusions: Array.isArray(trip.inclusions) ? trip.inclusions : [],
     exclusions: Array.isArray(trip.exclusions) ? trip.exclusions : [],
+    womenJoiningFrom: [],
     financialDetails:
       trip.financialDetails && typeof trip.financialDetails === "object"
         ? trip.financialDetails

@@ -10,7 +10,7 @@ import UpcomingTripsGrid from "../upcoming/UpcomingTripsGrid";
 const defaultFilters = {
   destinations: ["India"],
   duration: [2, 16],
-  budget: [8000, 100000],
+  budget: [23000, 1000000],
   months: [],
 };
 

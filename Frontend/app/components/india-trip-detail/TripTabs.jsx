@@ -7,7 +7,15 @@ import LockedItinerary from "../auth/LockedItinerary";
 import { useAuth } from "@clerk/nextjs";
 import { formatDualPrice } from "../../utils/formatPrice";
 
-const tabs = ["Overview & Highlights", "Itinerary", "Inclusions", "Exclusions", "Gallery", "Other Info"];
+const tabs = [
+  "Overview & Highlights",
+  "Itinerary",
+  "Inclusions",
+  "Exclusions",
+  "Gallery",
+  "Women Joining From",
+  "Other Info",
+];
 const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default function TripTabs({ trip }) {
@@ -63,6 +71,7 @@ function TripTabsView({ trip, isItineraryLocked }) {
           <BulletList title="What's Not Included" items={trip.exclusions} icon="x" />
         ) : null}
         {activeTab === "Gallery" ? <Gallery trip={trip} /> : null}
+        {activeTab === "Women Joining From" ? <WomenJoiningFrom trip={trip} /> : null}
         {activeTab === "Other Info" ? <OtherInfo trip={trip} /> : null}
       </div>
     </section>
@@ -195,6 +204,39 @@ function Gallery({ trip }) {
           </a>
         ))}
       </div>
+    </div>
+  );
+}
+
+function WomenJoiningFrom({ trip }) {
+  const entries = Array.isArray(trip.womenJoiningFrom) ? trip.womenJoiningFrom : [];
+
+  return (
+    <div>
+      <h2 className="text-2xl font-black">Women Joining From</h2>
+      <p className="mt-2 text-sm leading-6 text-[#555555]">
+        Fellow travelers who have signed up for this trip and where they are joining from.
+      </p>
+
+      {entries.length ? (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {entries.map((entry, index) => (
+            <article
+              key={`${entry.name}-${entry.location}-${index}`}
+              className="rounded-2xl border border-[#D4AF37]/25 bg-white p-5 shadow-sm"
+            >
+              <p className="text-lg font-black text-[#1A1A1A]">{entry.name || "Traveler"}</p>
+              <p className="mt-2 text-sm font-semibold text-[#0F9B9B]">
+                Joining from: <span className="text-[#333333]">{entry.location || "To be shared"}</span>
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-5 rounded-2xl border border-dashed border-[#D4AF37]/40 bg-white px-5 py-8 text-center text-sm font-semibold text-[#555555]">
+          Traveler joining details will be shared here soon.
+        </p>
+      )}
     </div>
   );
 }

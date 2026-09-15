@@ -11,6 +11,7 @@ import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
 import { getTripNavItems, getUpcomingTripsByDestination } from "../lib/data/trips";
+import { getGoogleReviewsForUi } from "../lib/data/googleReviews";
 
 export const dynamic = "force-dynamic";
 
@@ -71,10 +72,11 @@ export const metadata = {
 };
 
 export default async function InternationalTripsPage() {
-  const [blogs, trips, internationalNav] = await Promise.all([
+  const [blogs, trips, internationalNav, google] = await Promise.all([
     getPublishedBlogs(),
     getUpcomingTripsByDestination("International"),
     getTripNavItems("International"),
+    getGoogleReviewsForUi(),
   ]);
 
   const blogCards = blogs.slice(0, 6).map(toPublicBlogCard);
@@ -149,7 +151,12 @@ export default async function InternationalTripsPage() {
         </ol>
       </nav>
       <InternationalTripsClient trips={trips} months={months} />
-      <TravelerReviews />
+      <TravelerReviews
+        reviews={google.reviews}
+        title="What Travelers Say on Google"
+        subtitle="Real Google reviews from women who traveled with us"
+        mapsUri={google.source === "google" ? google.mapsUri : null}
+      />
       <BlogsSection posts={blogCards} />
       <WhyDivasSection />
       <ContactForm destinationOptions={internationalNav} />

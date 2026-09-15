@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Trip, TripAccommodation, TripItineraryDay } from "@/app/lib/data/types";
+import type { Trip, TripAccommodation, TripItineraryDay, TripWomanJoining } from "@/app/lib/data/types";
 import { slugify } from "@/app/lib/slugify";
 
 const fileButtonClass =
@@ -29,6 +29,11 @@ const emptyStay = (): TripAccommodation => ({
   hotel: "",
   category: "",
   nights: 1,
+});
+
+const emptyWomanJoining = (): TripWomanJoining => ({
+  name: "",
+  location: "",
 });
 
 function linesToArray(text: string) {
@@ -90,6 +95,9 @@ export default function TripForm({ mode, initial }: TripFormProps) {
   );
   const [accommodations, setAccommodations] = useState<TripAccommodation[]>(
     initial?.accommodations?.length ? initial.accommodations : [emptyStay()],
+  );
+  const [womenJoiningFrom, setWomenJoiningFrom] = useState<TripWomanJoining[]>(
+    initial?.womenJoiningFrom?.length ? initial.womenJoiningFrom : [emptyWomanJoining()],
   );
   const [financial, setFinancial] = useState({
     company: initial?.financialDetails?.company || "",
@@ -168,6 +176,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
         paymentConditions,
         itinerary,
         accommodations,
+        womenJoiningFrom: womenJoiningFrom.filter((entry) => entry.name.trim() || entry.location.trim()),
         financialDetails: financial,
       };
 
@@ -459,6 +468,53 @@ export default function TripForm({ mode, initial }: TripFormProps) {
               <input placeholder="Meals" value={day.meals || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, meals: e.target.value } : item)))} className={inputClass} />
               <textarea placeholder="Description" rows={3} value={day.description || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, description: e.target.value } : item)))} className={`${inputClass} sm:col-span-2`} />
             </div>
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-black">Women joining from</h2>
+          <button
+            type="button"
+            className="text-sm font-bold text-[#0F9B9B]"
+            onClick={() => setWomenJoiningFrom((prev) => [...prev, emptyWomanJoining()])}
+          >
+            Add traveler
+          </button>
+        </div>
+        <p className="text-sm text-black/60">
+          Add traveler names and the cities/locations they are joining this trip from.
+        </p>
+        {womenJoiningFrom.map((entry, index) => (
+          <div key={index} className="grid gap-3 rounded-xl border border-black/10 p-4 sm:grid-cols-2">
+            <input
+              placeholder="Traveler name"
+              value={entry.name}
+              onChange={(e) =>
+                setWomenJoiningFrom((prev) =>
+                  prev.map((item, i) => (i === index ? { ...item, name: e.target.value } : item)),
+                )
+              }
+              className={inputClass}
+            />
+            <input
+              placeholder="Joining from (city / location)"
+              value={entry.location}
+              onChange={(e) =>
+                setWomenJoiningFrom((prev) =>
+                  prev.map((item, i) => (i === index ? { ...item, location: e.target.value } : item)),
+                )
+              }
+              className={inputClass}
+            />
+            <button
+              type="button"
+              className="text-left text-xs font-bold text-red-600 sm:col-span-2"
+              onClick={() => setWomenJoiningFrom((prev) => prev.filter((_, i) => i !== index))}
+            >
+              Remove
+            </button>
           </div>
         ))}
       </section>

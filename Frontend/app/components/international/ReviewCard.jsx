@@ -2,6 +2,8 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 
 export default function ReviewCard({ review }) {
+  const starCount = Math.max(1, Math.min(5, Math.round(Number(review.rating) || 5)));
+
   return (
     <article className="rounded-3xl border border-[#D4AF37]/30 bg-[#1A1A1A] p-8 transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-[0_12px_28px_rgba(212,175,55,0.2)]">
       <div className="flex items-center gap-4">
@@ -20,8 +22,8 @@ export default function ReviewCard({ review }) {
           <p className="text-sm text-white">{review.badge}</p>
         </div>
       </div>
-      <div className="mt-5 flex gap-1 text-[#D4AF37]" aria-label={`${review.rating} star review`}>
-        {Array.from({ length: review.rating }).map((_, index) => (
+      <div className="mt-5 flex gap-1 text-[#D4AF37]" aria-label={`${starCount} star review`}>
+        {Array.from({ length: starCount }).map((_, index) => (
           <Star key={index} className="h-5 w-5 fill-current" aria-hidden="true" />
         ))}
       </div>

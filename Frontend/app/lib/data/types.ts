@@ -99,6 +99,11 @@ export type TripAccommodation = {
   nights: number | string;
 };
 
+export type TripWomanJoining = {
+  name: string;
+  location: string;
+};
+
 export type TripFinancialDetails = {
   company?: string;
   accountNo?: string;
@@ -141,6 +146,7 @@ export type Trip = {
   accommodations: TripAccommodation[];
   inclusions: string[];
   exclusions: string[];
+  womenJoiningFrom: TripWomanJoining[];
   financialDetails: TripFinancialDetails;
   cancellationLinks: string[];
   published: boolean;
@@ -182,6 +188,7 @@ export type TripCreateInput = {
   accommodations?: TripAccommodation[];
   inclusions?: string[];
   exclusions?: string[];
+  womenJoiningFrom?: TripWomanJoining[];
   financialDetails?: TripFinancialDetails;
   cancellationLinks?: string[];
   published?: boolean;

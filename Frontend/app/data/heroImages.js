@@ -3,6 +3,9 @@ export const homeHeroImages = [
   { src: "/heroes/home/homeHero2.webp", alt: "Women exploring a destination together" },
   { src: "/heroes/home/homeHero3.webp", alt: "Curated women-only travel experience" },
   { src: "/heroes/home/homeHero4.webp", alt: "Memorable moments from a Divas Sojourn trip" },
+  { src: "/heroes/home/HeroHome5.webp", alt: "Women travelers sharing a trip moment" },
+  { src: "/heroes/home/HeroHome6.webp", alt: "Scenic destination from a Divas Sojourn journey" },
+  { src: "/heroes/home/HeroHome7.webp", alt: "Solo women travelers exploring together" },
 ];
 
 export const indiaHeroImages = [

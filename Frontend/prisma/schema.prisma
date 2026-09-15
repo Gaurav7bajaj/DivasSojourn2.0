@@ -90,6 +90,8 @@ model Trip {
   accommodations       Json?
   inclusions           Json?
   exclusions           Json?
+  /// JSON array of { name, location } for travelers joining this trip
+  womenJoiningFrom     Json?
   financialDetails     Json?
   cancellationLinks    Json?
   published            Boolean  @default(true)
@@ -110,4 +112,18 @@ model CustomerProfile {
 
   @@index([phone])
   @@index([email])
+}
+
+/// Cached Google Places rating + up to 5 reviews (refreshed at most once / 24h).
+model GooglePlaceCache {
+  id               String   @id @default("default")
+  placeId          String
+  name             String   @default("")
+  rating           Float?
+  userRatingsTotal Int?
+  /// JSON array: { authorName, rating, text, relativeTime, profilePhotoUrl?, time? }
+  reviews          Json     @default("[]")
+  mapsUri          String?
+  fetchedAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

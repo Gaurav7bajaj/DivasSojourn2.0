@@ -5,6 +5,7 @@ import type {
   TripDestination,
   TripFinancialDetails,
   TripItineraryDay,
+  TripWomanJoining,
   UpcomingTripCard,
   TripNavItem,
 } from "./types";
@@ -47,6 +48,17 @@ export function asAccommodations(value: Prisma.JsonValue | null | undefined): Tr
       category: item.category ? String(item.category) : undefined,
       nights: (item.nights as number | string) ?? 0,
     }));
+}
+
+export function asWomenJoiningFrom(value: Prisma.JsonValue | null | undefined): TripWomanJoining[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Prisma.JsonObject => Boolean(item) && typeof item === "object" && !Array.isArray(item))
+    .map((item) => ({
+      name: String(item.name || "").trim(),
+      location: String(item.location || "").trim(),
+    }))
+    .filter((item) => item.name || item.location);
 }
 
 export function asFinancialDetails(
@@ -97,6 +109,7 @@ type PrismaTripRow = {
   accommodations: Prisma.JsonValue | null;
   inclusions: Prisma.JsonValue | null;
   exclusions: Prisma.JsonValue | null;
+  womenJoiningFrom: Prisma.JsonValue | null;
   financialDetails: Prisma.JsonValue | null;
   cancellationLinks: Prisma.JsonValue | null;
   published: boolean;
@@ -141,6 +154,7 @@ export function toTrip(row: PrismaTripRow): Trip {
     accommodations: asAccommodations(row.accommodations),
     inclusions: asStringArray(row.inclusions),
     exclusions: asStringArray(row.exclusions),
+    womenJoiningFrom: asWomenJoiningFrom(row.womenJoiningFrom),
     financialDetails: asFinancialDetails(row.financialDetails),
     cancellationLinks: asStringArray(row.cancellationLinks),
     published: row.published,
