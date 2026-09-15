@@ -64,16 +64,17 @@ function asCachedReviews(value: Prisma.JsonValue | null | undefined): CachedGoog
 }
 
 function mapFallbackReviews(): GooglePlaceUi["reviews"] {
-  return fallbackTravelerReviews.map((review) => ({
+  const mapped: GooglePlaceUi["reviews"] = fallbackTravelerReviews.map((review) => ({
     id: String(review.id),
-    name: review.name,
-    destination: review.destination,
-    image: review.image,
-    rating: review.rating,
-    review: review.review,
-    date: review.date,
-    badge: review.badge,
+    name: String(review.name),
+    destination: String(review.destination),
+    image: String(review.image),
+    rating: Number(review.rating) || 5,
+    review: String(review.review),
+    date: String(review.date),
+    badge: String(review.badge),
   }));
+  return mapped;
 }
 
 function fallbackUi(): GooglePlaceUi {

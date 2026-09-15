@@ -1,6 +1,6 @@
 export const travelerReviews = [
   {
-    id: 1,
+    id: "1",
     name: "Priya Sharma",
     destination: "Bali, Indonesia",
     image:
@@ -12,7 +12,7 @@ export const travelerReviews = [
     badge: "Verified Traveler",
   },
   {
-    id: 2,
+    id: "2",
     name: "Ananya Mehta",
     destination: "Greece",
     image:
@@ -24,7 +24,7 @@ export const travelerReviews = [
     badge: "Verified Traveler",
   },
   {
-    id: 3,
+    id: "3",
     name: "Nisha Kapoor",
     destination: "Kenya",
     image:
