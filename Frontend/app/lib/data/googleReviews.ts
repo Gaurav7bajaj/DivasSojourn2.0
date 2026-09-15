@@ -63,12 +63,25 @@ function asCachedReviews(value: Prisma.JsonValue | null | undefined): CachedGoog
     .filter((item) => item.authorName || item.text);
 }
 
+function mapFallbackReviews(): GooglePlaceUi["reviews"] {
+  return fallbackTravelerReviews.map((review) => ({
+    id: String(review.id),
+    name: review.name,
+    destination: review.destination,
+    image: review.image,
+    rating: review.rating,
+    review: review.review,
+    date: review.date,
+    badge: review.badge,
+  }));
+}
+
 function fallbackUi(): GooglePlaceUi {
   const google = mockPlatformReviews.find((item) => item.platform === "Google");
   return {
     rating: google?.rating ?? 4.9,
     count: google?.count ?? 0,
-    reviews: fallbackTravelerReviews,
+    reviews: mapFallbackReviews(),
     mapsUri: null,
     source: "fallback",
     placeName: "Divas Sojourn",
@@ -105,7 +118,7 @@ function toUiFromCache(row: {
           date: review.relativeTime || "Recently",
           badge: "Google Review",
         }))
-      : fallbackTravelerReviews,
+      : mapFallbackReviews(),
     mapsUri: row.mapsUri,
     source: "google",
     placeName: row.name || "Divas Sojourn",
