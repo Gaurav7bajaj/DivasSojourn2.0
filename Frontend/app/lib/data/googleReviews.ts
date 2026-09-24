@@ -130,6 +130,65 @@ export async function getCachedGooglePlace() {
   return prisma.googlePlaceCache.findUnique({ where: { id: CACHE_ID } });
 }
 
+type PlacesNewResult = {
+  displayName?: { text?: string };
+  rating?: number;
+  userRatingCount?: number;
+  googleMapsUri?: string;
+  reviews?: Array<{
+    rating?: number;
+    text?: { text?: string };
+    originalText?: { text?: string };
+    relativePublishTimeDescription?: string;
+    publishTime?: string;
+    authorAttribution?: { displayName?: string; photoUri?: string };
+  }>;
+};
+
+/**
+ * Places API (New) — https://places.googleapis.com/v1/places/{placeId}
+ * New Google Cloud projects can only enable this one (legacy is closed to them).
+ * Returns null when the API is not enabled / key is wrong so the caller can
+ * fall back to the legacy endpoint.
+ */
+async function fetchPlaceDetailsNewApi(
+  apiKey: string,
+  placeId: string,
+): Promise<PlacesDetailsResult | null> {
+  const response = await fetch(
+    `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
+    {
+      cache: "no-store",
+      headers: {
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "displayName,rating,userRatingCount,googleMapsUri,reviews",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    console.error("Google Places (New) HTTP error", response.status, body.slice(0, 300));
+    return null;
+  }
+
+  const data = (await response.json()) as PlacesNewResult;
+  return {
+    name: data.displayName?.text,
+    rating: data.rating,
+    user_ratings_total: data.userRatingCount,
+    url: data.googleMapsUri,
+    reviews: (data.reviews || []).map((review) => ({
+      author_name: review.authorAttribution?.displayName,
+      rating: review.rating,
+      text: review.text?.text || review.originalText?.text,
+      relative_time_description: review.relativePublishTimeDescription,
+      profile_photo_url: review.authorAttribution?.photoUri,
+      time: review.publishTime ? Math.floor(Date.parse(review.publishTime) / 1000) : undefined,
+    })),
+  };
+}
+
 async function fetchPlaceDetailsFromGoogle(): Promise<PlacesDetailsResult | null> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY?.trim();
   const placeId = process.env.GOOGLE_PLACE_ID?.trim();
@@ -138,6 +197,12 @@ async function fetchPlaceDetailsFromGoogle(): Promise<PlacesDetailsResult | null
     return null;
   }
 
+  const fromNewApi = await fetchPlaceDetailsNewApi(apiKey, placeId);
+  if (fromNewApi) {
+    return fromNewApi;
+  }
+
+  // Fallback: legacy Places API (only works if it is already enabled on your project).
   const url = new URL("https://maps.googleapis.com/maps/api/place/details/json");
   url.searchParams.set("place_id", placeId);
   url.searchParams.set("fields", "name,rating,user_ratings_total,reviews,url");

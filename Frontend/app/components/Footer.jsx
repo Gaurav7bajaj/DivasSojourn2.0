@@ -67,7 +67,7 @@ export default function Footer() {
         </div>
       </div>
       <p className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-sm text-white/60">
-        Copyright &copy; {new Date().getFullYear()} Divas Sojourn. All rights reserved.
+        Copyright &copy; 2015&ndash;{new Date().getFullYear()} Divas Sojourn. All rights reserved.
       </p>
     </footer>
   );

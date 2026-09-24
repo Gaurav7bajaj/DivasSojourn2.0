@@ -7,38 +7,40 @@ import {
   WhyDivasSection,
 } from "./components/home";
 import ShortContactForm from "./components/international/ShortContactForm";
-// Google reviews (disabled for now — re-enable when Places billing/API is ready)
-// import TravelerReviews from "./components/international/TravelerReviews";
-// import {
-//   getGoogleReviewsForUi,
-//   mergePlatformReviewsWithGoogle,
-// } from "./lib/data/googleReviews";
+import TravelerReviews from "./components/international/TravelerReviews";
+import {
+  getGoogleReviewsForUi,
+  mergePlatformReviewsWithGoogle,
+} from "./lib/data/googleReviews";
 
-export default function Home() {
-  // const google = await getGoogleReviewsForUi();
-  // const platformReviews = mergePlatformReviewsWithGoogle(google);
+// Re-render at most once an hour; Google data itself is cached in the DB for 24h.
+export const revalidate = 3600;
+
+export default async function Home() {
+  const google = await getGoogleReviewsForUi();
+  const platformReviews = mergePlatformReviewsWithGoogle(google);
+  const isLiveGoogle = google.source === "google";
 
   return (
     <main>
       <HeroSection />
-      <ReviewsSection />
-      {/* <ReviewsSection
+      <ReviewsSection
         reviews={platformReviews}
-        mapsUri={google.source === "google" ? google.mapsUri : null}
+        mapsUri={isLiveGoogle ? google.mapsUri : null}
         attributionLabel={
-          google.source === "google"
-            ? `${google.placeName} rating powered by Google.`
-            : null
+          isLiveGoogle ? `${google.placeName} rating powered by Google.` : null
         }
       />
-      {google.reviews?.length ? (
+      {/* Only show individual reviews when they are real Google reviews —
+          never the placeholder sample reviews. */}
+      {isLiveGoogle && google.reviews?.length ? (
         <TravelerReviews
           reviews={google.reviews}
           title="What Travelers Say on Google"
           subtitle="Real Google reviews from the Divas Sojourn community"
-          mapsUri={google.source === "google" ? google.mapsUri : null}
+          mapsUri={google.mapsUri}
         />
-      ) : null} */}
+      ) : null}
       <UpcomingTripsSection />
       <IndiaTripsSection />
       <InternationalTripsSection />

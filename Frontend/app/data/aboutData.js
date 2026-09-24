@@ -7,11 +7,54 @@ export const founderData = {
   image: "/founder-pooja.jpg",
 };
 
-export const companyStats = [
-  { label: "Destinations", value: 1300, suffix: "+" },
-  { label: "Years of Experience", value: 10, suffix: "+" },
-  { label: "Happy Travelers", value: 14000, suffix: "+" },
-  { label: "Google Rating", value: 4.9, suffix: "", isDecimal: true },
+export const socialLinks = [
+  {
+    id: "whatsapp",
+    label: "Call / WhatsApp",
+    detail: "09990022835 / 08130269655",
+    href: "https://wa.me/919990022835",
+    secondaryHref: "https://wa.me/918130269655",
+    phones: [
+      { label: "09990022835", href: "https://wa.me/919990022835" },
+      { label: "08130269655", href: "https://wa.me/918130269655" },
+    ],
+  },
+  {
+    id: "facebook-page",
+    label: "Facebook Page",
+    detail: "divassojourn",
+    href: "https://www.facebook.com/divassojourn/",
+  },
+  {
+    id: "facebook-group",
+    label: "Facebook Group",
+    detail: "Join the community",
+    href: "https://www.facebook.com/groups/1924871134404158/",
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    detail: "@divassojourn",
+    href: "https://www.instagram.com/divassojourn/",
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    detail: "Pooja Malhotra",
+    href: "https://www.linkedin.com/in/pooja-malhotra-~-divas-sojourn-927448106",
+  },
+  {
+    id: "twitter",
+    label: "Twitter",
+    detail: "@impoojamalhotra",
+    href: "https://twitter.com/impoojamalhotra",
+  },
+  {
+    id: "youtube",
+    label: "YouTube",
+    detail: "Divas Sojourn",
+    href: "https://www.youtube.com/channel/UCLRdWh0PUhiPfIARRyPeHqg?view_as=subscriber",
+  },
 ];
 
 export const missionVision = {
