@@ -45,4 +45,4 @@ Full preview + admin steps: [DEPLOY.md](./DEPLOY.md).
 - Set `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct) in local env and on Vercel
 - Preview/deploy build runs `prisma db push` via `npm run vercel-build`
 
-Uploaded images save under `public/uploads/` locally. On Vercel that disk is ephemeral — use HTTPS image URLs for the client preview until cloud storage is added in `app/lib/uploads.ts`.
+Uploaded images save under `public/uploads/` in local development. On Vercel, configure **Storage → Blob** so `BLOB_READ_WRITE_TOKEN` is set; admin blog/gallery/trip uploads then go to Vercel Blob automatically (`app/lib/uploads.ts`).

@@ -1,12 +1,14 @@
 /**
- * Phase 1 local image uploads.
- * Phase 2: swap this helper for Cloudinary / S3 / Vercel Blob (or similar).
- * No UI/API changes needed beyond returning a public URL string the same way.
+ * Image/PDF uploads for admin (blogs, gallery, trips).
  *
- * On Vercel (serverless), writing under public/uploads does not persist.
- * Prefer HTTPS image URLs in admin forms until cloud storage is wired.
+ * - Local `next dev`: writes under `public/uploads/` (no Blob token needed).
+ * - Vercel / serverless: uploads to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set.
+ *
+ * Create the store in Vercel → Storage → Blob; the token is injected as
+ * `BLOB_READ_WRITE_TOKEN` (also add it to `.env.local` for local Blob testing).
  */
 
+import { del, put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
@@ -19,12 +21,20 @@ export type UploadFolder = "blogs" | "gallery" | "trips";
 const ALLOWED_PDF = new Set(["application/pdf"]);
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
-function isServerlessReadOnlyFs(): boolean {
+function isServerlessHost(): boolean {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
-function serverlessUploadError(): string {
-  return "File uploads to local disk are not available on this host. Paste an HTTPS image URL instead, or configure cloud storage.";
+function hasBlobToken(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+}
+
+function shouldUseBlob(): boolean {
+  return hasBlobToken() || isServerlessHost();
+}
+
+function missingBlobTokenError(): string {
+  return "Cloud uploads are not configured. Add BLOB_READ_WRITE_TOKEN from Vercel Storage → Blob, then redeploy.";
 }
 
 export function validateImageFile(file: File): string | null {
@@ -43,23 +53,55 @@ function extensionForType(type: string): string {
   return "jpg";
 }
 
+function isVercelBlobUrl(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return host.endsWith(".public.blob.vercel-storage.com") || host.endsWith(".blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
+}
+
+async function putToBlob(
+  pathname: string,
+  file: File,
+  contentType: string,
+): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
+  if (!hasBlobToken()) {
+    return { error: missingBlobTokenError() };
+  }
+
+  try {
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType,
+      addRandomSuffix: false,
+    });
+    return { url: blob.url };
+  } catch (error) {
+    console.error("Vercel Blob upload failed", error);
+    return { error: "Upload to cloud storage failed. Try again or use a smaller file." };
+  }
+}
+
 export async function saveUploadedImage(
   file: File,
   folder: UploadFolder,
 ): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
-  if (isServerlessReadOnlyFs()) {
-    return { error: serverlessUploadError() };
-  }
-
   const validationError = validateImageFile(file);
   if (validationError) {
     return { error: validationError };
   }
 
+  const filename = `${randomUUID()}.${extensionForType(file.type)}`;
+  const pathname = `${folder}/${filename}`;
+
+  if (shouldUseBlob()) {
+    return putToBlob(pathname, file, file.type);
+  }
+
   const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
   await fs.mkdir(uploadsDir, { recursive: true });
-
-  const filename = `${randomUUID()}.${extensionForType(file.type)}`;
   const filePath = path.join(uploadsDir, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(filePath, buffer);
@@ -70,10 +112,6 @@ export async function saveUploadedImage(
 export async function saveUploadedPdf(
   file: File,
 ): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
-  if (isServerlessReadOnlyFs()) {
-    return { error: serverlessUploadError() };
-  }
-
   if (!ALLOWED_PDF.has(file.type) && !file.name.toLowerCase().endsWith(".pdf")) {
     return { error: "Only PDF files are allowed." };
   }
@@ -81,21 +119,39 @@ export async function saveUploadedPdf(
     return { error: "PDF must be 15MB or smaller." };
   }
 
+  const filename = `${randomUUID()}.pdf`;
+  const pathname = `trips/${filename}`;
+
+  if (shouldUseBlob()) {
+    return putToBlob(pathname, file, "application/pdf");
+  }
+
   const uploadsDir = path.join(process.cwd(), "public", "uploads", "trips");
   await fs.mkdir(uploadsDir, { recursive: true });
-  const filename = `${randomUUID()}.pdf`;
   const filePath = path.join(uploadsDir, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
   await fs.writeFile(filePath, buffer);
   return { url: `/uploads/trips/${filename}` };
 }
 
-export async function deleteUploadedFileIfLocal(imageUrl: string): Promise<void> {
-  if (!imageUrl.startsWith("/uploads/") || isServerlessReadOnlyFs()) {
+export async function deleteUploadedFileIfLocal(fileUrl: string): Promise<void> {
+  if (!fileUrl) return;
+
+  if (isVercelBlobUrl(fileUrl)) {
+    if (!hasBlobToken()) return;
+    try {
+      await del(fileUrl);
+    } catch {
+      // Ignore missing / already-deleted blobs
+    }
     return;
   }
 
-  const relative = imageUrl.replace(/^\//, "");
+  if (!fileUrl.startsWith("/uploads/") || isServerlessHost()) {
+    return;
+  }
+
+  const relative = fileUrl.replace(/^\//, "");
   const filePath = path.join(process.cwd(), "public", relative);
 
   try {
