@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/app/lib/admin/session";
 import { createBlog, getBlogs } from "@/app/lib/data/blogs";
-import { saveUploadedImage } from "@/app/lib/uploads";
+import { saveUploadedImage, uploadErrorFromCaught } from "@/app/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,10 @@ export async function POST(request: Request) {
     const destination = String(formData.get("destination") || "").trim() || undefined;
     const readingTime = String(formData.get("readingTime") || "").trim() || undefined;
     const featured = String(formData.get("featured") || "false") === "true";
-    const existingCover = String(formData.get("coverImageUrl") || "").trim();
+    const removeCover = String(formData.get("removeCoverImage") || "") === "true";
+    const existingCover = removeCover
+      ? ""
+      : String(formData.get("coverImageUrl") || "").trim();
     const coverFile = formData.get("coverImage");
 
     if (!title || !excerpt || !content || !author) {
@@ -72,7 +75,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ blog }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Unable to create blog." }, { status: 500 });
+  } catch (error) {
+    console.error("Create blog failed", error);
+    return NextResponse.json({ error: uploadErrorFromCaught(error) }, { status: 500 });
   }
 }

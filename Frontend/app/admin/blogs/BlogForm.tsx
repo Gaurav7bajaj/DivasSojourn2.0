@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Blog } from "@/app/lib/data/types";
 import { slugify } from "@/app/lib/slugify";
+
+const MAX_COVER_BYTES = 4 * 1024 * 1024;
 
 type BlogFormProps = {
   mode: "create" | "edit";
@@ -13,6 +15,7 @@ type BlogFormProps = {
 
 export default function BlogForm({ mode, initial }: BlogFormProps) {
   const router = useRouter();
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(initial?.title || "");
   const [slug, setSlug] = useState(initial?.slug || "");
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
@@ -26,6 +29,7 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
   const [featured, setFeatured] = useState(initial?.featured ?? false);
   const [coverImageUrl, setCoverImageUrl] = useState(initial?.coverImageUrl || "");
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [removeCoverImage, setRemoveCoverImage] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,8 +41,57 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
 
   const previewUrl = useMemo(() => {
     if (coverFile) return URL.createObjectURL(coverFile);
+    if (removeCoverImage) return "";
     return coverImageUrl;
-  }, [coverFile, coverImageUrl]);
+  }, [coverFile, coverImageUrl, removeCoverImage]);
+
+  const clearCover = () => {
+    setCoverFile(null);
+    setCoverImageUrl("");
+    setRemoveCoverImage(true);
+    if (coverInputRef.current) {
+      coverInputRef.current.value = "";
+    }
+  };
+
+  const onCoverSelected = (file: File | null) => {
+    setError("");
+    if (!file) {
+      setCoverFile(null);
+      return;
+    }
+
+    const type = (file.type || "").toLowerCase();
+    const name = file.name.toLowerCase();
+    const okType =
+      type === "image/jpeg" ||
+      type === "image/jpg" ||
+      type === "image/png" ||
+      type === "image/webp" ||
+      name.endsWith(".jpg") ||
+      name.endsWith(".jpeg") ||
+      name.endsWith(".png") ||
+      name.endsWith(".webp");
+
+    if (!okType) {
+      setError(
+        "Only JPG, PNG, and WebP are allowed. iPhone HEIC photos must be converted to JPG first.",
+      );
+      setCoverFile(null);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > MAX_COVER_BYTES) {
+      setError("Cover image must be 4MB or smaller. Compress the photo and try again.");
+      setCoverFile(null);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+      return;
+    }
+
+    setRemoveCoverImage(false);
+    setCoverFile(file);
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -58,7 +111,10 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
       formData.set("destination", destination);
       formData.set("readingTime", readingTime);
       formData.set("featured", String(featured));
-      formData.set("coverImageUrl", coverImageUrl);
+      formData.set("coverImageUrl", removeCoverImage ? "" : coverImageUrl);
+      if (removeCoverImage && !coverFile) {
+        formData.set("removeCoverImage", "true");
+      }
       if (coverFile) {
         formData.set("coverImage", coverFile);
       }
@@ -70,10 +126,21 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
           body: formData,
         },
       );
-      const data = await response.json();
+
+      let data: { error?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (!response.ok) {
-        setError(data.error || "Unable to save blog.");
+        setError(
+          data.error ||
+            (response.status === 413
+              ? "Image is too large for the server. Use a file under 4MB."
+              : "Unable to save blog."),
+        );
         return;
       }
 
@@ -119,19 +186,56 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
         />
       </label>
 
-      <label className="block text-sm font-bold">
-        Cover image
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => setCoverFile(event.target.files?.[0] || null)}
-          className="mt-2 block w-full text-sm"
-        />
-      </label>
-      {previewUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={previewUrl} alt="Cover preview" className="h-40 w-full rounded-xl object-cover" />
-      ) : null}
+      <div className="space-y-3">
+        <p className="text-sm font-bold">Cover image</p>
+        {previewUrl ? (
+          <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-[#FAFAFA]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewUrl}
+              alt="Cover preview"
+              className="h-40 w-full object-cover"
+            />
+            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 bg-black/55 px-3 py-2 text-xs text-white">
+              <span className="truncate font-semibold">
+                {coverFile ? `New: ${coverFile.name}` : "Current cover"}
+              </span>
+              <button
+                type="button"
+                onClick={clearCover}
+                className="rounded-full bg-red-600 px-3 py-1 font-bold hover:bg-red-500"
+              >
+                Remove cover
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex h-28 items-center justify-center rounded-2xl border border-dashed border-black/15 bg-[#FAFAFA] text-sm text-[#777777]">
+            No cover image
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex cursor-pointer items-center rounded-full bg-[#0F9B9B] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0d8585]">
+            {previewUrl ? "Change cover photo" : "Choose cover photo"}
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+              className="sr-only"
+              onChange={(event) => onCoverSelected(event.target.files?.[0] || null)}
+            />
+          </label>
+          {coverFile ? (
+            <span className="text-xs font-semibold text-[#2563EB]">Ready to upload on save</span>
+          ) : null}
+          {removeCoverImage && !coverFile ? (
+            <span className="text-xs font-semibold text-red-600">Cover will be removed on save</span>
+          ) : null}
+        </div>
+        <p className="text-xs font-medium text-[#777777]">
+          JPG, PNG, or WebP · max 4MB (required for Vercel admin uploads)
+        </p>
+      </div>
 
       <label className="block text-sm font-bold">
         Excerpt*

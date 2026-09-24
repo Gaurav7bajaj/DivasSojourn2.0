@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/app/lib/admin/session";
 import { deleteBlog, getBlogById, updateBlog } from "@/app/lib/data/blogs";
-import { deleteUploadedFileIfLocal, saveUploadedImage } from "@/app/lib/uploads";
+import {
+  deleteUploadedFileIfLocal,
+  saveUploadedImage,
+  uploadErrorFromCaught,
+} from "@/app/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +35,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const destination = String(formData.get("destination") || "").trim() || undefined;
     const readingTime = String(formData.get("readingTime") || "").trim() || undefined;
     const featured = String(formData.get("featured") || "false") === "true";
-    const existingCover = String(formData.get("coverImageUrl") || existing.coverImageUrl).trim();
+    const removeCover = String(formData.get("removeCoverImage") || "") === "true";
     const coverFile = formData.get("coverImage");
 
     if (!title || !excerpt || !content || !author) {
@@ -41,16 +45,26 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    let coverImageUrl = existingCover;
+    let coverImageUrl = existing.coverImageUrl;
+    const previousCover = existing.coverImageUrl;
+
     if (coverFile instanceof File && coverFile.size > 0) {
       const upload = await saveUploadedImage(coverFile, "blogs");
       if (upload.error || !upload.url) {
         return NextResponse.json({ error: upload.error || "Upload failed." }, { status: 400 });
       }
       coverImageUrl = upload.url;
-      if (existing.coverImageUrl.startsWith("/uploads/")) {
-        await deleteUploadedFileIfLocal(existing.coverImageUrl);
+      if (previousCover && previousCover !== coverImageUrl) {
+        await deleteUploadedFileIfLocal(previousCover);
       }
+    } else if (removeCover) {
+      coverImageUrl = "";
+      if (previousCover) {
+        await deleteUploadedFileIfLocal(previousCover);
+      }
+    } else if (formData.has("coverImageUrl")) {
+      // Allow explicit URL updates without the empty-string || existing bug.
+      coverImageUrl = String(formData.get("coverImageUrl") || "").trim();
     }
 
     const blog = await updateBlog(id, {
@@ -69,8 +83,9 @@ export async function PUT(request: Request, context: RouteContext) {
     });
 
     return NextResponse.json({ blog });
-  } catch {
-    return NextResponse.json({ error: "Unable to update blog." }, { status: 500 });
+  } catch (error) {
+    console.error("Update blog failed", error);
+    return NextResponse.json({ error: uploadErrorFromCaught(error) }, { status: 500 });
   }
 }
 
@@ -92,7 +107,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Blog not found." }, { status: 404 });
     }
 
-    if (existing.coverImageUrl.startsWith("/uploads/")) {
+    if (existing.coverImageUrl) {
       await deleteUploadedFileIfLocal(existing.coverImageUrl);
     }
 
