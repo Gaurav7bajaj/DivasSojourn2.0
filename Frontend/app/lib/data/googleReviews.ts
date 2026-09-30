@@ -105,7 +105,7 @@ function toUiFromCache(row: {
 
   return {
     rating: row.rating ?? googleFallback?.rating ?? 4.8,
-    count: row.userRatingsTotal ?? googleFallback?.count ?? 300,
+    count: row.userRatingsTotal ?? 300,
     reviews: cachedReviews.length
       ? cachedReviews.map((review, index) => ({
           id: `google-${review.time ?? index}`,
