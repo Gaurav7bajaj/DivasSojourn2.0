@@ -1,10 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Check, Lock, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useState } from "react";
-import LockedItinerary from "../auth/LockedItinerary";
-import { useAuth } from "@clerk/nextjs";
 import { formatDualPrice } from "../../utils/formatPrice";
 
 const tabs = [
@@ -16,23 +14,12 @@ const tabs = [
   "Women Joining From",
   "Other Info",
 ];
-const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default function TripTabs({ trip }) {
-  // useAuth() crashes when ClerkProvider is absent (no Clerk keys on Vercel).
-  if (clerkEnabled) {
-    return <TripTabsWithClerk trip={trip} />;
-  }
-  return <TripTabsView trip={trip} isItineraryLocked={false} />;
+  return <TripTabsView trip={trip} />;
 }
 
-function TripTabsWithClerk({ trip }) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const isItineraryLocked = isLoaded && !isSignedIn;
-  return <TripTabsView trip={trip} isItineraryLocked={isItineraryLocked} />;
-}
-
-function TripTabsView({ trip, isItineraryLocked }) {
+function TripTabsView({ trip }) {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [openDay, setOpenDay] = useState(1);
 
@@ -58,11 +45,7 @@ function TripTabsView({ trip, isItineraryLocked }) {
       <div className="p-4 md:p-6">
         {activeTab === "Overview & Highlights" ? <Overview trip={trip} /> : null}
         {activeTab === "Itinerary" ? (
-          isItineraryLocked ? (
-            <LockedItinerary />
-          ) : (
-            <Itinerary trip={trip} openDay={openDay} setOpenDay={setOpenDay} />
-          )
+          <Itinerary trip={trip} openDay={openDay} setOpenDay={setOpenDay} />
         ) : null}
         {activeTab === "Inclusions" ? (
           <BulletList title="What's Included" items={trip.inclusions} icon="check" />

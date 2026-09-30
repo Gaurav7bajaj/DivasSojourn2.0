@@ -1,7 +1,23 @@
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import AppShell from "./components/AppShell";
 import { getTripNavItems } from "./lib/data/trips";
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +88,11 @@ export default async function RootLayout({ children }) {
   );
 
   return (
-    <html lang="en-IN" data-scroll-behavior="smooth">
+    <html
+      lang="en-IN"
+      data-scroll-behavior="smooth"
+      className={`${playfair.variable} ${dmSans.variable}`}
+    >
       <body>{clerkEnabled ? <ClerkProvider>{shell}</ClerkProvider> : shell}</body>
     </html>
   );

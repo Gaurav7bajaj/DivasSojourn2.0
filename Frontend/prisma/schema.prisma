@@ -127,3 +127,26 @@ model GooglePlaceCache {
   fetchedAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
+
+/// Website contact / enquiry form submissions for the admin panel.
+model Enquiry {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String
+  message       String   @default("")
+  /// Page or form label, e.g. "Home", "International Trips"
+  page          String   @default("")
+  /// Optional fields from the longer contact form
+  interestedIn  String   @default("")
+  travelDate    String   @default("")
+  travelers     String   @default("")
+  /// Form type: "short" | "contact"
+  formType      String   @default("short")
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([read])
+}

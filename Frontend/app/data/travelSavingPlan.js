@@ -8,6 +8,33 @@ export const travelSavingIntro = {
   ],
 };
 
+/** Single source of truth for calculator + plan cards. */
+export const savingPlanOptions = [
+  { id: 1, monthly: 2000, months: 12, package: 28000 },
+  { id: 2, monthly: 5000, months: 12, package: 70000 },
+  { id: 3, monthly: 2000, months: 6, package: 13500 },
+  { id: 4, monthly: 5000, months: 6, package: 34000 },
+];
+
+export function derivePlan(plan) {
+  const total = plan.monthly * plan.months;
+  const bonus = plan.package - total;
+  const bonusPercent = total > 0 ? (bonus / total) * 100 : 0;
+  return { ...plan, total, bonus, bonusPercent };
+}
+
+export const savingPlans = savingPlanOptions.map((plan) => {
+  const derived = derivePlan(plan);
+  return {
+    option: `Option ${plan.id}`,
+    monthlyInr: plan.monthly,
+    duration: `${plan.months} months`,
+    totalPayInr: derived.total,
+    packageValueInr: plan.package,
+    bonusInr: derived.bonus,
+  };
+});
+
 export const howItWorksSteps = [
   {
     step: 1,
@@ -34,65 +61,35 @@ export const howItWorksSteps = [
   },
 ];
 
-export const savingPlans = [
-  {
-    option: "Option 1",
-    monthlyInr: 2000,
-    duration: "12 months",
-    totalPayInr: 24000,
-    packageValueInr: 28000,
-    bonusInr: 4000,
-  },
-  {
-    option: "Option 2",
-    monthlyInr: 5000,
-    duration: "12 months",
-    totalPayInr: 60000,
-    packageValueInr: 70000,
-    bonusInr: 10000,
-  },
-  {
-    option: "Option 3",
-    monthlyInr: 2000,
-    duration: "6 months",
-    totalPayInr: 12000,
-    packageValueInr: 13500,
-    bonusInr: 1500,
-  },
-  {
-    option: "Option 4",
-    monthlyInr: 5000,
-    duration: "6 months",
-    totalPayInr: 30000,
-    packageValueInr: 34000,
-    bonusInr: 4000,
-  },
-];
-
 export const whyJoinPoints = [
   {
-    title: "More travel value for your money",
+    title: "More travel value",
     description: "Every option gives you a package worth more than what you actually pay in.",
   },
   {
-    title: "Built-in travel discipline",
+    title: "Built-in discipline",
     description:
       "A fixed monthly commitment makes it easier to save consistently, instead of letting travel funds get spent elsewhere.",
   },
   {
-    title: "Flexibility across trips",
+    title: "Flexible across trips",
     description:
-      "Your saved value isn't locked to a single tour; it can be applied to any women-only package, and even split across two or more trips.",
+      "Your saved value can be applied to any women-only package and split across trips — but not toward fully customised or private itineraries.",
   },
   {
-    title: "Two-year window to use it",
+    title: "Two years to use it",
     description:
       "You're not rushed into booking immediately. You have up to two years after completing your plan to redeem it.",
   },
   {
-    title: "Designed for women travellers",
+    title: "Designed for women",
     description:
       "Redeemable exclusively against Divas Sojourn's curated women-only trips, from short weekend getaways to longer 10-day international experiences.",
+  },
+  {
+    title: "Top up anytime",
+    description:
+      "If your saved package value doesn't fully cover the cost of a trip you want, you can pay the difference in cash at the time of booking.",
   },
 ];
 
@@ -163,3 +160,6 @@ export const travelSavingFaqs = [
       "Not at all. While Divas Sojourn specialises in solo women's travel, anyone looking to save toward a future women-only trip can join the plan.",
   },
 ];
+
+export const PHONE_DISPLAY = "+91-99900 22835";
+export const PHONE_HREF = "tel:+919990022835";

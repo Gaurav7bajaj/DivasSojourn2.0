@@ -1,5 +1,5 @@
-import TripSection from "./TripSection";
 import { getTripNavItems } from "../../lib/data/trips";
+import FeaturedJourneysCarousel from "./FeaturedJourneysCarousel";
 
 export default async function IndiaTripsSection() {
   const trips = (await getTripNavItems("India")).slice(0, 8).map((trip) => ({
@@ -7,21 +7,19 @@ export default async function IndiaTripsSection() {
     name: trip.shortName || trip.name || trip.title,
     image: trip.image,
     price: trip.price,
-    description: trip.description,
-    slug: trip.slug,
-    customHref: `/india-trips/${trip.slug}`,
+    href: `/india-trips/${trip.slug}`,
+    badge: "India",
   }));
 
   return (
-    <TripSection
+    <FeaturedJourneysCarousel
       id="india-trips"
-      title="India Trips"
-      subtitle="A Journey Through Time, Colour And Culture"
-      description="Experience India through thoughtfully planned women-only journeys, from mountain valleys to coastal retreats."
-      ctaHref="/india-trips"
-      heroImage="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80"
-      heroVideo="https://videos.pexels.com/video-files/3724873/3724873-uhd_2560_1440_25fps.mp4"
-      heroAlt="Lush waterfall and green Indian landscape"
+      eyebrow="Featured India"
+      title="Where will you go"
+      titleEm="next?"
+      blurb="A journey through time, colour and culture — from mountain valleys to coastal retreats."
+      viewAllHref="/india-trips"
+      viewAllLabel="View all India trips →"
       trips={trips}
     />
   );

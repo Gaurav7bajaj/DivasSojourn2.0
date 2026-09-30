@@ -74,10 +74,17 @@ export type PublicBlogCard = {
   content: string;
 };
 
-/** Shape expected by PhotoGallery */
+/** Shape expected by gallery / PhotoGallery */
 export type PublicGalleryItem = {
+  id: string;
   src: string;
   alt: string;
+  destination: string;
+  trip?: string;
+  width: number;
+  height: number;
+  focus?: string;
+  index: number;
 };
 
 export type TripDestination = "India" | "International";
@@ -205,8 +212,15 @@ export type UpcomingTripCard = {
   destination: TripDestination;
   duration: { nights: number; days: number };
   departure: string;
+  pickupLocation: string;
+  dropLocation: string;
+  shortName?: string;
+  country?: string;
+  region?: string;
   startDate: string;
   endDate: string;
+  /** Extra departure date labels beyond the primary start/end window (when known). */
+  extraDates: string[];
   batches: number;
   originalPrice: number | null;
   currentPrice: number;

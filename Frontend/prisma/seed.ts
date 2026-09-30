@@ -34,7 +34,11 @@ async function main() {
   for (const image of SEED_GALLERY) {
     await prisma.galleryImage.upsert({
       where: { id: image.id },
-      update: {},
+      update: {
+        imageUrl: image.imageUrl,
+        caption: image.caption,
+        category: image.category,
+      },
       create: {
         id: image.id,
         imageUrl: image.imageUrl,
@@ -44,6 +48,22 @@ async function main() {
       },
     });
   }
+
+  // Remove old Unsplash placeholder gallery seed rows if still present
+  await prisma.galleryImage.deleteMany({
+    where: {
+      id: {
+        in: [
+          "gallery-seed-1",
+          "gallery-seed-2",
+          "gallery-seed-3",
+          "gallery-seed-4",
+          "gallery-seed-5",
+          "gallery-seed-6",
+        ],
+      },
+    },
+  });
 
   const tripCount = await seedTrips(prisma);
 

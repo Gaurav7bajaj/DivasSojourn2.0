@@ -4,44 +4,52 @@ import { companyValues } from "../../data/aboutData";
 export default function ValuesSection() {
   return (
     <section
-      className="bg-[#1A1A1A] px-4 py-20"
+      className="bg-[#0B0B0C] px-6 py-20 md:px-12 md:py-[120px] xl:px-24"
       aria-labelledby="values-heading"
     >
-      <div className="mx-auto max-w-4xl">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
-            Our Promise to You
-          </p>
+      <div className="mx-auto grid max-w-[1280px] gap-12 lg:grid-cols-[420px_1fr] lg:gap-16">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="h-0.5 w-9 shrink-0 bg-[#D6AE3C]" aria-hidden="true" />
+            <p className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.24em] text-[#D6AE3C]">
+              Our Promise to You
+            </p>
+          </div>
           <h2
             id="values-heading"
-            className="mt-3 text-3xl font-black text-white md:text-5xl"
+            className="mt-4 font-[family-name:var(--font-playfair)] text-[36px] font-semibold leading-tight text-[#FBF8F1] md:text-[48px]"
           >
-            Built on Trust &amp; Transparency
+            Built on trust{" "}
+            <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+              &amp; transparency
+            </em>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/60">
-            These aren&apos;t marketing claims — they are the principles we
-            operate by on every single trip. Here&apos;s what you can always
-            expect from us.
+          <p className="mt-5 font-[family-name:var(--font-dm-sans)] text-[17px] leading-[1.65] text-[#D9D3C6]">
+            These aren&apos;t marketing claims — they are the principles we operate by on every
+            single trip.
           </p>
         </div>
 
-        <div className="mt-12 space-y-8">
+        <div className="grid gap-4 sm:grid-cols-2">
           {companyValues.map((value) => (
-            <div key={value.title} className="flex items-start gap-4">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#D4AF37]/15">
+            <article
+              key={value.title}
+              className="rounded-[20px] border border-white/[0.08] bg-[#141417] p-[26px]"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(214,174,60,0.16)]">
                 <Check
-                  className="h-4 w-4 text-[#D4AF37]"
+                  className="h-5 w-5 text-[#D6AE3C]"
                   aria-hidden="true"
-                  strokeWidth={3}
+                  strokeWidth={2.75}
                 />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white">{value.title}</h3>
-                <p className="mt-1 leading-7 text-white/60">
-                  {value.description}
-                </p>
-              </div>
-            </div>
+              <h3 className="mt-4 font-[family-name:var(--font-dm-sans)] text-[19px] font-bold text-[#FBF8F1]">
+                {value.title}
+              </h3>
+              <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-[1.55] text-[#C9C3B6]">
+                {value.description}
+              </p>
+            </article>
           ))}
         </div>
       </div>

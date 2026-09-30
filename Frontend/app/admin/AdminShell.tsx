@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import AdminLogoutButton from "./AdminLogoutButton";
+import AdminNavLink from "./AdminNavLink";
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,15 +22,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               Divas Admin
             </Link>
             <nav className="hidden items-center gap-4 text-sm font-semibold sm:flex">
-              <Link href="/admin/blogs" className="hover:text-[#D4AF37]">
-                Blogs
-              </Link>
-              <Link href="/admin/gallery" className="hover:text-[#D4AF37]">
-                Gallery
-              </Link>
-              <Link href="/admin/trips" className="hover:text-[#D4AF37]">
-                Trips
-              </Link>
+              <AdminNavLink href="/admin/enquiries" showUnreadBadge>
+                Enquiries
+              </AdminNavLink>
+              <AdminNavLink href="/admin/blogs">Blogs</AdminNavLink>
+              <AdminNavLink href="/admin/gallery">Gallery</AdminNavLink>
+              <AdminNavLink href="/admin/trips">Trips</AdminNavLink>
               <Link href="/" className="text-white/70 hover:text-white">
                 View site
               </Link>

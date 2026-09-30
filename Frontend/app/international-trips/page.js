@@ -1,17 +1,16 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import {
   BlogsSection,
   ContactForm,
-  TravelerReviews,
 } from "../components/international";
-import InternationalTripsHeader from "../components/international/InternationalTripsHeader";
+import CategoryHero from "../components/shared/CategoryHero";
 import InternationalTripsClient from "../components/international/InternationalTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
+import { buildInternationalHeroSlides } from "../data/internationalHeroSlides";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
 import { getTripNavItems, getUpcomingTripsByDestination } from "../lib/data/trips";
-// import { getGoogleReviewsForUi } from "../lib/data/googleReviews";
 
 export const dynamic = "force-dynamic";
 
@@ -29,19 +28,6 @@ export const metadata = {
     "women travel group",
     "female travelers",
     "international destinations",
-    "Bali",
-    "Kenya",
-    "Mauritius",
-    "Georgia",
-    "Armenia",
-    "South Africa",
-    "Greece",
-    "Russia",
-    "South Korea",
-    "Turkey",
-    "Seychelles",
-    "Laos",
-    "Balkan Cruise",
     "women-only tours",
   ],
   alternates: {
@@ -50,7 +36,7 @@ export const metadata = {
   openGraph: {
     title: "International Trip Packages for Solo Female Travelers | Divas Sojourn",
     description:
-      "Discover amazing international destinations designed for female travelers. Safe, inclusive, and unforgettable experiences. Book your trip today with early bird discount.",
+      "Discover amazing international destinations designed for female travelers. Safe, inclusive, and unforgettable experiences.",
     url: pageUrl,
     type: "website",
     images: [
@@ -76,11 +62,23 @@ export default async function InternationalTripsPage() {
     getPublishedBlogs(),
     getUpcomingTripsByDestination("International"),
     getTripNavItems("International"),
-    // getGoogleReviewsForUi(),
   ]);
 
   const blogCards = blogs.slice(0, 6).map(toPublicBlogCard);
   const months = buildMonthsFromTrips(trips);
+
+  const sortedForHero = [...trips].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const heroSlides = buildInternationalHeroSlides(
+    sortedForHero.length ? sortedForHero : internationalNav,
+  );
+
+  const prices = trips
+    .map((trip) => Number(trip.currentPrice) || 0)
+    .filter((price) => price > 0);
+  const lowestPrice = prices.length ? Math.min(...prices) : 0;
+  const startingPriceLabel = lowestPrice
+    ? `₹${new Intl.NumberFormat("en-IN").format(lowestPrice)}`
+    : "₹—";
 
   const schema = [
     {
@@ -117,52 +115,54 @@ export default async function InternationalTripsPage() {
         },
       })),
     },
-    ...blogCards.map((blog) => ({
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: blog.title,
-      image: blog.image,
-      datePublished: blog.datePublished,
-      author: {
-        "@type": "Organization",
-        name: blog.author,
-      },
-      description: blog.excerpt,
-      url: `https://divassojourn.com/blogs/${blog.slug}`,
-    })),
   ];
 
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <InternationalTripsHeader />
-      <nav className="bg-[#1A1A1A] px-4 py-4 text-sm text-white" aria-label="Breadcrumb">
-        <ol className="mx-auto flex max-w-7xl items-center gap-2">
-          <li>
-            <Link href="/" className="transition hover:text-[#D4AF37]">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li className="font-semibold text-[#D4AF37]">International Trips</li>
-        </ol>
-      </nav>
-      <InternationalTripsClient trips={trips} months={months} />
-      <TravelerReviews />
-      {/* Google reviews (disabled for now)
-      <TravelerReviews
-        reviews={google.reviews}
-        title="What Travelers Say on Google"
-        subtitle="Real Google reviews from women who traveled with us"
-        mapsUri={google.source === "google" ? google.mapsUri : null}
+      <CategoryHero
+        slides={heroSlides}
+        upcomingCount={trips.length}
+        startingPriceLabel={startingPriceLabel}
+        breadcrumbLabel="International Trips"
+        eyebrow="Explore"
+        title="International"
+        titleItalic="trips"
+        description="Northern lights, autumn in Seoul, misty Laos and New Year in Japan — small-group journeys abroad, just for women."
+        ariaLabel="International Trips"
+        titleClassName="md:text-[clamp(2.75rem,5.5vw,4.75rem)]"
       />
-      */}
+
+      <div className="bg-[#0B0B0C] px-5 pt-16 md:px-12 xl:px-24">
+        <div className="mx-auto max-w-none text-center md:text-left">
+          <h2 className="font-[family-name:var(--font-playfair)] text-[36px] font-semibold text-[#FBF8F1] md:text-[44px]">
+            International{" "}
+            <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+              departures
+            </em>
+          </h2>
+          <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[16px] text-[#C9C3B6]">
+            Filter by country, month, duration or budget.
+          </p>
+        </div>
+      </div>
+
+      <Suspense
+        fallback={
+          <div className="border-t border-white/8 px-5 py-16 text-[#C9C3B6] md:px-12 xl:px-24">
+            Loading trips…
+          </div>
+        }
+      >
+        <InternationalTripsClient trips={trips} months={months} />
+      </Suspense>
+
       <BlogsSection posts={blogCards} />
       <WhyDivasSection />
-      <ContactForm destinationOptions={internationalNav} />
+      <ContactForm destinationOptions={internationalNav} pageLabel="International Trips" />
     </main>
   );
 }

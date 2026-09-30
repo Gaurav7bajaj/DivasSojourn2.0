@@ -22,7 +22,7 @@ export default async function Home() {
   const isLiveGoogle = google.source === "google";
 
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <HeroSection />
       <ReviewsSection
         reviews={platformReviews}
@@ -41,9 +41,9 @@ export default async function Home() {
           mapsUri={google.mapsUri}
         />
       ) : null}
-      <UpcomingTripsSection />
       <IndiaTripsSection />
       <InternationalTripsSection />
+      <UpcomingTripsSection />
       <WhyDivasSection />
       <ShortContactForm pageLabel="Home" storageKey="divasHomeLeads" />
     </main>

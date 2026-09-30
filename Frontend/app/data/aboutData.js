@@ -4,7 +4,7 @@ export const founderData = {
   quote:
     "Doing what you like is freedom, but liking what you do is happiness.",
   bio: `An engineer by profession, Pooja questioned the societal norms that confined women's aspirations to marriage and kids. A firebrand girl, she left her cushy job in 2015, bought a one-way ticket, and never looked back. What started as a solo journey across continents soon became a mission — to create a safe, empowering space where women from all walks of life can explore the world fearlessly. Today, Divas Sojourn stands as a testament to her belief that travel can transform lives, build communities, and break barriers.`,
-  image: "/founder-pooja.jpg",
+  image: "/CEOphoto.webp",
 };
 
 export const socialLinks = [
@@ -102,28 +102,29 @@ export const companyValues = [
 ];
 
 export const galleryImages = [
-  {
-    src: "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=800&q=80",
-    alt: "Women travelers exploring together",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=800&q=80",
-    alt: "Group of friends on a mountain trek",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=80",
-    alt: "Beach sunset with travelers",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80",
-    alt: "Scenic mountain landscape",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80",
-    alt: "Lake and mountain adventure",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=800&q=80",
-    alt: "Cultural exploration in a historic city",
-  },
+  { src: "/heroes/home/homeHero1.webp", alt: "Divas Sojourn travelers on a scenic journey" },
+  { src: "/heroes/home/homeHero2.webp", alt: "Women exploring a destination together" },
+  { src: "/heroes/home/homeHero3.webp", alt: "Curated women-only travel experience" },
+  { src: "/heroes/home/homeHero4.webp", alt: "Memorable moments from a Divas Sojourn trip" },
+  { src: "/heroes/home/HeroHome5.webp", alt: "Women travelers sharing a trip moment" },
+  { src: "/heroes/home/HeroHome6.webp", alt: "Scenic destination from a Divas Sojourn journey" },
+  { src: "/heroes/home/HeroHome7.webp", alt: "Solo women travelers exploring together" },
+  { src: "/heroes/home/upcomingCommunityTrips.png", alt: "Upcoming community trips" },
+  { src: "/heroes/india/indianHero1.webp", alt: "India trip destination for women travelers" },
+  { src: "/heroes/india/indianHero2.webp", alt: "Exploring India with Divas Sojourn" },
+  { src: "/heroes/india/indianHero3.webp", alt: "Women-only India group travel" },
+  { src: "/heroes/india/indianHero4.webp", alt: "Scenic India landscape from a Divas Sojourn trip" },
+  { src: "/heroes/india/indianHero5.webp", alt: "India adventures for female travelers" },
+  { src: "/heroes/international/internationalHero1.webp", alt: "International destination for women travelers" },
+  { src: "/heroes/international/internationalHero2.webp", alt: "Overseas adventure with Divas Sojourn" },
+  { src: "/heroes/international/internationalHero3.webp", alt: "Women-only international group travel" },
+  { src: "/heroes/international/internationalHero4.webp", alt: "Global travel experience for female travelers" },
+  { src: "/heroes/international/internationalHero5.webp", alt: "International trip highlight from Divas Sojourn" },
+  { src: "/heroes/calendar/calendarHero1.webp", alt: "Women travelers in traditional attire on a cultural trip" },
+  { src: "/heroes/calendar/calendarHero2.webp", alt: "Women travelers at a historic temple destination" },
+  { src: "/heroes/calendar/calendarHero3.webp", alt: "Women travelers on a tropical island getaway" },
+  { src: "/heroes/calendar/calendarHero4.webp", alt: "Women travelers exploring together abroad" },
+  { src: "/heroes/calendar/calendarHero5.webp", alt: "Women travelers at a mountain overlook" },
+  { src: "/heroes/calendar/calendarHero6.webp", alt: "Women travelers at a scenic destination" },
+  { src: "/heroes/calendar/calendarHero7.webp", alt: "Women travelers posing at a mountain destination" },
 ];

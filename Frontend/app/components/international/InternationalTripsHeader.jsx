@@ -7,13 +7,18 @@ export default function InternationalTripsHeader() {
   return (
     <HeroImageCarousel
       images={internationalHeroImages}
-      className="flex min-h-[62vh] items-center justify-center bg-[#0F0F0F] text-center md:min-h-[90vh]"
+      intervalMs={2000}
+      unoptimized
+      imageClassName="object-contain object-center"
+      className="relative flex h-[320px] w-full items-center justify-center bg-[#0F0F0F] text-center sm:h-[420px] md:h-[520px]"
       ariaLabel="International trips hero"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/5 to-[#1A1A1A]" aria-hidden="true" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#1A1A1A] to-transparent" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-[#1A1A1A] via-black/30 to-black/15"
+        aria-hidden="true"
+      />
 
-      <div className="relative z-10 mx-auto flex min-h-[62vh] max-w-4xl flex-col items-center justify-center px-4 md:min-h-[90vh]">
+      <div className="relative z-10 mx-auto flex h-full max-w-4xl flex-col items-center justify-center px-4">
         <p className="text-sm font-black uppercase tracking-[0.4em] text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.9)]">
           Explore
         </p>

@@ -1,53 +1,187 @@
 import type { GalleryImage } from "./types";
 
-/** Seed gallery images for prisma/seed.ts (and historical JSON bootstrap). */
+/**
+ * Site gallery photos — hero/carousel images from Home, India, International,
+ * and Calendar pages (served from /public/heroes).
+ */
 export const SEED_GALLERY: GalleryImage[] = [
+  // Home
   {
-    id: "gallery-seed-1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?auto=format&fit=crop&w=800&q=80",
-    caption: "Women travelers exploring together",
-    category: "Community",
-    createdAt: "2026-01-10T10:00:00.000Z",
+    id: "gallery-home-1",
+    imageUrl: "/heroes/home/homeHero1.webp",
+    caption: "Divas Sojourn travelers on a scenic journey",
+    category: "Home",
+    createdAt: "2026-09-27T10:00:00.000Z",
   },
   {
-    id: "gallery-seed-2",
-    imageUrl:
-      "https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=800&q=80",
-    caption: "Group of friends on a mountain trek",
+    id: "gallery-home-2",
+    imageUrl: "/heroes/home/homeHero2.webp",
+    caption: "Women exploring a destination together",
+    category: "Home",
+    createdAt: "2026-09-27T10:01:00.000Z",
+  },
+  {
+    id: "gallery-home-3",
+    imageUrl: "/heroes/home/homeHero3.webp",
+    caption: "Curated women-only travel experience",
+    category: "Home",
+    createdAt: "2026-09-27T10:02:00.000Z",
+  },
+  {
+    id: "gallery-home-4",
+    imageUrl: "/heroes/home/homeHero4.webp",
+    caption: "Memorable moments from a Divas Sojourn trip",
+    category: "Home",
+    createdAt: "2026-09-27T10:03:00.000Z",
+  },
+  {
+    id: "gallery-home-5",
+    imageUrl: "/heroes/home/HeroHome5.webp",
+    caption: "Women travelers sharing a trip moment",
+    category: "Home",
+    createdAt: "2026-09-27T10:04:00.000Z",
+  },
+  {
+    id: "gallery-home-6",
+    imageUrl: "/heroes/home/HeroHome6.webp",
+    caption: "Scenic destination from a Divas Sojourn journey",
+    category: "Home",
+    createdAt: "2026-09-27T10:05:00.000Z",
+  },
+  {
+    id: "gallery-home-7",
+    imageUrl: "/heroes/home/HeroHome7.webp",
+    caption: "Solo women travelers exploring together",
+    category: "Home",
+    createdAt: "2026-09-27T10:06:00.000Z",
+  },
+  {
+    id: "gallery-home-upcoming",
+    imageUrl: "/heroes/home/upcomingCommunityTrips.png",
+    caption: "Upcoming community trips",
+    category: "Home",
+    createdAt: "2026-09-27T10:07:00.000Z",
+  },
+  // India
+  {
+    id: "gallery-india-1",
+    imageUrl: "/heroes/india/indianHero1.webp",
+    caption: "India trip destination for women travelers",
     category: "India Trips",
-    createdAt: "2026-01-11T10:00:00.000Z",
+    createdAt: "2026-09-27T10:10:00.000Z",
   },
   {
-    id: "gallery-seed-3",
-    imageUrl:
-      "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=80",
-    caption: "Beach sunset with travelers",
+    id: "gallery-india-2",
+    imageUrl: "/heroes/india/indianHero2.webp",
+    caption: "Exploring India with Divas Sojourn",
+    category: "India Trips",
+    createdAt: "2026-09-27T10:11:00.000Z",
+  },
+  {
+    id: "gallery-india-3",
+    imageUrl: "/heroes/india/indianHero3.webp",
+    caption: "Women-only India group travel",
+    category: "India Trips",
+    createdAt: "2026-09-27T10:12:00.000Z",
+  },
+  {
+    id: "gallery-india-4",
+    imageUrl: "/heroes/india/indianHero4.webp",
+    caption: "Scenic India landscape from a Divas Sojourn trip",
+    category: "India Trips",
+    createdAt: "2026-09-27T10:13:00.000Z",
+  },
+  {
+    id: "gallery-india-5",
+    imageUrl: "/heroes/india/indianHero5.webp",
+    caption: "India adventures for female travelers",
+    category: "India Trips",
+    createdAt: "2026-09-27T10:14:00.000Z",
+  },
+  // International
+  {
+    id: "gallery-intl-1",
+    imageUrl: "/heroes/international/internationalHero1.webp",
+    caption: "International destination for women travelers",
     category: "International",
-    createdAt: "2026-01-12T10:00:00.000Z",
+    createdAt: "2026-09-27T10:20:00.000Z",
   },
   {
-    id: "gallery-seed-4",
-    imageUrl:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80",
-    caption: "Scenic mountain landscape",
-    category: "India Trips",
-    createdAt: "2026-01-13T10:00:00.000Z",
-  },
-  {
-    id: "gallery-seed-5",
-    imageUrl:
-      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=800&q=80",
-    caption: "Lake and mountain adventure",
-    category: "India Trips",
-    createdAt: "2026-01-14T10:00:00.000Z",
-  },
-  {
-    id: "gallery-seed-6",
-    imageUrl:
-      "https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=800&q=80",
-    caption: "Cultural exploration in a historic city",
+    id: "gallery-intl-2",
+    imageUrl: "/heroes/international/internationalHero2.webp",
+    caption: "Overseas adventure with Divas Sojourn",
     category: "International",
-    createdAt: "2026-01-15T10:00:00.000Z",
+    createdAt: "2026-09-27T10:21:00.000Z",
+  },
+  {
+    id: "gallery-intl-3",
+    imageUrl: "/heroes/international/internationalHero3.webp",
+    caption: "Women-only international group travel",
+    category: "International",
+    createdAt: "2026-09-27T10:22:00.000Z",
+  },
+  {
+    id: "gallery-intl-4",
+    imageUrl: "/heroes/international/internationalHero4.webp",
+    caption: "Global travel experience for female travelers",
+    category: "International",
+    createdAt: "2026-09-27T10:23:00.000Z",
+  },
+  {
+    id: "gallery-intl-5",
+    imageUrl: "/heroes/international/internationalHero5.webp",
+    caption: "International trip highlight from Divas Sojourn",
+    category: "International",
+    createdAt: "2026-09-27T10:24:00.000Z",
+  },
+  // Calendar
+  {
+    id: "gallery-calendar-1",
+    imageUrl: "/heroes/calendar/calendarHero1.webp",
+    caption: "Women travelers in traditional attire on a cultural trip",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:30:00.000Z",
+  },
+  {
+    id: "gallery-calendar-2",
+    imageUrl: "/heroes/calendar/calendarHero2.webp",
+    caption: "Women travelers at a historic temple destination",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:31:00.000Z",
+  },
+  {
+    id: "gallery-calendar-3",
+    imageUrl: "/heroes/calendar/calendarHero3.webp",
+    caption: "Women travelers on a tropical island getaway",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:32:00.000Z",
+  },
+  {
+    id: "gallery-calendar-4",
+    imageUrl: "/heroes/calendar/calendarHero4.webp",
+    caption: "Women travelers exploring together abroad",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:33:00.000Z",
+  },
+  {
+    id: "gallery-calendar-5",
+    imageUrl: "/heroes/calendar/calendarHero5.webp",
+    caption: "Women travelers at a mountain overlook",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:34:00.000Z",
+  },
+  {
+    id: "gallery-calendar-6",
+    imageUrl: "/heroes/calendar/calendarHero6.webp",
+    caption: "Women travelers at a scenic destination",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:35:00.000Z",
+  },
+  {
+    id: "gallery-calendar-7",
+    imageUrl: "/heroes/calendar/calendarHero7.webp",
+    caption: "Women travelers posing at a mountain destination",
+    category: "Calendar",
+    createdAt: "2026-09-27T10:36:00.000Z",
   },
 ];

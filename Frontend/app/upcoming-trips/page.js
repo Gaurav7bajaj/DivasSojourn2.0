@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { UpcomingTripsClient, UpcomingTripsHeader } from "../components/upcoming";
 import ContactForm from "../components/international/ContactForm";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
@@ -6,8 +7,7 @@ import { getTripNavItems, getUpcomingTrips } from "../lib/data/trips";
 export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/upcoming-trips";
-const heroImage =
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80";
+const heroImage = "https://divassojourn.com/heroes/home/upcomingCommunityTrips.png";
 
 export const metadata = {
   title: "Upcoming Women Travel Packages 2026",
@@ -103,16 +103,25 @@ export default async function UpcomingTripsPage() {
   ];
 
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <UpcomingTripsHeader />
-      <UpcomingTripsClient trips={trips} months={months} />
+      <Suspense
+        fallback={
+          <div className="border-t border-white/8 px-5 py-16 text-[#C9C3B6] md:px-12 xl:px-24">
+            Loading trips…
+          </div>
+        }
+      >
+        <UpcomingTripsClient trips={trips} months={months} />
+      </Suspense>
       <ContactForm
         destinationOptions={destinationOptions}
         storageKey="divasUpcomingLeads"
+        pageLabel="Upcoming Trips"
       />
     </main>
   );

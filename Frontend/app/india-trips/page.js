@@ -1,9 +1,10 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { BlogsSection, ContactForm, TravelerReviews } from "../components/international";
 import IndiaTripsHeader from "../components/india/IndiaTripsHeader";
 import IndiaTripsClient from "../components/india/IndiaTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
 import { indiaReviews } from "../data/indiaTrips";
+import { buildIndiaHeroSlides } from "../data/indiaHeroSlides";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
@@ -71,6 +72,14 @@ export default async function IndiaTripsPage() {
     .map(toPublicBlogCard);
 
   const months = buildMonthsFromTrips(trips);
+  const heroSlides = buildIndiaHeroSlides(indiaNav);
+  const prices = trips
+    .map((trip) => Number(trip.currentPrice) || 0)
+    .filter((price) => price > 0);
+  const lowestPrice = prices.length ? Math.min(...prices) : 0;
+  const startingPriceLabel = lowestPrice
+    ? `₹${new Intl.NumberFormat("en-IN").format(lowestPrice)}`
+    : "₹—";
 
   const schema = [
     {
@@ -123,24 +132,44 @@ export default async function IndiaTripsPage() {
   ];
 
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      <IndiaTripsHeader />
-      <nav className="bg-[#1A1A1A] px-4 py-4 text-sm text-white" aria-label="Breadcrumb">
-        <ol className="mx-auto flex max-w-7xl items-center gap-2">
-          <li>
-            <Link href="/" className="transition hover:text-[#D4AF37]">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li className="font-semibold text-[#D4AF37]">India Trips</li>
-        </ol>
-      </nav>
-      <IndiaTripsClient trips={trips} months={months} />
+      <IndiaTripsHeader
+        slides={heroSlides}
+        upcomingCount={trips.length}
+        startingPriceLabel={startingPriceLabel}
+      />
+
+      <div
+        id="departures"
+        className="scroll-mt-28 bg-[#0B0B0C] px-5 pt-14 md:px-12 xl:px-24"
+      >
+        <div className="mx-auto max-w-none text-center md:text-left">
+          <h2 className="font-[family-name:var(--font-playfair)] text-[36px] font-semibold text-[#FBF8F1] md:text-[44px]">
+            India{" "}
+            <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+              departures
+            </em>
+          </h2>
+          <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[16px] text-[#C9C3B6]">
+            Filter by region, month, duration or budget.
+          </p>
+        </div>
+      </div>
+
+      <Suspense
+        fallback={
+          <div className="border-t border-white/8 px-5 py-16 text-[#C9C3B6] md:px-12 xl:px-24">
+            Loading trips…
+          </div>
+        }
+      >
+        <IndiaTripsClient trips={trips} months={months} />
+      </Suspense>
+
       {indiaReviews.length > 0 ? <TravelerReviews reviews={indiaReviews} /> : null}
       {blogCards.length > 0 ? (
         <BlogsSection
@@ -150,7 +179,7 @@ export default async function IndiaTripsPage() {
         />
       ) : null}
       <WhyDivasSection />
-      <ContactForm destinationOptions={indiaNav} storageKey="divasIndiaLeads" />
+      <ContactForm destinationOptions={indiaNav} storageKey="divasIndiaLeads" pageLabel="India Trips" />
     </main>
   );
 }

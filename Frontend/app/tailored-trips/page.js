@@ -31,7 +31,7 @@ export const metadata = {
 
 export default function TailoredTripsPage() {
   return (
-    <main className="bg-[#1A1A1A]">
+    <main className="bg-[#0B0B0C]">
       <TailoredTripsHero />
       <TailoredIntro />
       <DestinationCards />

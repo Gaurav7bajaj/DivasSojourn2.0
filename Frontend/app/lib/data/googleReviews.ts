@@ -80,10 +80,10 @@ function mapFallbackReviews(): GooglePlaceUi["reviews"] {
 function fallbackUi(): GooglePlaceUi {
   const google = mockPlatformReviews.find((item) => item.platform === "Google");
   return {
-    rating: google?.rating ?? 4.9,
-    count: google?.count ?? 0,
+    rating: google?.rating ?? 4.8,
+    count: 300,
     reviews: mapFallbackReviews(),
-    mapsUri: null,
+    mapsUri: typeof google?.href === "string" ? google.href : null,
     source: "fallback",
     placeName: "Divas Sojourn",
   };
@@ -104,8 +104,8 @@ function toUiFromCache(row: {
   }
 
   return {
-    rating: row.rating ?? googleFallback?.rating ?? 4.9,
-    count: row.userRatingsTotal ?? googleFallback?.count ?? 0,
+    rating: row.rating ?? googleFallback?.rating ?? 4.8,
+    count: row.userRatingsTotal ?? googleFallback?.count ?? 300,
     reviews: cachedReviews.length
       ? cachedReviews.map((review, index) => ({
           id: `google-${review.time ?? index}`,
@@ -302,14 +302,14 @@ export async function getGoogleReviewsForUi(): Promise<GooglePlaceUi> {
 }
 
 export function mergePlatformReviewsWithGoogle(
-  google: Pick<GooglePlaceUi, "rating" | "count" | "source">,
+  google: Pick<GooglePlaceUi, "rating" | "count" | "source" | "mapsUri">,
 ) {
+  // Homepage platform cards use curated marketing stats; only swap in the
+  // live Google Maps URI when available so the Google card opens the real page.
   return mockPlatformReviews.map((item) => {
-    if (item.platform !== "Google") return item;
-    return {
-      ...item,
-      rating: google.rating,
-      count: google.count,
-    };
+    if (item.platform === "Google" && google.mapsUri) {
+      return { ...item, href: google.mapsUri };
+    }
+    return item;
   });
 }

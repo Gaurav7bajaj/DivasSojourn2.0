@@ -1,8 +1,8 @@
-import {
-  PaymentMethodsSection,
-  PaymentPolicySection,
-} from "../components/payments";
-import ShortContactForm from "../components/international/ShortContactForm";
+import PaymentsHeader from "../components/payments/PaymentsHeader";
+import PaymentMethodsSection from "../components/payments/PaymentMethodsSection";
+import PaymentScheduleSection from "../components/payments/PaymentScheduleSection";
+import PaymentNotesSection from "../components/payments/PaymentNotesSection";
+import PaymentsHelpStrip from "../components/payments/PaymentsHelpStrip";
 
 export const metadata = {
   title: "Payment Methods & Policy | Divas Sojourn",
@@ -67,14 +67,16 @@ const faqSchema = {
 
 export default function PaymentsPage() {
   return (
-    <main className="bg-[#1A1A1A]">
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <PaymentsHeader />
       <PaymentMethodsSection />
-      <PaymentPolicySection />
-      <ShortContactForm pageLabel="Payments" storageKey="divasPaymentLeads" />
+      <PaymentScheduleSection />
+      <PaymentNotesSection />
+      <PaymentsHelpStrip />
     </main>
   );
 }

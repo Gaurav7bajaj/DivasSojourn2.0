@@ -9,32 +9,95 @@ export const homeHeroImages = [
 ];
 
 export const indiaHeroImages = [
-  { src: "/heroes/india/indianHero1.webp", alt: "India trip destination for women travelers" },
-  { src: "/heroes/india/indianHero2.webp", alt: "Exploring India with Divas Sojourn" },
-  { src: "/heroes/india/indianHero3.webp", alt: "Women-only India group travel" },
-  { src: "/heroes/india/indianHero4.webp", alt: "Scenic India landscape from a Divas Sojourn trip" },
-  { src: "/heroes/india/indianHero5.webp", alt: "India adventures for female travelers" },
+  {
+    src: "/heroes/india/indianHero1.webp?v=20260926",
+    alt: "India trip destination for women travelers",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/india/indianHero2.webp?v=20260926",
+    alt: "Exploring India with Divas Sojourn",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/india/indianHero3.webp?v=20260926",
+    alt: "Women-only India group travel",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/india/indianHero4.webp?v=20260926",
+    alt: "Scenic India landscape from a Divas Sojourn trip",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/india/indianHero5.webp?v=20260926",
+    alt: "India adventures for female travelers",
+    imageClassName: "object-center",
+  },
 ];
 
 export const internationalHeroImages = [
   {
-    src: "/heroes/international/internationalHero1.webp",
+    src: "/heroes/international/internationalHero1.webp?v=20260926b",
     alt: "International destination for women travelers",
+    imageClassName: "object-center",
   },
   {
-    src: "/heroes/international/internationalHero2.webp",
+    src: "/heroes/international/internationalHero2.webp?v=20260926b",
     alt: "Overseas adventure with Divas Sojourn",
+    imageClassName: "object-center",
   },
   {
-    src: "/heroes/international/internationalHero3.webp",
+    src: "/heroes/international/internationalHero3.webp?v=20260926b",
     alt: "Women-only international group travel",
+    imageClassName: "object-center",
   },
   {
-    src: "/heroes/international/internationalHero4.webp",
+    src: "/heroes/international/internationalHero4.webp?v=20260926b",
     alt: "Global travel experience for female travelers",
+    imageClassName: "object-center",
   },
   {
-    src: "/heroes/international/internationalHero5.webp",
+    src: "/heroes/international/internationalHero5.webp?v=20260926b",
     alt: "International trip highlight from Divas Sojourn",
+    imageClassName: "object-center",
+  },
+];
+
+export const calendarHeroImages = [
+  {
+    src: "/heroes/calendar/calendarHero1.webp?v=20260926g",
+    alt: "Women travelers in traditional attire on a cultural trip",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero2.webp?v=20260926g",
+    alt: "Women travelers at a historic temple destination",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero3.webp?v=20260926g",
+    alt: "Women travelers on a tropical island getaway",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero4.webp?v=20260926g",
+    alt: "Women travelers exploring together abroad",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero5.webp?v=20260926g",
+    alt: "Women travelers at a mountain overlook",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero6.webp?v=20260926g",
+    alt: "Women travelers at a scenic destination",
+    imageClassName: "object-center",
+  },
+  {
+    src: "/heroes/calendar/calendarHero7.webp?v=20260927a",
+    alt: "Women travelers posing at a mountain destination",
+    imageClassName: "object-center",
   },
 ];

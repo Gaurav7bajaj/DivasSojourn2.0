@@ -1,5 +1,10 @@
 import { Blog, GalleryImage, PublicBlogCard, PublicGalleryItem } from "./types";
 import { slugify } from "../slugify";
+import {
+  resolveGalleryDestination,
+  resolveGalleryDimensions,
+  resolveGalleryFocus,
+} from "../../data/galleryMeta";
 
 export { slugify };
 
@@ -34,9 +39,26 @@ export function toPublicBlogCard(blog: Blog): PublicBlogCard {
   };
 }
 
-export function toPublicGalleryItem(image: GalleryImage): PublicGalleryItem {
+export function toPublicGalleryItem(
+  image: GalleryImage,
+  index = 0,
+): PublicGalleryItem {
+  const dims = resolveGalleryDimensions(image.imageUrl);
+  const destination = resolveGalleryDestination(
+    image.imageUrl,
+    image.category,
+    image.caption,
+  );
+
   return {
+    id: image.id,
     src: image.imageUrl,
-    alt: image.caption || image.category || "Gallery photo",
+    alt: `Divas Sojourn travellers — ${destination}`,
+    destination,
+    trip: image.category || undefined,
+    width: dims.width,
+    height: dims.height,
+    focus: resolveGalleryFocus(image.imageUrl),
+    index: index + 1,
   };
 }

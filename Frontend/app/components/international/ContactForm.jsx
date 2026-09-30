@@ -19,6 +19,7 @@ export default function ContactForm({
   destinationOptions = [],
   storageKey = "divasInternationalLeads",
   defaultInterestedIn = "",
+  pageLabel = "",
 }) {
   const [values, setValues] = useState({
     ...initialValues,
@@ -54,7 +55,7 @@ export default function ContactForm({
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setSuccessMessage("");
 
@@ -63,19 +64,46 @@ export default function ContactForm({
     }
 
     setIsSubmitting(true);
-    const formEntry = {
-      ...values,
-      submittedAt: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...values,
+          page: pageLabel || defaultInterestedIn || "Contact",
+          formType: "contact",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrors((current) => ({
+          ...current,
+          form: data.error || "Unable to submit. Please try again.",
+        }));
+        return;
+      }
 
-    const storedEntries = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
-    window.localStorage.setItem(storageKey, JSON.stringify([...storedEntries, formEntry]));
+      try {
+        const formEntry = {
+          ...values,
+          submittedAt: new Date().toISOString(),
+        };
+        const storedEntries = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+        window.localStorage.setItem(storageKey, JSON.stringify([...storedEntries, formEntry]));
+      } catch {
+        // local backup is optional
+      }
 
-    window.setTimeout(() => {
       setValues({ ...initialValues, interestedIn: defaultInterestedIn });
-      setIsSubmitting(false);
       setSuccessMessage("Thank you! Our team will call you back soon.");
-    }, 600);
+    } catch {
+      setErrors((current) => ({
+        ...current,
+        form: "Unable to submit. Please try again.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -178,6 +206,12 @@ export default function ContactForm({
               />
             </div>
           </div>
+
+          {errors.form ? (
+            <p className="mt-5 rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-300">
+              {errors.form}
+            </p>
+          ) : null}
 
           {successMessage && (
             <p className="mt-5 rounded-2xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-3 text-sm font-semibold text-[#E8C547]">

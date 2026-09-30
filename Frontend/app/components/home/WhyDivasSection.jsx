@@ -1,65 +1,89 @@
-import { BadgeCheck, Filter, Radar, UsersRound } from "lucide-react";
+import Image from "next/image";
 
 const reasons = [
   {
-    title: "No Third Party Mess",
+    number: "01",
+    title: "No third-party mess",
     description:
-      "100 percent in-house operations for all trips! No third parties involved, hence no shady claims!",
-    icon: UsersRound,
+      "100% in-house operations on every trip. No middlemen, so no shady claims.",
   },
   {
-    title: "Transparency & Security",
+    number: "02",
+    title: "Transparency & security",
     description:
-      "Real time monitoring of all trips by ground team! All routes and weather conditions are accurately updated!",
-    icon: Radar,
+      "Our ground team monitors every trip in real time, with routes and weather kept up to date.",
   },
   {
-    title: "Co-Travelers Filtering",
+    number: "03",
+    title: "Co-traveller filtering",
     description:
-      "Multi-step filtering to bring only like-minded people together! That's our key to have fuss-free trips!",
-    icon: Filter,
+      "A multi-step screening brings like-minded women together — our key to fuss-free trips.",
   },
   {
-    title: "One Stop Hassle Free Experience",
+    number: "04",
+    title: "One-stop, hassle-free",
     description:
-      "Comfortable stays, trained drivers, hospitable staff and friendly trip leaders put together that one memorable trip for you!",
-    icon: BadgeCheck,
+      "Comfortable stays, trained drivers, hospitable staff and friendly trip leaders, all taken care of.",
   },
 ];
 
 export default function WhyDivasSection() {
   return (
-    <section className="bg-[#1A1A1A] px-4 py-16" aria-labelledby="why-divas-heading">
-      <div className="mx-auto max-w-7xl">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">Why Choose Us</p>
-          <h2 id="why-divas-heading" className="mt-3 text-3xl font-black text-white md:text-5xl">
-            Why Divas Sojourn?
+    <section
+      className="bg-[#0B0B0C] px-5 py-16 md:px-12 md:py-24 xl:px-24"
+      aria-labelledby="why-divas-heading"
+    >
+      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[440px_minmax(0,1fr)] lg:gap-16">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="h-0.5 w-9 shrink-0 bg-[#D6AE3C]" aria-hidden="true" />
+            <p className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.24em] text-[#D6AE3C]">
+              Why choose us
+            </p>
+          </div>
+          <h2
+            id="why-divas-heading"
+            className="mt-4 font-[family-name:var(--font-playfair)] text-[36px] font-semibold leading-tight text-[#FBF8F1] md:text-[48px]"
+          >
+            Why{" "}
+            <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+              Divas Sojourn?
+            </em>
           </h2>
-          <p className="mt-4 leading-7 text-white">
-            Every journey is planned with trusted operations, thoughtful community building and reliable
-            on-ground care.
+          <p className="mt-4 font-[family-name:var(--font-dm-sans)] text-[16px] leading-[1.55] text-[#D9D3C6] md:text-[17px]">
+            Every journey is planned with trusted operations, thoughtful community building and
+            reliable on-ground care — so you can travel freely, together.
           </p>
+          <div className="relative mt-8 h-[240px] overflow-hidden rounded-[20px]">
+            <Image
+              src="/heroes/home/homeHero2.webp"
+              alt="Women travelers together on a Divas Sojourn journey"
+              fill
+              sizes="(max-width: 1024px) 100vw, 440px"
+              className="object-cover"
+              loading="lazy"
+            />
+          </div>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {reasons.map((reason) => {
-            const Icon = reason.icon;
-
-            return (
-              <article
-                key={reason.title}
-                className="rounded-3xl border border-[#D4AF37]/30 bg-[#1A1A1A] p-6 shadow-xl transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:bg-[#2A2A2A] hover:shadow-[0_8px_20px_rgba(212,175,55,0.2)]"
-              >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D4AF37]/15 text-[#D4AF37]">
-                  <Icon className="h-7 w-7" aria-hidden="true" />
-                </div>
-                <h3 className="text-xl font-bold text-white">{reason.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-white">{reason.description}</p>
-              </article>
-            );
-          })}
-        </div>
+        <ol className="m-0 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2">
+          {reasons.map((reason) => (
+            <li
+              key={reason.number}
+              className="flex flex-col gap-3 rounded-[20px] border border-white/8 bg-[#141417] p-7"
+            >
+              <p className="font-[family-name:var(--font-playfair)] text-[36px] font-semibold leading-none text-[#D6AE3C]">
+                {reason.number}
+              </p>
+              <h3 className="font-[family-name:var(--font-dm-sans)] text-[19px] font-bold text-[#FBF8F1]">
+                {reason.title}
+              </h3>
+              <p className="font-[family-name:var(--font-dm-sans)] text-[15px] leading-[1.55] text-[#C9C3B6]">
+                {reason.description}
+              </p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

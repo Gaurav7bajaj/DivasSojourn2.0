@@ -14,7 +14,7 @@ export default function EnquiryCard({ trip }) {
     setFormData((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const phoneIsValid = /^[0-9]{10}$/.test(formData.phone);
 
@@ -23,13 +23,45 @@ export default function EnquiryCard({ trip }) {
       return;
     }
 
-    const leads = JSON.parse(window.localStorage.getItem("divasIndiaTripLeads") || "[]");
-    window.localStorage.setItem(
-      "divasIndiaTripLeads",
-      JSON.stringify([...leads, { ...formData, trip: trip.title, createdAt: new Date().toISOString() }]),
-    );
-    setStatus("Thanks. Our team will call you back shortly.");
-    setFormData({ name: "", phone: "", email: "" });
+    setStatus("Sending...");
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          page: trip.shortName || trip.title || "Trip detail",
+          interestedIn: trip.title || "",
+          formType: "short",
+          message: `Callback request for ${trip.title || "trip"}`,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error || "Unable to submit. Please try again.");
+        return;
+      }
+
+      try {
+        const leads = JSON.parse(window.localStorage.getItem("divasIndiaTripLeads") || "[]");
+        window.localStorage.setItem(
+          "divasIndiaTripLeads",
+          JSON.stringify([
+            ...leads,
+            { ...formData, trip: trip.title, createdAt: new Date().toISOString() },
+          ]),
+        );
+      } catch {
+        // optional backup
+      }
+
+      setStatus("Thanks. Our team will call you back shortly.");
+      setFormData({ name: "", phone: "", email: "" });
+    } catch {
+      setStatus("Unable to submit. Please try again.");
+    }
   };
 
   return (

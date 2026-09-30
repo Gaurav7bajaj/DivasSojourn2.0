@@ -1,1 +1,1 @@
-export { default as TravelSavingHero } from "./TravelSavingHero";
+export { default as TravelSavingClient } from "./TravelSavingClient";

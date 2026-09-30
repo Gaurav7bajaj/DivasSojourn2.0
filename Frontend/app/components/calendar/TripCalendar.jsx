@@ -1,432 +1,865 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, DollarSign, Globe, Compass, ArrowRight } from "lucide-react";
-import { formatDualPrice } from "../../utils/formatPrice";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, ImageIcon, X } from "lucide-react";
+import { inrToUsd } from "../../utils/formatPrice";
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const FILTERS = [
+  { value: "all", label: "All trips" },
+  { value: "india", label: "India" },
+  { value: "international", label: "International" },
+];
+const MAX_LANES = 2;
+const DEFAULT_MONTH = "2026-07";
+
+const inrFmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+const usdFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+const shortDateFmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function toMonthKey(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}`;
+}
+
+function parseMonthKey(value) {
+  const match = /^(\d{4})-(\d{2})$/.exec(String(value || ""));
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  if (!Number.isFinite(year) || month < 0 || month > 11) return null;
+  return new Date(year, month, 1);
+}
+
+function parseType(value) {
+  const v = String(value || "all").toLowerCase();
+  if (v === "india" || v === "international") return v;
+  return "all";
+}
+
+function typeMatches(tripType, filter) {
+  if (filter === "all") return true;
+  return tripType.toLowerCase() === filter;
+}
+
+function tripHref(trip) {
+  return trip.type === "India"
+    ? `/india-trips/${trip.slug}`
+    : `/international-trips/${trip.slug}`;
+}
+
+function formatRoute(trip) {
+  if (trip.route) {
+    return trip.route
+      .split(/\s*[-–—>→]+\s*/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(" → ");
+  }
+  const pickup = (trip.pickupLocation || "").trim();
+  const drop = (trip.dropLocation || "").trim();
+  if (pickup && drop && pickup !== drop) return `${pickup} → ${drop}`;
+  return pickup || drop || "";
+}
+
+function durationLabel(trip) {
+  if (trip.nights && trip.days) return `${trip.nights}N / ${trip.days}D`;
+  return trip.duration || "";
+}
+
+function displayPrice(trip) {
+  return trip.earlyBirdPrice || trip.price || 0;
+}
+
+function buildCalendarCells(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const prevMonthTotal = new Date(year, month, 0).getDate();
+  const cells = [];
+
+  for (let i = firstDay - 1; i >= 0; i -= 1) {
+    const d = prevMonthTotal - i;
+    const pMonth = month === 0 ? 11 : month - 1;
+    const pYear = month === 0 ? year - 1 : year;
+    cells.push({
+      day: d,
+      month: pMonth,
+      year: pYear,
+      isCurrentMonth: false,
+      dateString: `${pYear}-${pad2(pMonth + 1)}-${pad2(d)}`,
+    });
+  }
+
+  for (let d = 1; d <= totalDays; d += 1) {
+    cells.push({
+      day: d,
+      month,
+      year,
+      isCurrentMonth: true,
+      dateString: `${year}-${pad2(month + 1)}-${pad2(d)}`,
+    });
+  }
+
+  const remaining = 42 - cells.length;
+  const nMonth = month === 11 ? 0 : month + 1;
+  const nYear = month === 11 ? year + 1 : year;
+  for (let d = 1; d <= remaining; d += 1) {
+    cells.push({
+      day: d,
+      month: nMonth,
+      year: nYear,
+      isCurrentMonth: false,
+      dateString: `${nYear}-${pad2(nMonth + 1)}-${pad2(d)}`,
+    });
+  }
+
+  return cells;
+}
+
+function rangesOverlap(aStart, aSpan, bStart, bSpan) {
+  const aEnd = aStart + aSpan;
+  const bEnd = bStart + bSpan;
+  return aStart < bEnd && bStart < aEnd;
+}
+
+/**
+ * Build per-week trip segments with greedy lane assignment.
+ */
+function buildWeekLayouts(trips, weeks, monthStart, monthEnd) {
+  return weeks.map((weekCells) => {
+    const segments = [];
+
+    trips.forEach((trip) => {
+      const clipStart = trip.startDate < monthStart ? monthStart : trip.startDate;
+      const clipEnd = trip.endDate > monthEnd ? monthEnd : trip.endDate;
+      if (clipStart > clipEnd) return;
+
+      let firstIdx = -1;
+      let lastIdx = -1;
+      weekCells.forEach((cell, idx) => {
+        if (cell.dateString >= clipStart && cell.dateString <= clipEnd) {
+          if (firstIdx === -1) firstIdx = idx;
+          lastIdx = idx;
+        }
+      });
+      if (firstIdx === -1) return;
+
+      const startCol = firstIdx + 1;
+      const span = lastIdx - firstIdx + 1;
+      const roundLeft = trip.startDate === weekCells[firstIdx].dateString;
+      const roundRight = trip.endDate === weekCells[lastIdx].dateString;
+
+      segments.push({
+        trip,
+        startCol,
+        span,
+        roundLeft,
+        roundRight,
+        dateFrom: weekCells[firstIdx].dateString,
+        dateTo: weekCells[lastIdx].dateString,
+      });
+    });
+
+    segments.sort((a, b) => a.startCol - b.startCol || b.span - a.span);
+
+    const lanes = [];
+    const placed = [];
+    const overflow = [];
+
+    segments.forEach((seg) => {
+      let lane = 0;
+      for (;;) {
+        if (!lanes[lane]) lanes[lane] = [];
+        const conflict = lanes[lane].some((range) =>
+          rangesOverlap(seg.startCol, seg.span, range.start, range.span),
+        );
+        if (!conflict) break;
+        lane += 1;
+      }
+      if (lane >= MAX_LANES) {
+        overflow.push(seg);
+        return;
+      }
+      lanes[lane].push({ start: seg.startCol, span: seg.span });
+      placed.push({ ...seg, lane: lane + 1 });
+    });
+
+    const overflowByDay = {};
+    overflow.forEach((seg) => {
+      for (let col = seg.startCol; col < seg.startCol + seg.span; col += 1) {
+        const cell = weekCells[col - 1];
+        if (!cell) continue;
+        if (!overflowByDay[cell.dateString]) overflowByDay[cell.dateString] = [];
+        if (!overflowByDay[cell.dateString].some((t) => t.id === seg.trip.id)) {
+          overflowByDay[cell.dateString].push(seg.trip);
+        }
+      }
+    });
+
+    return { weekCells, segments: placed, overflowByDay };
+  });
+}
+
+function TripCard({ trip, selected, onSelect, cardRef }) {
+  const price = displayPrice(trip);
+  const isIndia = trip.type === "India";
+  const accent = isIndia ? "#D6AE3C" : "#6EA8E0";
+  const typeColor = isIndia ? "#E2BB4D" : "#8FBDE8";
+  const route = formatRoute(trip);
+  const duration = durationLabel(trip);
+
+  return (
+    <article
+      ref={cardRef}
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(trip.id)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(trip.id);
+        }
+      }}
+      className={`flex cursor-pointer gap-3.5 rounded-2xl border p-3.5 transition ${
+        selected
+          ? ""
+          : "border-white/8 hover:border-[#D6AE3C]"
+      }`}
+      style={selected ? { borderColor: accent } : undefined}
+      aria-pressed={selected}
+    >
+      <div className="relative h-[76px] w-[76px] shrink-0 overflow-hidden rounded-xl bg-[#1C1C20]">
+        {trip.image ? (
+          <Image
+            src={trip.image}
+            alt=""
+            fill
+            sizes="76px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[#8F897D]">
+            <ImageIcon className="h-6 w-6" aria-hidden="true" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <p className="font-[family-name:var(--font-dm-sans)] text-[11px] font-bold uppercase tracking-[0.12em]">
+          <span style={{ color: typeColor }}>{trip.type}</span>
+          {duration ? (
+            <span className="text-[#C9C3B6]"> · {duration}</span>
+          ) : null}
+        </p>
+        <h4 className="line-clamp-2 font-[family-name:var(--font-dm-sans)] text-[16px] font-bold leading-snug text-[#FBF8F1]">
+          {trip.title}
+        </h4>
+        <p className="line-clamp-2 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+          {shortDateFmt.format(new Date(`${trip.startDate}T00:00:00`))} –{" "}
+          {shortDateFmt.format(new Date(`${trip.endDate}T00:00:00`))}
+          {route ? ` · ${route}` : ""}
+        </p>
+        <div className="mt-auto flex items-end justify-between gap-3 pt-1">
+          <p className="font-[family-name:var(--font-dm-sans)]">
+            <span className="text-[15px] font-bold text-[#FBF8F1]">
+              ₹{inrFmt.format(price)}
+            </span>{" "}
+            <span className="text-[12px] text-[#C9C3B6]">
+              ${usdFmt.format(inrToUsd(price))}
+            </span>
+          </p>
+          <Link
+            href={tripHref(trip)}
+            onClick={(event) => event.stopPropagation()}
+            className="shrink-0 font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#D6AE3C] transition hover:text-[#E6BF4C]"
+          >
+            Details →
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function TripCalendar({ trips = [] }) {
-  const [currentDate, setCurrentDate] = useState(new Date("2026-07-01"));
-  const [filterType, setFilterType] = useState("All"); // "All", "India", "International"
-  const [hoveredTripId, setHoveredTripId] = useState(null);
-  const [hoveredDate, setHoveredDate] = useState(null);
-  const [selectedCell, setSelectedCell] = useState(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const allTrips = useMemo(() => {
-    return trips.map((trip) => {
-      const type = trip.destination === "International" ? "International" : "India";
-      const isIndia = type === "India";
-      return {
-        ...trip,
-        type,
-        color: isIndia ? "#D4AF37" : "#06B6D4",
-        bgClass: isIndia
-          ? "bg-[#D4AF37]/10 text-[#D4AF37] border-[#D4AF37]/30"
-          : "bg-[#06B6D4]/10 text-[#06B6D4] border-[#06B6D4]/30",
-        dotClass: isIndia ? "bg-[#D4AF37]" : "bg-[#06B6D4]",
-      };
-    });
-  }, [trips]);
+  const initialMonth =
+    parseMonthKey(searchParams.get("month")) || parseMonthKey(DEFAULT_MONTH);
+  const [currentDate, setCurrentDate] = useState(initialMonth);
+  const [filterType, setFilterType] = useState(parseType(searchParams.get("type")));
+  const [selectedTripId, setSelectedTripId] = useState(null);
+  const [mobileDay, setMobileDay] = useState(null);
+  const [overflowPopover, setOverflowPopover] = useState(null);
+  const [focusCellIndex, setFocusCellIndex] = useState(null);
+  const cardRefs = useRef({});
+  const gridRef = useRef(null);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  const monthName = MONTH_NAMES[month];
+  const monthKey = toMonthKey(currentDate);
+  const monthStart = `${year}-${pad2(month + 1)}-01`;
+  const monthEnd = `${year}-${pad2(month + 1)}-${pad2(new Date(year, month + 1, 0).getDate())}`;
+  const todayStr = useMemo(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  }, []);
 
-  // Navigation handlers
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-    setSelectedCell(null);
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-    setSelectedCell(null);
-  };
-
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-  const currentMonthName = monthNames[month];
-
-  // Helper to check if a trip overlaps with the currently selected month
-  const isTripInMonth = (trip, m, y) => {
-    const tripStart = new Date(trip.startDate);
-    const tripEnd = new Date(trip.endDate);
-    const monthStart = new Date(y, m, 1);
-    const monthEnd = new Date(y, m + 1, 0); // Last day of month
-    return tripStart <= monthEnd && tripEnd >= monthStart;
-  };
-
-  // Trips in the current month matching the filter
-  const tripsInMonth = useMemo(() => {
-    return allTrips.filter((trip) => {
-      const matchesFilter = filterType === "All" || trip.type === filterType;
-      const matchesMonth = isTripInMonth(trip, month, year);
-      return matchesFilter && matchesMonth;
-    }).sort((a, b) => a.startDate.localeCompare(b.startDate));
-  }, [allTrips, month, year, filterType]);
-
-  // Generate calendar days
-  const calendarCells = useMemo(() => {
-    const firstDay = new Date(year, month, 1).getDay();
-    const totalDays = new Date(year, month + 1, 0).getDate();
-    const prevMonthTotalDays = new Date(year, month, 0).getDate();
-    
-    const cells = [];
-
-    // Padding from previous month
-    for (let i = firstDay - 1; i >= 0; i--) {
-      const d = prevMonthTotalDays - i;
-      const pMonth = month === 0 ? 11 : month - 1;
-      const pYear = month === 0 ? year - 1 : year;
-      const dateStr = `${pYear}-${String(pMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      cells.push({
-        day: d,
-        month: pMonth,
-        year: pYear,
-        isCurrentMonth: false,
-        dateString: dateStr,
-      });
+  useEffect(() => {
+    const nextMonth = parseMonthKey(searchParams.get("month"));
+    const nextType = parseType(searchParams.get("type"));
+    if (nextMonth && toMonthKey(nextMonth) !== monthKey) {
+      setCurrentDate(nextMonth);
     }
-
-    // Days of current month
-    for (let d = 1; d <= totalDays; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      cells.push({
-        day: d,
-        month: month,
-        year: year,
-        isCurrentMonth: true,
-        dateString: dateStr,
-      });
+    if (nextType !== filterType) {
+      setFilterType(nextType);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync from URL only
+  }, [searchParams]);
 
-    // Padding for next month to make perfect grid of weeks
-    const remaining = 42 - cells.length;
-    const nMonth = month === 11 ? 0 : month + 1;
-    const nYear = month === 11 ? year + 1 : year;
-    for (let d = 1; d <= remaining; d++) {
-      const dateStr = `${nYear}-${String(nMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      cells.push({
-        day: d,
-        month: nMonth,
-        year: nYear,
-        isCurrentMonth: false,
-        dateString: dateStr,
-      });
-    }
-
-    return cells;
-  }, [year, month]);
-
-  // Find active trips for a specific date
-  const getTripsForDate = useCallback(
-    (dateString) => {
-      return allTrips.filter((trip) => {
-        const matchesFilter = filterType === "All" || trip.type === filterType;
-        const isActive = dateString >= trip.startDate && dateString <= trip.endDate;
-        return matchesFilter && isActive;
-      });
+  const pushUrl = useCallback(
+    (nextMonth, nextType) => {
+      const params = new URLSearchParams();
+      params.set("month", toMonthKey(nextMonth));
+      if (nextType !== "all") params.set("type", nextType);
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
+    [pathname, router],
+  );
+
+  const allTrips = useMemo(
+    () =>
+      trips.map((trip) => ({
+        ...trip,
+        type: trip.destination === "International" ? "International" : "India",
+      })),
+    [trips],
+  );
+
+  const filteredTrips = useMemo(
+    () => allTrips.filter((trip) => typeMatches(trip.type, filterType)),
     [allTrips, filterType],
   );
 
-  // Selected cell trips
-  const selectedCellTrips = useMemo(() => {
-    if (!selectedCell) return [];
-    return getTripsForDate(selectedCell.dateString);
-  }, [selectedCell, getTripsForDate]);
+  const tripsInMonth = useMemo(
+    () =>
+      filteredTrips
+        .filter((trip) => trip.startDate <= monthEnd && trip.endDate >= monthStart)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate)),
+    [filteredTrips, monthStart, monthEnd],
+  );
+
+  const calendarCells = useMemo(() => buildCalendarCells(year, month), [year, month]);
+  const weeks = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < calendarCells.length; i += 7) {
+      rows.push(calendarCells.slice(i, i + 7));
+    }
+    return rows;
+  }, [calendarCells]);
+
+  const weekLayouts = useMemo(
+    () => buildWeekLayouts(tripsInMonth, weeks, monthStart, monthEnd),
+    [tripsInMonth, weeks, monthStart, monthEnd],
+  );
+
+  const tripsByDate = useMemo(() => {
+    const map = {};
+    tripsInMonth.forEach((trip) => {
+      const start = trip.startDate < monthStart ? monthStart : trip.startDate;
+      const end = trip.endDate > monthEnd ? monthEnd : trip.endDate;
+      const cursor = new Date(`${start}T00:00:00`);
+      const last = new Date(`${end}T00:00:00`);
+      while (cursor <= last) {
+        const key = `${cursor.getFullYear()}-${pad2(cursor.getMonth() + 1)}-${pad2(cursor.getDate())}`;
+        if (!map[key]) map[key] = [];
+        map[key].push(trip);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    });
+    return map;
+  }, [tripsInMonth, monthStart, monthEnd]);
+
+  const mobileList = useMemo(() => {
+    if (!mobileDay) return tripsInMonth;
+    return (tripsByDate[mobileDay] || []).slice().sort((a, b) => a.startDate.localeCompare(b.startDate));
+  }, [mobileDay, tripsInMonth, tripsByDate]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedTripId(null);
+  }, []);
+
+  const selectTrip = useCallback(
+    (tripId) => {
+      setSelectedTripId((current) => {
+        const next = current === tripId ? null : tripId;
+        if (next) {
+          requestAnimationFrame(() => {
+            cardRefs.current[next]?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+            });
+          });
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === "Escape") {
+        clearSelection();
+        setOverflowPopover(null);
+        setMobileDay(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [clearSelection]);
+
+  useEffect(() => {
+    clearSelection();
+    setMobileDay(null);
+    setOverflowPopover(null);
+  }, [monthKey, filterType, clearSelection]);
+
+  const goMonth = (delta) => {
+    const next = new Date(year, month + delta, 1);
+    setCurrentDate(next);
+    pushUrl(next, filterType);
+  };
+
+  const setFilter = (value) => {
+    setFilterType(value);
+    pushUrl(currentDate, value);
+  };
+
+  const onGridKeyDown = (event) => {
+    if (focusCellIndex == null) return;
+    const cols = 7;
+    let next = focusCellIndex;
+    if (event.key === "ArrowRight") next = Math.min(calendarCells.length - 1, focusCellIndex + 1);
+    else if (event.key === "ArrowLeft") next = Math.max(0, focusCellIndex - 1);
+    else if (event.key === "ArrowDown") next = Math.min(calendarCells.length - 1, focusCellIndex + cols);
+    else if (event.key === "ArrowUp") next = Math.max(0, focusCellIndex - cols);
+    else return;
+    event.preventDefault();
+    setFocusCellIndex(next);
+    const el = gridRef.current?.querySelector(`[data-cell-index="${next}"]`);
+    el?.focus();
+  };
+
+  const monthTitleWidth = "11ch";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
-      {/* Category Tabs & Navigation Row */}
-      <div className="mb-8 flex flex-col items-center justify-between gap-6 border-b border-white/10 pb-6 md:flex-row">
-        {/* Month Selector */}
-        <div className="flex items-center gap-4">
+    <div className="bg-[#0B0B0C]">
+      {/* Controls */}
+      <div className="mx-0 flex flex-col gap-4 border-b border-white/8 px-5 py-2 pb-6 md:flex-row md:items-center md:justify-between md:px-12 md:pb-6 xl:px-24">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
           <button
-            onClick={handlePrevMonth}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-neutral-900 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
+            type="button"
+            onClick={() => goMonth(-1)}
             aria-label="Previous month"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-          
-          <h2 className="min-w-44 text-center text-xl font-bold tracking-tight text-white sm:text-2xl">
-            {currentMonthName} {year}
+
+          <h2
+            className="text-center font-[family-name:var(--font-playfair)] text-[28px] font-semibold text-[#FBF8F1] md:text-[36px]"
+            style={{ minWidth: monthTitleWidth }}
+          >
+            {monthName}{" "}
+            <span className="text-[#D6AE3C]">{year}</span>
           </h2>
 
           <button
-            onClick={handleNextMonth}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-neutral-900 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
+            type="button"
+            onClick={() => goMonth(1)}
             aria-label="Next month"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
+
+          <div className="ml-1 hidden items-center gap-4 sm:flex">
+            <span className="inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+              <span className="h-2.5 w-2.5 rounded-[2px] bg-[#D6AE3C]" aria-hidden="true" />
+              India
+            </span>
+            <span className="inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+              <span className="h-2.5 w-2.5 rounded-[2px] bg-[#6EA8E0]" aria-hidden="true" />
+              International
+            </span>
+          </div>
         </div>
 
-        {/* Category Filters */}
-        <div className="flex rounded-full border border-white/10 bg-[#000000] p-1">
-          {["All", "India", "International"].map((type) => (
-            <button
-              key={type}
-              onClick={() => {
-                setFilterType(type);
-                setSelectedCell(null);
-              }}
-              className={`rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${
-                filterType === type
-                  ? "bg-[#D4AF37] text-black font-bold shadow-[0_4px_12px_rgba(212,175,55,0.2)]"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {type} Trips
-            </button>
-          ))}
+        <div
+          className="flex w-full rounded-full bg-[#16161A] p-1 md:w-auto"
+          role="tablist"
+          aria-label="Trip type filter"
+        >
+          {FILTERS.map((option) => {
+            const active = filterType === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setFilter(option.value)}
+                className={`h-[42px] flex-1 whitespace-nowrap rounded-full px-4 font-[family-name:var(--font-dm-sans)] text-[13px] font-bold transition md:flex-none md:px-5 ${
+                  active
+                    ? "bg-[#D6AE3C] text-[#1A1405]"
+                    : "text-[#C9C3B6] hover:text-[#FBF8F1]"
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Left Side: Calendar (2/3 width) */}
-        <div className="lg:col-span-2">
-          <div className="rounded-3xl border border-white/10 bg-[#000000] p-4 shadow-2xl md:p-6">
-            {/* Days of week header */}
-            <div className="grid grid-cols-7 mb-4 text-center text-xs font-bold uppercase tracking-wider text-white/50">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="py-2">{day}</div>
+      {/* Layout */}
+      <div className="flex flex-col items-start gap-7 px-5 py-7 pb-20 md:px-12 lg:flex-row xl:px-24">
+        {/* Desktop month grid */}
+        <div className="hidden min-w-0 flex-1 md:block">
+          <div
+            ref={gridRef}
+            role="grid"
+            aria-label={`${monthName} ${year} trip calendar`}
+            onKeyDown={onGridKeyDown}
+            className="overflow-hidden rounded-[20px] border border-white/8 bg-[#141417] p-2"
+          >
+            <div
+              role="row"
+              className="grid h-11 grid-cols-7"
+            >
+              {WEEKDAYS.map((day) => (
+                <div
+                  key={day}
+                  role="columnheader"
+                  className="flex items-center justify-center font-[family-name:var(--font-dm-sans)] text-[12px] font-bold uppercase tracking-[0.14em] text-[#C9C3B6]"
+                >
+                  {day}
+                </div>
               ))}
             </div>
 
-            {/* Grid of days */}
-            <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-              {calendarCells.map((cell, idx) => {
-                const cellTrips = getTripsForDate(cell.dateString);
-                const hasTrips = cellTrips.length > 0;
-                const isSelected = selectedCell && selectedCell.dateString === cell.dateString;
-                
-                // Highlight states
-                const isHovered = hoveredDate === cell.dateString;
-                const matchesHoveredTrip = hoveredTripId && cellTrips.some(t => t.id === hoveredTripId);
+            {weekLayouts.map((layout, weekIndex) => (
+              <div
+                key={`week-${weekIndex}`}
+                role="row"
+                className="relative h-[128px] border-t border-white/[0.07]"
+              >
+                {/* Day cells */}
+                <div className="absolute inset-0 grid grid-cols-7">
+                  {layout.weekCells.map((cell, colIndex) => {
+                    const cellIndex = weekIndex * 7 + colIndex;
+                    const isToday = cell.dateString === todayStr;
+                    const overflowTrips = layout.overflowByDay[cell.dateString] || [];
+                    return (
+                      <div
+                        key={cell.dateString}
+                        role="gridcell"
+                        tabIndex={focusCellIndex === cellIndex || (focusCellIndex == null && cellIndex === 0) ? 0 : -1}
+                        data-cell-index={cellIndex}
+                        onFocus={() => setFocusCellIndex(cellIndex)}
+                        className={`relative border-r border-white/[0.07] last:border-r-0 ${
+                          cell.isCurrentMonth ? "" : "bg-black/25"
+                        }`}
+                      >
+                        <span
+                          className={`absolute right-2 top-2 flex h-7 w-7 items-center justify-center font-[family-name:var(--font-dm-sans)] text-[14px] font-semibold ${
+                            isToday
+                              ? "rounded-full bg-[#D6AE3C] text-[#1A1405]"
+                              : cell.isCurrentMonth
+                                ? "text-[#ECE7DC]"
+                                : "text-[#55524C]"
+                          }`}
+                        >
+                          {cell.day}
+                        </span>
+                        {overflowTrips.length > 0 ? (
+                          <button
+                            type="button"
+                            className="absolute bottom-2 left-2 z-[3] min-h-11 font-[family-name:var(--font-dm-sans)] text-[11px] font-bold text-[#D6AE3C] hover:underline"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOverflowPopover({
+                                dateString: cell.dateString,
+                                trips: overflowTrips,
+                                x: event.clientX,
+                                y: event.clientY,
+                              });
+                            }}
+                          >
+                            +{overflowTrips.length} more
+                          </button>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
 
+                {/* Bars layer */}
+                <div
+                  className="pointer-events-none absolute inset-x-0 top-11 bottom-0 grid grid-cols-7 gap-y-1.5 px-0"
+                  style={{ gridAutoRows: "30px", alignContent: "start" }}
+                >
+                  {layout.segments.map((seg) => {
+                    const isIndia = seg.trip.type === "India";
+                    const isSelected = selectedTripId === seg.trip.id;
+                    const faded = selectedTripId && !isSelected;
+                    const label = `${seg.trip.title}, ${shortDateFmt.format(new Date(`${seg.trip.startDate}T00:00:00`))}–${shortDateFmt.format(new Date(`${seg.trip.endDate}T00:00:00`))}`;
+
+                    let bg = isIndia ? "rgba(214,174,60,.16)" : "rgba(110,168,224,.16)";
+                    let border = isIndia ? "rgba(214,174,60,.45)" : "rgba(110,168,224,.45)";
+                    let color = isIndia ? "#ECC95E" : "#A9CDF2";
+                    if (isSelected) {
+                      bg = isIndia ? "#D6AE3C" : "#6EA8E0";
+                      border = bg;
+                      color = isIndia ? "#1A1405" : "#0B1320";
+                    }
+
+                    const radius = [
+                      seg.roundLeft ? "8px" : "0",
+                      seg.roundRight ? "8px" : "0",
+                      seg.roundRight ? "8px" : "0",
+                      seg.roundLeft ? "8px" : "0",
+                    ].join(" ");
+
+                    return (
+                      <button
+                        key={`${seg.trip.id}-${seg.dateFrom}`}
+                        type="button"
+                        aria-label={label}
+                        onClick={() => selectTrip(seg.trip.id)}
+                        className="pointer-events-auto z-[2] flex h-[30px] items-center overflow-hidden border px-2.5 text-left font-[family-name:var(--font-dm-sans)] text-[12px] font-bold transition hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#D6AE3C]"
+                        style={{
+                          gridColumn: `${seg.startCol} / span ${seg.span}`,
+                          gridRow: seg.lane,
+                          marginLeft: seg.roundLeft ? 6 : 0,
+                          marginRight: seg.roundRight ? 6 : 0,
+                          borderRadius: radius,
+                          background: bg,
+                          borderColor: border,
+                          color,
+                          opacity: faded ? 0.45 : 1,
+                        }}
+                      >
+                        <span className="truncate">{seg.trip.shortName || seg.trip.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile compact month */}
+        <div className="w-full md:hidden">
+          <div className="mb-3 flex items-center gap-4">
+            <span className="inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+              <span className="h-2.5 w-2.5 rounded-[2px] bg-[#D6AE3C]" aria-hidden="true" />
+              India
+            </span>
+            <span className="inline-flex items-center gap-2 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+              <span className="h-2.5 w-2.5 rounded-[2px] bg-[#6EA8E0]" aria-hidden="true" />
+              International
+            </span>
+          </div>
+          <div className="rounded-[20px] border border-white/8 bg-[#141417] p-3">
+            <div className="mb-2 grid grid-cols-7 text-center font-[family-name:var(--font-dm-sans)] text-[11px] font-bold uppercase tracking-[0.12em] text-[#C9C3B6]">
+              {WEEKDAYS.map((d) => (
+                <div key={d} className="py-2">
+                  {d.slice(0, 1)}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {calendarCells.map((cell) => {
+                const dayTrips = cell.isCurrentMonth ? tripsByDate[cell.dateString] || [] : [];
+                const hasIndia = dayTrips.some((t) => t.type === "India");
+                const hasIntl = dayTrips.some((t) => t.type === "International");
+                const active = mobileDay === cell.dateString;
+                const isToday = cell.dateString === todayStr;
                 return (
-                  <div
-                    key={idx}
-                    onMouseEnter={() => setHoveredDate(cell.dateString)}
-                    onMouseLeave={() => setHoveredDate(null)}
+                  <button
+                    key={cell.dateString}
+                    type="button"
+                    disabled={!cell.isCurrentMonth}
                     onClick={() => {
-                      if (hasTrips) {
-                        setSelectedCell(isSelected ? null : cell);
-                      }
+                      if (!cell.isCurrentMonth) return;
+                      setMobileDay((current) =>
+                        current === cell.dateString ? null : cell.dateString,
+                      );
                     }}
-                    className={`relative min-h-[90px] sm:min-h-[110px] rounded-2xl border p-2 flex flex-col justify-between transition-all duration-300 cursor-pointer ${
-                      cell.isCurrentMonth
-                        ? "bg-neutral-900/60 hover:bg-neutral-900 border-white/5"
-                        : "bg-neutral-950/20 border-white/0 text-white/20"
-                    } ${
-                      isSelected
-                        ? "ring-2 ring-[#D4AF37] bg-neutral-900 border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]"
-                        : ""
-                    } ${
-                      matchesHoveredTrip
-                        ? "border-[#D4AF37]/80 bg-[#D4AF37]/5 shadow-[0_0_20px_rgba(212,175,55,0.1)] scale-[1.01]"
-                        : ""
-                    } ${
-                      isHovered && hasTrips
-                        ? "border-white/20 bg-neutral-900"
-                        : ""
+                    className={`flex min-h-11 flex-col items-center justify-center rounded-xl py-1.5 font-[family-name:var(--font-dm-sans)] text-[14px] font-semibold transition ${
+                      !cell.isCurrentMonth
+                        ? "text-[#55524C]"
+                        : active
+                          ? "bg-[#D6AE3C] text-[#1A1405]"
+                          : isToday
+                            ? "ring-1 ring-[#D6AE3C] text-[#ECE7DC]"
+                            : "text-[#ECE7DC] hover:bg-white/5"
                     }`}
                   >
-                    {/* Day number */}
-                    <span className={`self-end text-xs font-bold sm:text-sm ${
-                      cell.isCurrentMonth
-                        ? isSelected
-                          ? "text-[#D4AF37]"
-                          : "text-white/60"
-                        : "text-white/10"
-                    }`}>
-                      {cell.day}
-                    </span>
-
-                    {/* Trips list inside cell */}
-                    <div className="mt-1 space-y-1">
-                      {cell.isCurrentMonth && cellTrips.slice(0, 2).map((trip) => {
-                        const isTripActive = hoveredTripId === trip.id;
-                        return (
-                          <div
-                            key={trip.id + trip.type}
-                            onMouseEnter={() => setHoveredTripId(trip.id)}
-                            onMouseLeave={() => setHoveredTripId(null)}
-                            className={`group relative text-[9px] sm:text-[10px] font-semibold truncate rounded-lg px-2 py-0.5 border transition-all duration-300 ${trip.bgClass} ${
-                              isTripActive ? "ring-1 ring-white/30 scale-[1.02] shadow-lg" : ""
-                            }`}
-                          >
-                            {trip.shortName}
-                          </div>
-                        );
-                      })}
-                      {cell.isCurrentMonth && cellTrips.length > 2 && (
-                        <div className="text-[9px] sm:text-[10px] font-bold text-center text-[#D4AF37] pt-0.5">
-                          +{cellTrips.length - 2} more
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Subtle dot at the bottom for mobile */}
-                    {hasTrips && (
-                      <div className="flex justify-center gap-1 mt-1 sm:hidden">
-                        {cellTrips.map((trip) => (
-                          <span key={trip.id + trip.type} className={`h-1.5 w-1.5 rounded-full ${trip.dotClass}`} />
-                        ))}
-                      </div>
+                    {cell.day}
+                    {cell.isCurrentMonth && (hasIndia || hasIntl) ? (
+                      <span className="mt-1 flex gap-0.5">
+                        {hasIndia ? (
+                          <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#1A1405]" : "bg-[#D6AE3C]"}`} />
+                        ) : null}
+                        {hasIntl ? (
+                          <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#1A1405]/70" : "bg-[#6EA8E0]"}`} />
+                        ) : null}
+                      </span>
+                    ) : (
+                      <span className="mt-1 h-1.5" />
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Right Side: Trips in Selected Month / selected day details */}
-        <div className="lg:col-span-1">
-          {/* Selected Day View Details (Populates when clicking a date in the calendar) */}
-          {selectedCell && selectedCellTrips.length > 0 ? (
-            <div className="mb-6 rounded-3xl border border-[#D4AF37]/30 bg-neutral-900/60 p-5 shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#D4AF37]">
-                  Trips on {selectedCell.day} {currentMonthName}
-                </h3>
-                <button
-                  onClick={() => setSelectedCell(null)}
-                  className="text-xs font-semibold text-white/50 hover:text-white"
-                >
-                  Clear Selection
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {selectedCellTrips.map((trip) => (
-                  <div key={trip.id + trip.type} className="group relative rounded-2xl bg-black p-3 border border-white/5 hover:border-white/10 transition duration-300">
-                    <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-bold text-white text-sm line-clamp-1 flex-1">{trip.title}</h4>
-                      {trip.soldOut && (
-                        <span className="rounded-full bg-red-500/15 text-red-400 border border-red-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
-                          Sold Out
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-white/60 mt-1 flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-[#D4AF37]" />
-                      {trip.dates}
-                    </p>
-                    <div className="flex items-center justify-between mt-3">
-                      <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-black">
-                        {formatDualPrice(trip.price, { useRupeeSymbol: true })}
-                      </span>
-                      <Link
-                        href={trip.type === "India" ? `/india-trips/${trip.slug}` : `/international-trips/${trip.slug}`}
-                        className="text-xs font-bold text-white flex items-center gap-1 group-hover:text-[#D4AF37] transition"
-                      >
-                        Details <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition" />
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Right / mobile panel */}
+        <aside className="w-full shrink-0 lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:w-[400px] lg:overflow-y-auto">
+          <div className="flex flex-col gap-3.5 rounded-[20px] border border-white/8 bg-[#141417] p-[22px]">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="font-[family-name:var(--font-playfair)] text-[22px] font-semibold text-[#FBF8F1] md:text-[24px]">
+                {mobileDay
+                  ? `Departing ${shortDateFmt.format(new Date(`${mobileDay}T00:00:00`))}`
+                  : `Departing in ${monthName}`}
+              </h3>
+              <p className="shrink-0 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+                {mobileList.length} trip{mobileList.length === 1 ? "" : "s"}
+              </p>
             </div>
-          ) : null}
 
-          {/* Month Summary panel */}
-          <div className="rounded-3xl border border-white/10 bg-[#000000] p-6 shadow-2xl">
-            <h3 className="mb-5 text-lg font-bold tracking-tight text-white flex items-center gap-2">
-              <Compass className="h-5 w-5 text-[#D4AF37]" />
-              Scheduled in {currentMonthName}
-            </h3>
+            {mobileDay ? (
+              <button
+                type="button"
+                onClick={() => setMobileDay(null)}
+                className="self-start font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#D6AE3C] md:hidden"
+              >
+                Show all in {monthName}
+              </button>
+            ) : null}
 
-            {tripsInMonth.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-white/40">
-                <Calendar className="h-10 w-10 text-white/20 mb-3" />
-                <p className="text-sm font-semibold">No group trips scheduled</p>
-                <p className="text-xs mt-1 text-white/30">Select another month or apply different filter.</p>
+            {mobileList.length === 0 ? (
+              <div className="py-10 text-center">
+                <p className="font-[family-name:var(--font-dm-sans)] text-[15px] text-[#C9C3B6]">
+                  No trips this month.
+                </p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1 scrollbar-hide">
-                {tripsInMonth.map((trip) => {
-                  // Check if this card's trip is active on the hovered date
-                  const isHighlighted = hoveredDate && (hoveredDate >= trip.startDate && hoveredDate <= trip.endDate);
-                  const isCardHovered = hoveredTripId === trip.id;
-
-                  return (
-                    <div
-                      key={trip.id + trip.type}
-                      onMouseEnter={() => setHoveredTripId(trip.id)}
-                      onMouseLeave={() => setHoveredTripId(null)}
-                      className={`group flex items-start gap-4 rounded-2xl border p-3.5 transition-all duration-300 ${
-                        isHighlighted || isCardHovered
-                          ? "bg-neutral-900 border-[#D4AF37]/50 shadow-[0_8px_20px_rgba(212,175,55,0.08)] scale-[1.02]"
-                          : "bg-neutral-950 border-white/5 hover:bg-neutral-900 hover:border-white/10"
-                      }`}
-                    >
-                      {/* Image Thumbnail */}
-                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-800">
-                        <img
-                          src={trip.image}
-                          alt={trip.shortName}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                        />
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                            trip.type === "India"
-                              ? "bg-[#D4AF37]/10 text-[#D4AF37]"
-                              : "bg-[#06B6D4]/10 text-[#06B6D4]"
-                          }`}>
-                            {trip.type}
-                          </span>
-                          {trip.soldOut && (
-                            <span className="rounded-full bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
-                              Sold Out
-                            </span>
-                          )}
-                          <span className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
-                            {trip.duration}
-                          </span>
-                        </div>
-
-                        <h4 className="mt-1 text-sm font-bold text-white truncate group-hover:text-[#D4AF37] transition">
-                          {trip.title}
-                        </h4>
-
-                        <p className="mt-1 text-xs text-white/60 line-clamp-1 flex items-center gap-1 font-medium">
-                          <MapPin className="h-3.5 w-3.5 text-[#D4AF37] shrink-0" />
-                          {trip.route ? trip.route.split(" - ").slice(0, 3).join(" → ") : trip.pickupLocation}
-                        </p>
-
-                        <div className="mt-2.5 flex items-center justify-between">
-                          <div className="flex items-baseline gap-0.5">
-                            <span className="text-[10px] font-semibold text-white/40">From</span>
-                            <span className="rounded-full bg-white px-2.5 py-0.5 text-sm font-extrabold text-black">
-                              {formatDualPrice(trip.price, { useRupeeSymbol: true })}
-                            </span>
-                          </div>
-                          
-                          <Link
-                            href={trip.type === "India" ? `/india-trips/${trip.slug}` : `/international-trips/${trip.slug}`}
-                            className="flex items-center gap-1 rounded-full bg-white/5 hover:bg-[#D4AF37] px-3 py-1 text-[11px] font-bold text-white hover:text-black transition-all duration-300"
-                          >
-                            Details
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col gap-3.5">
+                {mobileList.map((trip) => (
+                  <TripCard
+                    key={trip.id}
+                    trip={trip}
+                    selected={selectedTripId === trip.id}
+                    onSelect={selectTrip}
+                    cardRef={(node) => {
+                      if (node) cardRefs.current[trip.id] = node;
+                      else delete cardRefs.current[trip.id];
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
-        </div>
+        </aside>
       </div>
+
+      {/* Overflow popover */}
+      {overflowPopover ? (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="More trips">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/50"
+            aria-label="Close"
+            onClick={() => setOverflowPopover(null)}
+          />
+          <div className="absolute left-1/2 top-1/2 w-[min(100%-2rem,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/8 bg-[#141417] p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-[family-name:var(--font-dm-sans)] text-[14px] font-bold text-[#FBF8F1]">
+                More on{" "}
+                {shortDateFmt.format(new Date(`${overflowPopover.dateString}T00:00:00`))}
+              </p>
+              <button
+                type="button"
+                onClick={() => setOverflowPopover(null)}
+                className="rounded-full border border-white/15 p-2 text-[#FBF8F1]"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {overflowPopover.trips.map((trip) => (
+                <li key={trip.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectTrip(trip.id);
+                      setOverflowPopover(null);
+                    }}
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/8 px-3 py-3 text-left transition hover:border-[#D6AE3C]"
+                  >
+                    <span className="font-[family-name:var(--font-dm-sans)] text-[14px] font-semibold text-[#FBF8F1]">
+                      {trip.shortName || trip.title}
+                    </span>
+                    <span
+                      className="shrink-0 font-[family-name:var(--font-dm-sans)] text-[11px] font-bold uppercase tracking-[0.12em]"
+                      style={{ color: trip.type === "India" ? "#E2BB4D" : "#8FBDE8" }}
+                    >
+                      {trip.type}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

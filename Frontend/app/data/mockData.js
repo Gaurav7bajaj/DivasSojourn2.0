@@ -1,18 +1,21 @@
 export const reviews = [
   {
     platform: "Google",
-    rating: 4.9,
-    count: 14001,
+    rating: 4.8,
+    countLabel: "300+ reviews",
+    href: "https://www.google.com/maps/search/?api=1&query=Divas+Sojourn+-+Travel.Discover.Friends+New+Delhi",
   },
   {
     platform: "TripAdvisor",
     rating: 5.0,
-    count: 3850,
+    countLabel: "80+ reviews",
+    href: "https://www.tripadvisor.in/Attraction_Review-g297602-d12622548-Reviews-Divas_Sojourn-National_Capital_Territory_of_Delhi.html",
   },
   {
     platform: "Facebook",
-    rating: 4.9,
-    count: 1031,
+    ratingLabel: "100% recommended",
+    countLabel: "50+ reviews",
+    href: "https://www.facebook.com/divassojourn/reviews",
   },
 ];
 

@@ -1,45 +1,71 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function AboutCTA() {
   return (
     <section
-      className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-cover bg-center px-4 text-center"
-      style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1800&q=85')",
-      }}
-      aria-label="Join Divas Sojourn"
+      className="bg-[#0B0B0C] px-6 py-20 md:px-12 md:py-[120px] xl:px-24"
+      aria-labelledby="about-cta-heading"
     >
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A] via-black/80 to-[#1A1A1A]"
-        aria-hidden="true"
-      />
+      <div className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[28px] border border-[rgba(214,174,60,0.2)] bg-[#121215] md:h-[420px]">
+        <div className="relative h-[240px] w-full md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[60%]">
+          <Image
+            src="/heroes/home/upcomingCommunityTrips.png"
+            alt="Women travelers walking together along a tropical beach at golden hour"
+            fill
+            sizes="(max-width: 768px) 100vw, 60vw"
+            className="object-cover object-center"
+            loading="lazy"
+          />
+        </div>
 
-      <div className="relative z-10 mx-auto max-w-3xl py-16">
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#D4AF37]">
-          Your Journey Awaits
-        </p>
-        <h2 className="mt-4 text-3xl font-black text-white md:text-5xl">
-          Ready to Begin Your Adventure?
-        </h2>
-        <p className="mx-auto mt-5 max-w-xl leading-7 text-white/70">
-          Join thousands of women who have discovered the joy of traveling
-          together. Your next unforgettable memory is just a trip away.
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/upcoming-trips"
-            className="rounded-full bg-[#D4AF37] px-8 py-3 text-sm font-bold uppercase tracking-wide text-[#0F0F0F] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)]"
+        <div
+          className="pointer-events-none absolute inset-0 hidden md:block"
+          style={{
+            background:
+              "linear-gradient(90deg, #121215 0%, #121215 40%, rgba(18,18,21,.55) 55%, transparent 75%)",
+          }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[240px] bg-gradient-to-b from-black/25 to-[#121215] md:hidden"
+          aria-hidden="true"
+        />
+
+        <div className="relative z-[1] flex flex-col justify-center px-6 py-10 md:h-full md:max-w-[580px] md:px-16 md:py-0">
+          <div className="flex items-center gap-3">
+            <span className="h-0.5 w-9 shrink-0 bg-[#D6AE3C]" aria-hidden="true" />
+            <p className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.24em] text-[#D6AE3C]">
+              Your Journey Awaits
+            </p>
+          </div>
+          <h2
+            id="about-cta-heading"
+            className="mt-4 font-[family-name:var(--font-playfair)] text-[32px] font-semibold leading-tight text-[#FBF8F1] md:text-[44px]"
           >
-            Explore Upcoming Trips
-          </Link>
-          <Link
-            href="tel:+919990022835"
-            className="rounded-full border-2 border-white/30 px-8 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-[#D4AF37] hover:text-[#D4AF37]"
-          >
-            Contact Us
-          </Link>
+            Ready to begin{" "}
+            <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+              your adventure?
+            </em>
+          </h2>
+          <p className="mt-4 max-w-lg font-[family-name:var(--font-dm-sans)] text-[16px] leading-[1.55] text-[#D9D3C6] md:text-[17px]">
+            Join thousands of women who have discovered the joy of traveling together. Your next
+            unforgettable memory is just a trip away.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              href="/upcoming-trips"
+              className="inline-flex h-[54px] items-center justify-center rounded-full bg-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
+            >
+              Explore upcoming trips →
+            </Link>
+            <a
+              href="#reach-out"
+              className="inline-flex h-[54px] items-center justify-center rounded-full border-[1.5px] border-[rgba(245,241,232,0.7)] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
+            >
+              Contact us
+            </a>
+          </div>
         </div>
       </div>
     </section>

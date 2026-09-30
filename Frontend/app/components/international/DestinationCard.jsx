@@ -6,14 +6,16 @@ export default function DestinationCard({ destination }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-l-4 border-t-4 border-[#D4AF37]/30 bg-[#1A1A1A] transition duration-300 hover:-translate-y-2 hover:border-[#D4AF37] hover:shadow-[0_14px_30px_rgba(212,175,55,0.22)]">
       <Link href={`/international-trips/${destination.slug}`} aria-label={`Explore ${destination.name}`}>
-        <div className="relative h-64 overflow-hidden">
-          <Image
-            src={destination.image}
-            alt={`${destination.name} international trip for female travelers`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover brightness-90 transition duration-500 group-hover:scale-110 group-hover:brightness-110"
-          />
+        <div className="relative h-64 overflow-hidden bg-[#2A2A2A]">
+          {destination.image ? (
+            <Image
+              src={destination.image}
+              alt={`${destination.name} international trip for female travelers`}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-cover brightness-90 transition duration-500 group-hover:scale-110 group-hover:brightness-110"
+            />
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent" />
           <span className="absolute left-4 top-4 rounded-full bg-[#D4AF37] px-3 py-1 text-xs font-black uppercase tracking-wide text-[#0F0F0F]">
             {destination.badge}

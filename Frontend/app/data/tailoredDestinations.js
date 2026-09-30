@@ -89,8 +89,8 @@ export const tailoredDestinations = [
   },
 ];
 
-// Hero skips the first destination image (dark/black Georgia shot) — cards still show all destinations.
-export const tailoredHeroImages = tailoredDestinations.slice(1).map((destination) => ({
+// Hero skips the first two destination images (Georgia + Armenia) — cards still show all destinations.
+export const tailoredHeroImages = tailoredDestinations.slice(2).map((destination) => ({
   src: destination.image,
   alt: destination.alt,
 }));

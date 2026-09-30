@@ -9,6 +9,8 @@ import type {
   UpcomingTripCard,
   TripNavItem,
 } from "./types";
+import { deriveCountryLabel } from "./tripCountry";
+import { deriveRegionLabel } from "./tripRegion";
 
 export function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
@@ -165,16 +167,26 @@ export function toTrip(row: PrismaTripRow): Trip {
 }
 
 export function toUpcomingTripCard(trip: Trip): UpcomingTripCard {
+  const pickup = (trip.pickupLocation || "").trim();
+  const drop = (trip.dropLocation || "").trim();
+  // Trip.dates is a free-text field; we cannot reliably expand multi-batch
+  // departures yet, so batches stay at 1 unless we later add structured data.
   return {
     id: trip.id,
     title: trip.title,
     slug: trip.slug,
+    shortName: trip.shortName,
+    country: deriveCountryLabel(trip),
+    region: trip.destination === "India" ? deriveRegionLabel(trip) : undefined,
     image: trip.image,
     destination: trip.destination,
     duration: { nights: trip.nights, days: trip.days },
-    departure: `${trip.pickupLocation} / ${trip.dropLocation}`,
+    departure: pickup && drop ? `${pickup} / ${drop}` : pickup || drop || "",
+    pickupLocation: pickup,
+    dropLocation: drop,
     startDate: trip.startDate,
     endDate: trip.endDate,
+    extraDates: [],
     batches: 1,
     originalPrice: trip.earlyBirdPrice ? trip.price : null,
     currentPrice: trip.earlyBirdPrice || trip.price,

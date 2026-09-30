@@ -6,14 +6,16 @@ export default function BlogCard({ blog }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-[#D4AF37]/30 bg-[#1A1A1A] transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-[0_12px_28px_rgba(212,175,55,0.2)]">
       <Link href={`/blogs/${blog.slug}`} aria-label={`Read ${blog.title}`}>
-        <div className="relative aspect-video overflow-hidden">
-          <Image
-            src={blog.image}
-            alt={blog.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition duration-500 group-hover:scale-110"
-          />
+        <div className="relative aspect-video overflow-hidden bg-[#2A2A2A]">
+          {blog.image ? (
+            <Image
+              src={blog.image}
+              alt={blog.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover transition duration-500 group-hover:scale-110"
+            />
+          ) : null}
         </div>
         <div className="p-6">
           <span className="rounded-full bg-[#D4AF37]/20 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#D4AF37]">

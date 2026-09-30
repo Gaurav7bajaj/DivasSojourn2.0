@@ -14,7 +14,7 @@ export default function FilterSidebar({
   destinationOptions = ["India", "International"],
 }) {
   return (
-    <aside className="sticky top-28 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-[#D4AF37]/30 bg-[#F9F9F9] text-[#1A1A1A] shadow-xl">
+    <aside className="sticky top-28 max-h-[calc(100vh-8rem)] self-start overflow-y-auto overscroll-contain rounded-2xl border border-[#D4AF37]/30 bg-[#F9F9F9] text-[#1A1A1A] shadow-xl [scrollbar-width:thin] [scrollbar-color:#D4AF37_#ececec]">
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#D4AF37]/20 bg-[#F9F9F9] px-5 py-4">
         <h2 className="text-lg font-black">Filters</h2>
         <button

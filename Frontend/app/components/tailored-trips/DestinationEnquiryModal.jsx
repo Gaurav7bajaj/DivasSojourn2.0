@@ -1,29 +1,61 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
-import { Mail, MessageSquare, Phone, Send, User, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { Check, X } from "lucide-react";
+
+const WHEN_OPTIONS = [
+  { value: "flexible", label: "I'm flexible" },
+  { value: "next-12-months", label: "Next 12 months" },
+];
+
+const GROUP_OPTIONS = [
+  { value: "just-me", label: "Just me" },
+  { value: "2-4", label: "2–4" },
+  { value: "5-10", label: "5–10" },
+  { value: "10+", label: "10+ women" },
+];
 
 const initialValues = {
   name: "",
-  email: "",
   phone: "",
-  message: "",
+  travelDate: "flexible",
+  travelers: "just-me",
+  customWhere: "",
 };
 
 export default function DestinationEnquiryModal({ destination, onClose }) {
   const titleId = useId();
+  const panelRef = useRef(null);
+  const closeRef = useRef(null);
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const isCustom = Boolean(destination?.isCustom);
+  const displayName = isCustom ? "dream" : destination?.name || "trip";
+
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
 
     const onKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onClose();
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !panelRef.current) return;
+
+      const focusable = panelRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
@@ -41,9 +73,7 @@ export default function DestinationEnquiryModal({ destination, onClose }) {
     setIsSuccess(false);
   }, [destination?.slug]);
 
-  if (!destination) {
-    return null;
-  }
+  if (!destination) return null;
 
   const updateValue = (event) => {
     const { name, value } = event.target;
@@ -58,193 +88,298 @@ export default function DestinationEnquiryModal({ destination, onClose }) {
     if (values.name.trim().length < 2) {
       nextErrors.name = "Please enter at least 2 characters.";
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-      nextErrors.email = "Please enter a valid email address.";
-    }
     if (phoneDigits.length !== 10) {
       nextErrors.phone = "Please enter a valid 10 digit phone number.";
+    }
+    if (isCustom && values.customWhere.trim().length < 2) {
+      nextErrors.customWhere = "Please tell us where you'd like to go.";
     }
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
-    const formEntry = {
-      destination: destination.name,
-      destinationSlug: destination.slug,
-      ...values,
-      submittedAt: new Date().toISOString(),
-    };
+    const phoneDigits = values.phone.replace(/\D/g, "");
+    const interestedIn = isCustom
+      ? values.customWhere.trim()
+      : destination.name;
+    const whenLabel =
+      WHEN_OPTIONS.find((option) => option.value === values.travelDate)?.label ||
+      values.travelDate;
+    const groupLabel =
+      GROUP_OPTIONS.find((option) => option.value === values.travelers)?.label ||
+      values.travelers;
 
-    const storedEntries = JSON.parse(window.localStorage.getItem("divasTailoredTripLeads") || "[]");
-    window.localStorage.setItem(
-      "divasTailoredTripLeads",
-      JSON.stringify([...storedEntries, formEntry]),
-    );
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name.trim(),
+          phone: phoneDigits,
+          email: "",
+          message: `When: ${whenLabel}. Group: ${groupLabel}.${
+            isCustom ? ` Custom destination: ${values.customWhere.trim()}.` : ""
+          }`,
+          page: "tailored-trips",
+          interestedIn,
+          travelDate: whenLabel,
+          travelers: groupLabel,
+          formType: "short",
+          source: "tailored-trips",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrors((current) => ({
+          ...current,
+          form: data.error || "Unable to submit. Please try again.",
+        }));
+        return;
+      }
 
-    window.setTimeout(() => {
-      setIsSubmitting(false);
+      try {
+        const formEntry = {
+          destination: interestedIn,
+          destinationSlug: destination.slug,
+          ...values,
+          submittedAt: new Date().toISOString(),
+        };
+        const storedEntries = JSON.parse(
+          window.localStorage.getItem("divasTailoredTripLeads") || "[]",
+        );
+        window.localStorage.setItem(
+          "divasTailoredTripLeads",
+          JSON.stringify([...storedEntries, formEntry]),
+        );
+      } catch {
+        // optional backup
+      }
+
       setIsSuccess(true);
-    }, 450);
+    } catch {
+      setErrors((current) => ({
+        ...current,
+        form: "Unable to submit. Please try again.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const inputClass =
+    "h-[50px] w-full rounded-xl border border-white/[0.14] bg-[#0F0F12] px-4 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none transition placeholder:text-[#8F897D] focus:border-[#D6AE3C] focus:ring-2 focus:ring-[#D6AE3C]/35";
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-black/70 p-4 backdrop-blur-sm sm:items-center"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[rgba(5,5,7,0.72)] p-0 sm:items-center sm:p-4"
       role="presentation"
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-lg translate-y-0 scale-100 rounded-[1.75rem] border border-[#D4AF37]/40 bg-[#0F0F0F] p-5 text-white shadow-2xl transition duration-300 sm:p-7"
+        className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-[24px] border border-[rgba(214,174,60,0.35)] bg-[#141417] p-6 shadow-2xl sm:max-w-[560px] sm:rounded-[24px] sm:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         <button
+          ref={closeRef}
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-white/15 p-2 text-white/80 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
-          aria-label="Close enquiry form"
+          className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
+          aria-label="Close"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
 
         {isSuccess ? (
-          <div className="py-6 text-center">
-            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#D4AF37]">Thank You</p>
-            <h2 id={titleId} className="mt-3 text-2xl font-black text-white md:text-3xl">
-              We&apos;ve received your request
+          <div className="py-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[rgba(214,174,60,0.16)] text-[#D6AE3C]">
+              <Check className="h-7 w-7" aria-hidden="true" />
+            </div>
+            <h2
+              id={titleId}
+              className="mt-5 font-[family-name:var(--font-playfair)] text-[28px] font-semibold text-[#FBF8F1] md:text-[32px]"
+            >
+              Your {isCustom ? "dream" : destination.name} trip is{" "}
+              <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+                in motion
+              </em>
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-white/75 md:text-base">
-              We will contact you as soon as possible to help you make your perfect trip.
+            <p className="mx-auto mt-3 max-w-md font-[family-name:var(--font-dm-sans)] text-[15px] leading-7 text-[#C9C3B6]">
+              Thank you! Our team will call you soon to start planning.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className="mt-7 inline-flex rounded-full bg-[#D4AF37] px-7 py-3 text-sm font-black uppercase tracking-wide text-[#1A1A1A] transition hover:bg-[#E8C547]"
+              className="mt-8 inline-flex h-12 items-center rounded-full bg-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[14px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
             >
               Close
             </button>
           </div>
         ) : (
           <>
-            <p className="text-sm font-black uppercase tracking-[0.22em] text-[#D4AF37]">Enquire Now</p>
-            <h2 id={titleId} className="mt-2 pr-10 text-2xl font-black text-white md:text-3xl">
-              Plan {destination.name}
+            <div className="flex items-center gap-3 pr-12">
+              <span className="h-0.5 w-9 shrink-0 bg-[#D6AE3C]" aria-hidden="true" />
+              <p className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.24em] text-[#D6AE3C]">
+                Tailored trip
+              </p>
+            </div>
+            <h2
+              id={titleId}
+              className="mt-4 font-[family-name:var(--font-playfair)] text-[28px] font-semibold leading-tight text-[#FBF8F1] md:text-[32px]"
+            >
+              Plan your{" "}
+              <em className="font-[family-name:var(--font-playfair)] font-medium italic text-[#E2BB4D]">
+                {displayName}
+              </em>{" "}
+              trip
             </h2>
-            <p className="mt-2 text-sm text-white/65">
-              Share a few details and we&apos;ll help tailor this destination for you.
+            <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#C9C3B6]">
+              Share a few details and our team will reach out to shape your itinerary.
             </p>
 
-            <div className="mt-4 inline-flex rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-1.5 text-sm font-bold text-[#E8C547]">
-              Destination: {destination.name}
-            </div>
-
             <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
-              <Field
-                id="tailored-name"
-                name="name"
-                label="Your Name"
-                value={values.name}
-                onChange={updateValue}
-                placeholder="e.g. Jennifer Aniston"
-                icon={User}
-                error={errors.name}
-                required
-              />
-              <Field
-                id="tailored-email"
-                name="email"
-                type="email"
-                label="Email"
-                value={values.email}
-                onChange={updateValue}
-                placeholder="Enter your email"
-                icon={Mail}
-                error={errors.email}
-                required
-              />
-              <Field
-                id="tailored-phone"
-                name="phone"
-                type="tel"
-                label="Phone"
-                value={values.phone}
-                onChange={updateValue}
-                placeholder="10 digit number"
-                icon={Phone}
-                error={errors.phone}
-                required
-              />
-
-              <div>
-                <label htmlFor="tailored-message" className="mb-2 block text-sm font-bold text-white">
-                  Message <span className="font-medium text-white/50">(optional)</span>
-                </label>
-                <div className="relative">
-                  <MessageSquare
-                    className="absolute left-4 top-4 h-5 w-5 text-[#D4AF37]"
-                    aria-hidden="true"
-                  />
-                  <textarea
-                    id="tailored-message"
-                    name="message"
-                    value={values.message}
+              {isCustom ? (
+                <div>
+                  <label
+                    htmlFor="tailored-custom-where"
+                    className="mb-2 block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                  >
+                    Where would you like to go? <span className="text-[#D6AE3C]">*</span>
+                  </label>
+                  <input
+                    id="tailored-custom-where"
+                    name="customWhere"
+                    value={values.customWhere}
                     onChange={updateValue}
-                    placeholder="Travel month, group size, or anything we should know"
-                    rows={3}
-                    className="w-full rounded-2xl border border-[#D4AF37]/30 bg-white py-3 pl-12 pr-4 text-[#1A1A1A] outline-none transition placeholder:text-[#A0A0A0] focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
+                    placeholder="e.g. Japan, Iceland, Bhutan…"
+                    className={inputClass}
+                    aria-invalid={Boolean(errors.customWhere)}
                   />
+                  {errors.customWhere ? (
+                    <p className="mt-2 text-sm text-red-400">{errors.customWhere}</p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="tailored-name"
+                    className="mb-2 block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                  >
+                    Your name <span className="text-[#D6AE3C]">*</span>
+                  </label>
+                  <input
+                    id="tailored-name"
+                    name="name"
+                    value={values.name}
+                    onChange={updateValue}
+                    placeholder="Full name"
+                    className={inputClass}
+                    aria-invalid={Boolean(errors.name)}
+                    required
+                  />
+                  {errors.name ? <p className="mt-2 text-sm text-red-400">{errors.name}</p> : null}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="tailored-phone"
+                    className="mb-2 block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                  >
+                    Phone <span className="text-[#D6AE3C]">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-[family-name:var(--font-dm-sans)] text-[14px] text-[#8F897D]">
+                      +91
+                    </span>
+                    <input
+                      id="tailored-phone"
+                      name="phone"
+                      type="tel"
+                      inputMode="numeric"
+                      value={values.phone}
+                      onChange={updateValue}
+                      placeholder="10 digit number"
+                      className={`${inputClass} pl-14`}
+                      aria-invalid={Boolean(errors.phone)}
+                      required
+                    />
+                  </div>
+                  {errors.phone ? <p className="mt-2 text-sm text-red-400">{errors.phone}</p> : null}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="tailored-when"
+                    className="mb-2 block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                  >
+                    When?
+                  </label>
+                  <select
+                    id="tailored-when"
+                    name="travelDate"
+                    value={values.travelDate}
+                    onChange={updateValue}
+                    className={inputClass}
+                  >
+                    {WHEN_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="tailored-group"
+                    className="mb-2 block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                  >
+                    Group size
+                  </label>
+                  <select
+                    id="tailored-group"
+                    name="travelers"
+                    value={values.travelers}
+                    onChange={updateValue}
+                    className={inputClass}
+                  >
+                    {GROUP_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
+
+              {errors.form ? (
+                <p className="rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-300">
+                  {errors.form}
+                </p>
+              ) : null}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#D4AF37] px-8 py-3.5 font-black uppercase tracking-wide text-[#1A1A1A] transition hover:bg-[#E8C547] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-[54px] w-full items-center justify-center rounded-full bg-[#D6AE3C] font-[family-name:var(--font-dm-sans)] text-[15px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                <Send className="h-5 w-5" aria-hidden="true" />
-                {isSubmitting ? "Sending..." : "Submit Enquiry"}
+                {isSubmitting ? "Sending…" : "Request my itinerary →"}
               </button>
             </form>
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-function Field({ id, label, icon: Icon, error, required = false, ...inputProps }) {
-  return (
-    <div>
-      <label htmlFor={id} className="mb-2 block text-sm font-bold text-white">
-        {label} {required ? <span className="text-[#D4AF37]">*</span> : null}
-      </label>
-      <div className="relative">
-        <Icon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#D4AF37]" aria-hidden="true" />
-        <input
-          id={id}
-          required={required}
-          className="w-full rounded-2xl border border-[#D4AF37]/30 bg-white py-3 pl-12 pr-4 text-[#1A1A1A] outline-none transition placeholder:text-[#A0A0A0] focus:border-[#D4AF37] focus:ring-4 focus:ring-[#D4AF37]/15"
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${id}-error` : undefined}
-          {...inputProps}
-        />
-      </div>
-      {error ? (
-        <p id={`${id}-error`} className="mt-2 text-sm text-red-400">
-          {error}
-        </p>
-      ) : null}
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { FaqAccordion, FaqHero } from "../components/faqs";
-import ShortContactForm from "../components/international/ShortContactForm";
+import FaqsClient from "../components/faqs/FaqsClient";
 import { faqItems } from "../data/faqs";
 
 export const metadata = {
@@ -31,7 +29,7 @@ const faqSchema = {
   "@type": "FAQPage",
   mainEntity: faqItems.map((item) => ({
     "@type": "Question",
-    name: item.question || item.heading,
+    name: item.question,
     acceptedAnswer: {
       "@type": "Answer",
       text: item.answer,
@@ -41,40 +39,12 @@ const faqSchema = {
 
 export default function FaqsPage() {
   return (
-    <main className="bg-[#F5F5F5]">
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <FaqHero />
-
-      <section className="px-4 py-12">
-        <div className="mx-auto max-w-4xl">
-          <nav className="mb-8 text-sm text-[#555555]" aria-label="Breadcrumb">
-            <ol className="flex flex-wrap items-center gap-2">
-              <li>
-                <Link href="/" className="transition hover:text-[#0F9B9B]">
-                  Home
-                </Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li className="font-black text-[#D4AF37]">FAQs</li>
-            </ol>
-          </nav>
-
-          <p className="mb-6 text-sm font-black uppercase tracking-[0.22em] text-[#D4AF37]">
-            Common Questions
-          </p>
-          <FaqAccordion items={faqItems} />
-        </div>
-      </section>
-
-      <ShortContactForm
-        pageLabel="FAQs"
-        storageKey="divasFaqLeads"
-        eyebrow="Still Have Questions?"
-        title="Reach Out to Us"
-      />
+      <FaqsClient />
     </main>
   );
 }

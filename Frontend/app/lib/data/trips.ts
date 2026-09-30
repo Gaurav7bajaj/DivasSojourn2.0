@@ -4,7 +4,7 @@
  */
 
 import { slugify } from "../slugify";
-import { prisma } from "./prisma";
+import { prisma, withDbRetry } from "./prisma";
 import { toTrip, toUpcomingTripCard, toTripNavItem } from "./tripMappers";
 import type {
   Trip,
@@ -35,15 +35,17 @@ function jsonOrUndefined<T>(value: T | undefined): T | undefined {
 }
 
 export async function getTrips(): Promise<Trip[]> {
-  const rows = await prisma.trip.findMany({ orderBy: { startDate: "asc" } });
+  const rows = await withDbRetry(() => prisma.trip.findMany({ orderBy: { startDate: "asc" } }));
   return rows.map(toTrip);
 }
 
 export async function getPublishedTrips(): Promise<Trip[]> {
-  const rows = await prisma.trip.findMany({
-    where: { published: true },
-    orderBy: { startDate: "asc" },
-  });
+  const rows = await withDbRetry(() =>
+    prisma.trip.findMany({
+      where: { published: true },
+      orderBy: { startDate: "asc" },
+    }),
+  );
   return rows.map(toTrip);
 }
 

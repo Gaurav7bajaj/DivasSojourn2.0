@@ -22,40 +22,99 @@ const platformLogos = {
   ),
 };
 
+function RatingDisplay({ review }) {
+  if (review.ratingLabel) {
+    return (
+      <p
+        className="mt-2 text-lg font-bold text-[#D4AF37]"
+        aria-label={review.ratingLabel}
+      >
+        {review.ratingLabel}
+      </p>
+    );
+  }
+
+  const ratingText =
+    review.rating != null ? Number(review.rating).toFixed(1) : null;
+
+  return (
+    <div
+      className="mt-2 flex items-center justify-center gap-1 text-[#D4AF37]"
+      aria-label={ratingText ? `${ratingText} star rating` : "Star rating"}
+    >
+      {Array.from({ length: 5 }).map((_, index) => (
+        <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
+      ))}
+      {ratingText ? <span className="ml-2 font-bold text-white">{ratingText}</span> : null}
+    </div>
+  );
+}
+
+function ReviewCount({ review }) {
+  if (review.countLabel) {
+    return <p className="mt-2 text-sm text-white">({review.countLabel})</p>;
+  }
+
+  if (review.count != null) {
+    return (
+      <p className="mt-2 text-sm text-white">
+        ({Number(review.count).toLocaleString("en-IN")} reviews)
+      </p>
+    );
+  }
+
+  return null;
+}
+
 export default function ReviewsSection({
   reviews = defaultReviews,
   mapsUri = null,
   attributionLabel = null,
 }) {
   return (
-    <section className="bg-[#1A1A1A] px-4 py-10" aria-labelledby="reviews-heading">
+    <section className="bg-[#0B0B0C] px-4 py-10" aria-labelledby="reviews-heading">
       <h2 id="reviews-heading" className="sr-only">
         Customer reviews
       </h2>
       <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-3">
-        {reviews.map((review) => (
-          <article
-            key={review.platform}
-            className="rounded-3xl border border-[#D4AF37]/30 bg-[#1A1A1A] p-6 text-center shadow-lg transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-[0_8px_20px_rgba(212,175,55,0.2)]"
-          >
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-md">
-              {platformLogos[review.platform]}
-            </div>
-            <h3 className="text-lg font-bold text-white">{review.platform} Reviews</h3>
-            <div
-              className="mt-2 flex items-center justify-center gap-1 text-[#D4AF37]"
-              aria-label={`${review.rating} star rating`}
-            >
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Star key={index} className="h-4 w-4 fill-current" aria-hidden="true" />
-              ))}
-              <span className="ml-2 font-bold text-white">{Number(review.rating).toFixed(1)}</span>
-            </div>
-            <p className="mt-2 text-sm text-white">
-              ({Number(review.count).toLocaleString("en-IN")} reviews)
-            </p>
-          </article>
-        ))}
+        {reviews.map((review) => {
+          const href =
+            review.platform === "Google" && mapsUri ? mapsUri : review.href;
+          const cardClassName =
+            "block rounded-3xl border border-[#D4AF37]/30 bg-[#1A1A1A] p-6 text-center shadow-lg transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-[0_8px_20px_rgba(212,175,55,0.2)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37]";
+
+          const body = (
+            <>
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-md">
+                {platformLogos[review.platform]}
+              </div>
+              <h3 className="text-lg font-bold text-white">{review.platform} Reviews</h3>
+              <RatingDisplay review={review} />
+              <ReviewCount review={review} />
+            </>
+          );
+
+          if (href) {
+            return (
+              <a
+                key={review.platform}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cardClassName}
+                aria-label={`Open ${review.platform} reviews for Divas Sojourn`}
+              >
+                {body}
+              </a>
+            );
+          }
+
+          return (
+            <article key={review.platform} className={cardClassName}>
+              {body}
+            </article>
+          );
+        })}
       </div>
       {mapsUri ? (
         <p className="mx-auto mt-5 max-w-6xl text-center text-xs text-white/60">

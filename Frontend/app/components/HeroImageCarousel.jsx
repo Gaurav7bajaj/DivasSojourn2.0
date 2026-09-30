@@ -11,6 +11,8 @@ export default function HeroImageCarousel({
   imageClassName = "object-cover object-center",
   children,
   ariaLabel = "Hero image carousel",
+  /** Skip Next image optimizer so public/ files match what you see in the raw URL. */
+  unoptimized = false,
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -48,19 +50,26 @@ export default function HeroImageCarousel({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {images.map((image, index) => (
-        <Image
-          key={image.src}
-          src={image.src}
-          alt={image.alt}
-          fill
-          priority={index === 0}
-          sizes="100vw"
-          className={`transition-opacity duration-500 ${imageClassName} ${
-            index === activeIndex ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+      {images.map((image, index) => {
+        const slideClass = image.imageClassName
+          ? `${imageClassName} ${image.imageClassName}`
+          : imageClassName;
+
+        return (
+          <Image
+            key={`${image.src}-${index}`}
+            src={image.src}
+            alt={image.alt}
+            fill
+            priority={index === 0}
+            sizes="100vw"
+            unoptimized={unoptimized}
+            className={`transition-opacity duration-500 ${slideClass} ${
+              index === activeIndex ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        );
+      })}
 
       {children}
 

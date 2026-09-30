@@ -1,11 +1,11 @@
 import {
   AboutHero,
   OurStory,
-  StatsSection,
   FounderSection,
   MissionVision,
   ValuesSection,
   PhotoGallery,
+  StatsSection,
   AboutCTA,
 } from "../components/about";
 import ShortContactForm from "../components/international/ShortContactForm";
@@ -23,14 +23,14 @@ export const metadata = {
 
 export default function AboutUsPage() {
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <AboutHero />
       <OurStory />
-      <StatsSection />
       <FounderSection />
       <MissionVision />
       <ValuesSection />
       <PhotoGallery />
+      <StatsSection />
       <AboutCTA />
       <ShortContactForm pageLabel="About Us" storageKey="divasAboutLeads" />
     </main>
