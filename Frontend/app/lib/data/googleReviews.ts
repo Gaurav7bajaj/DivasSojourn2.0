@@ -159,6 +159,7 @@ async function fetchPlaceDetailsNewApi(
     `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`,
     {
       cache: "no-store",
+      signal: AbortSignal.timeout(4000),
       headers: {
         "X-Goog-Api-Key": apiKey,
         "X-Goog-FieldMask": "displayName,rating,userRatingCount,googleMapsUri,reviews",
@@ -208,7 +209,10 @@ async function fetchPlaceDetailsFromGoogle(): Promise<PlacesDetailsResult | null
   url.searchParams.set("fields", "name,rating,user_ratings_total,reviews,url");
   url.searchParams.set("key", apiKey);
 
-  const response = await fetch(url.toString(), { cache: "no-store" });
+  const response = await fetch(url.toString(), {
+    cache: "no-store",
+    signal: AbortSignal.timeout(4000),
+  });
   if (!response.ok) {
     console.error("Google Places Details HTTP error", response.status);
     return null;

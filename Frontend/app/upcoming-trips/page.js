@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { UpcomingTripsClient, UpcomingTripsHeader } from "../components/upcoming";
-import ContactForm from "../components/international/ContactForm";
+import ShortContactForm from "../components/international/ShortContactForm";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
-import { getTripNavItems, getUpcomingTrips } from "../lib/data/trips";
+import { getUpcomingTrips } from "../lib/data/trips";
 
 export const dynamic = "force-dynamic";
 
@@ -49,10 +49,7 @@ export const metadata = {
 };
 
 export default async function UpcomingTripsPage() {
-  const [trips, destinationOptions] = await Promise.all([
-    getUpcomingTrips(),
-    getTripNavItems(),
-  ]);
+  const trips = await getUpcomingTrips();
   const months = buildMonthsFromTrips(trips);
 
   const schema = [
@@ -118,10 +115,9 @@ export default async function UpcomingTripsPage() {
       >
         <UpcomingTripsClient trips={trips} months={months} />
       </Suspense>
-      <ContactForm
-        destinationOptions={destinationOptions}
-        storageKey="divasUpcomingLeads"
+      <ShortContactForm
         pageLabel="Upcoming Trips"
+        storageKey="divasUpcomingLeads"
       />
     </main>
   );

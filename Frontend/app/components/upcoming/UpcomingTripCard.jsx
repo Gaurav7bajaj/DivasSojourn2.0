@@ -100,15 +100,21 @@ export default function UpcomingTripCard({
 
           <div className="mt-auto flex items-end justify-between gap-3 pt-4">
             <div className="min-w-0 rounded-full bg-[#E8E8E8] px-3 py-1.5">
-              {trip.originalPrice ? (
-                <p className="text-[10px] font-bold text-[#B54848] line-through">
-                  {formatDualPrice(trip.originalPrice)}
-                </p>
-              ) : null}
-              <p className="text-xs font-black text-[#1A1A1A]">
-                {formatDualPrice(trip.currentPrice)}
-                <span className="ml-1 text-[10px] font-semibold text-[#777777]">Onwards</span>
-              </p>
+              {!trip.currentPrice ? (
+                <p className="text-xs font-black text-[#1A1A1A]">Coming soon</p>
+              ) : (
+                <>
+                  {trip.originalPrice ? (
+                    <p className="text-[10px] font-bold text-[#B54848] line-through">
+                      {formatDualPrice(trip.originalPrice)}
+                    </p>
+                  ) : null}
+                  <p className="text-xs font-black text-[#1A1A1A]">
+                    {formatDualPrice(trip.currentPrice)}
+                    <span className="ml-1 text-[10px] font-semibold text-[#777777]">Onwards</span>
+                  </p>
+                </>
+              )}
             </div>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1A1A1A] text-white transition group-hover:bg-[#D4AF37] group-hover:text-[#1A1A1A]">
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -193,17 +199,25 @@ function DarkCard({ trip, href, priority, badgeLabel }) {
 
           <div className="mt-auto flex items-end justify-between gap-4 border-t border-white/8 pt-4">
             <div>
-              {trip.originalPrice && trip.originalPrice > trip.currentPrice ? (
-                <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#8F897D] line-through">
-                  ₹{inrFormatter.format(trip.originalPrice)}
+              {!trip.currentPrice ? (
+                <p className="font-[family-name:var(--font-dm-sans)] text-[22px] font-bold text-[#D6AE3C]">
+                  Coming soon
                 </p>
-              ) : null}
-              <p className="font-[family-name:var(--font-dm-sans)] text-[24px] font-bold text-[#FBF8F1]">
-                ₹{inrFormatter.format(trip.currentPrice)}
-              </p>
-              <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
-                ${usdFormatter.format(inrToUsd(trip.currentPrice))} · per person
-              </p>
+              ) : (
+                <>
+                  {trip.originalPrice && trip.originalPrice > trip.currentPrice ? (
+                    <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#8F897D] line-through">
+                      ₹{inrFormatter.format(trip.originalPrice)}
+                    </p>
+                  ) : null}
+                  <p className="font-[family-name:var(--font-dm-sans)] text-[24px] font-bold text-[#FBF8F1]">
+                    ₹{inrFormatter.format(trip.currentPrice)}
+                  </p>
+                  <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
+                    ${usdFormatter.format(inrToUsd(trip.currentPrice))} · per person
+                  </p>
+                </>
+              )}
             </div>
 
             <span className="inline-flex h-11 shrink-0 items-center rounded-full border-[1.5px] border-[#D6AE3C] px-4 font-[family-name:var(--font-dm-sans)] text-[14px] font-bold text-[#D6AE3C] transition group-hover:bg-[#D6AE3C] group-hover:text-[#1A1405]">

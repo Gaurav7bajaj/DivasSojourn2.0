@@ -1,4 +1,5 @@
-import { BlogPageHeader, BlogsListingClient, FeaturedBlog } from "../components/blogs";
+import { Suspense } from "react";
+import { BlogsListingClient } from "../components/blogs";
 import ShortContactForm from "../components/international/ShortContactForm";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
@@ -39,7 +40,35 @@ export const metadata = {
 
 export default async function BlogsPage() {
   const blogs = (await getPublishedBlogs()).map(toPublicBlogCard);
-  const featuredImage = blogs.find((blog) => blog.featured)?.image || blogs[0]?.image;
+  const featuredImage =
+    blogs.find((blog) => blog.featured && blog.image)?.image ||
+    blogs.find((blog) => blog.image)?.image;
+
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "The Divas Journal",
+    description:
+      "Destination guides, packing lists and real stories from our community of women travellers.",
+    numberOfItems: blogs.length,
+    itemListElement: blogs.map((blog, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${pageUrl}/${blog.slug}`,
+      item: {
+        "@type": "BlogPosting",
+        headline: blog.title,
+        image: blog.image || undefined,
+        datePublished: blog.datePublished,
+        author: {
+          "@type": "Person",
+          name: blog.author,
+        },
+        description: blog.excerpt,
+        url: `${pageUrl}/${blog.slug}`,
+      },
+    })),
+  };
 
   const schema = [
     {
@@ -60,33 +89,36 @@ export default async function BlogsPage() {
         },
       ],
     },
-    ...blogs.map((blog) => ({
+    {
       "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: blog.title,
-      image: blog.image,
-      datePublished: blog.datePublished,
-      author: {
-        "@type": "Person",
-        name: blog.author,
+      "@type": "Blog",
+      name: "The Divas Journal",
+      url: pageUrl,
+      publisher: {
+        "@type": "Organization",
+        name: "Divas Sojourn",
+        url: "https://divassojourn.com",
       },
-      description: blog.excerpt,
-      url: `${pageUrl}/${blog.slug}`,
-    })),
+    },
+    itemList,
   ];
 
   return (
-    <main>
+    <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      {featuredImage ? (
-        <meta property="og:image" content={featuredImage} />
-      ) : null}
-      <BlogPageHeader />
-      <FeaturedBlog blogs={blogs} />
-      <BlogsListingClient blogs={blogs} />
+      {featuredImage ? <meta property="og:image" content={featuredImage} /> : null}
+      <Suspense
+        fallback={
+          <div className="px-6 py-24 text-center font-[family-name:var(--font-dm-sans)] text-[#D9D3C6]">
+            Loading journal…
+          </div>
+        }
+      >
+        <BlogsListingClient blogs={blogs} />
+      </Suspense>
       <ShortContactForm pageLabel="Blogs" storageKey="divasBlogLeads" />
     </main>
   );

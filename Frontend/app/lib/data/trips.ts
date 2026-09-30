@@ -5,7 +5,12 @@
 
 import { slugify } from "../slugify";
 import { prisma, withDbRetry } from "./prisma";
-import { toTrip, toUpcomingTripCard, toTripNavItem } from "./tripMappers";
+import {
+  isWithinPublicListingWindow,
+  toTrip,
+  toUpcomingTripCard,
+  toTripNavItem,
+} from "./tripMappers";
 import type {
   Trip,
   TripCreateInput,
@@ -51,7 +56,9 @@ export async function getPublishedTrips(): Promise<Trip[]> {
 
 export async function getUpcomingTrips(): Promise<UpcomingTripCard[]> {
   const trips = await getPublishedTrips();
-  return trips.filter((trip) => trip.status === "upcoming").map(toUpcomingTripCard);
+  return trips
+    .filter((trip) => isWithinPublicListingWindow(trip.startDate))
+    .map(toUpcomingTripCard);
 }
 
 export async function getUpcomingTripsByDestination(
@@ -73,9 +80,11 @@ export async function getTripById(id: string): Promise<Trip | null> {
 
 export async function getTripNavItems(destination?: TripDestination): Promise<TripNavItem[]> {
   const trips = await getPublishedTrips();
-  const filtered = destination
-    ? trips.filter((trip) => trip.destination === destination)
-    : trips;
+  const filtered = trips.filter((trip) => {
+    if (!isWithinPublicListingWindow(trip.startDate)) return false;
+    if (destination && trip.destination !== destination) return false;
+    return true;
+  });
   return filtered.map(toTripNavItem);
 }
 

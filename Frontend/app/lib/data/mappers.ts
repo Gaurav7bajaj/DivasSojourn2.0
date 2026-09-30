@@ -20,16 +20,44 @@ export function formatDisplayDate(iso: string): string {
   });
 }
 
+const DESTINATION_LABELS = new Set([
+  "India",
+  "Japan",
+  "Russia",
+  "Bali",
+  "Europe",
+  "International",
+  "Africa",
+  "All Destinations",
+]);
+
+function resolveBlogDestination(blog: Blog): string {
+  const raw = blog.destination?.trim();
+  if (raw && raw !== "All Destinations") {
+    return raw;
+  }
+
+  const candidates = [
+    ...(blog.categories || []),
+    blog.category,
+  ].filter(Boolean) as string[];
+
+  const fromCategory = candidates.find((label) => DESTINATION_LABELS.has(label) && label !== "All Destinations");
+  return fromCategory || raw || "All Destinations";
+}
+
+/** Empty / whitespace cover URLs become "" so UI can render a gradient fallback. */
 export function toPublicBlogCard(blog: Blog): PublicBlogCard {
+  const cover = blog.coverImageUrl?.trim() || "";
   return {
     id: blog.id,
     title: blog.title,
     slug: blog.slug,
     excerpt: blog.excerpt,
-    image: blog.coverImageUrl,
+    image: cover,
     category: blog.category || "Travel",
     categories: blog.categories?.length ? blog.categories : [blog.category || "Travel"],
-    destination: blog.destination || "All Destinations",
+    destination: resolveBlogDestination(blog),
     author: blog.author,
     date: formatDisplayDate(blog.createdAt),
     datePublished: blog.createdAt.slice(0, 10),

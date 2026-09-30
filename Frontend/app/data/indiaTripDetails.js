@@ -491,7 +491,7 @@ export const indiaTripDetails = [
     pickupLocation: "Guwahati Airport",
     dropLocation: "Guwahati Airport",
     price: 47999,
-    earlyBirdPrice: 45999,
+    earlyBirdPrice: null,
     currency: "INR",
     route: "Guwahati - Shillong - Mawlynnong - Dawki - Cherrapunji - Guwahati",
     overview:
@@ -869,7 +869,7 @@ export const indiaTripDetails = [
     pickupLocation: "Madurai Airport",
     dropLocation: "Madurai Airport",
     price: 51500,
-    earlyBirdPrice: 49500,
+    earlyBirdPrice: null,
     currency: "INR",
     route: "Madurai - Rameshwaram - Dhanushkodi - Madurai",
     overview:

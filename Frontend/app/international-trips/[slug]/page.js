@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import TripDetailPage from "../../components/india-trip-detail/TripDetailPage";
 import { getPublishedTrips, getTripBySlug } from "../../lib/data/trips";
+import { isWithinPublicListingWindow } from "../../lib/data/tripMappers";
 import { formatDualPrice } from "../../utils/formatPrice";
 
 export const dynamic = "force-dynamic";
@@ -63,7 +64,10 @@ export default async function InternationalDestinationPage({ params }) {
   }
 
   const similarTrips = (await getPublishedTrips()).filter(
-    (item) => item.destination === "International" && item.slug !== trip.slug,
+    (item) =>
+      item.destination === "International" &&
+      item.slug !== trip.slug &&
+      isWithinPublicListingWindow(item.startDate),
   );
 
   const schema = [
@@ -98,18 +102,22 @@ export default async function InternationalDestinationPage({ params }) {
       description: trip.overview,
       image: trip.image,
       url: `${pageBaseUrl}/${trip.slug}`,
+      touristType: "Women-only group travel",
       offers: {
         "@type": "Offer",
-        price: String(trip.price),
-        priceCurrency: trip.currency,
-        availability:
-          trip.status === "upcoming"
+        name: trip.dates || trip.title,
+        price: String(trip.earlyBirdPrice || trip.price || 0),
+        priceCurrency: trip.currency || "INR",
+        availability: trip.soldOut
+          ? "https://schema.org/SoldOut"
+          : trip.status === "upcoming"
             ? "https://schema.org/InStock"
             : "https://schema.org/SoldOut",
+        validFrom: trip.startDate,
       },
       itinerary: trip.itinerary.map((day) => ({
         "@type": "TouristAttraction",
-        name: day.title,
+        name: day.title || `Day ${day.day}`,
         description: day.description,
       })),
     },

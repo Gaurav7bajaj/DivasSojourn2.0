@@ -1,8 +1,6 @@
 import { Suspense } from "react";
-import {
-  BlogsSection,
-  ContactForm,
-} from "../components/international";
+import { BlogsSection } from "../components/international";
+import ShortContactForm from "../components/international/ShortContactForm";
 import CategoryHero from "../components/shared/CategoryHero";
 import InternationalTripsClient from "../components/international/InternationalTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
@@ -162,7 +160,7 @@ export default async function InternationalTripsPage() {
 
       <BlogsSection posts={blogCards} />
       <WhyDivasSection />
-      <ContactForm destinationOptions={internationalNav} pageLabel="International Trips" />
+      <ShortContactForm pageLabel="International Trips" storageKey="divasInternationalLeads" />
     </main>
   );
 }

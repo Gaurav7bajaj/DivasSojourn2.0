@@ -76,15 +76,22 @@ export default async function BlogDetailPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <article>
-        <section className="relative flex min-h-[460px] items-end overflow-hidden px-4 py-14">
-          <Image
-            src={blog.image}
-            alt={blog.title}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
+        <section className="relative flex min-h-[460px] items-end overflow-hidden bg-[#0F0F12] px-4 py-14">
+          {blog.image ? (
+            <Image
+              src={blog.image}
+              alt={blog.title}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+          ) : (
+            <div
+              className="absolute inset-0 bg-[linear-gradient(145deg,#1a1814_0%,#0F0F12_45%,#141210_100%)]"
+              aria-hidden="true"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20" />
           <div className="relative z-10 mx-auto max-w-5xl">
             <span className="rounded-full bg-[#D4AF37] px-4 py-2 text-xs font-black uppercase tracking-wide text-[#0F0F0F]">

@@ -1,0 +1,829 @@
+[
+  {
+    "slug": "vietnam-wonders-2026",
+    "title": "Vietnam Wonders",
+    "shortName": "Vietnam Wonders",
+    "destination": "International",
+    "sourcePdf": "DS_29_Dec-03_Jan_Vietnam_Wonders_Trip_2026.pdf",
+    "pdfPublicPath": "/international-trip-pdfs/vietnam-wonders-2026.pdf",
+    "dates": "29th December – 03rd January",
+    "startDate": "2026-12-29",
+    "endDate": "2027-01-03",
+    "duration": "05 Nights / 06 Days",
+    "nights": 5,
+    "days": 6,
+    "pickupLocation": "Hanoi Airport",
+    "dropLocation": "Da Nang Airport",
+    "route": "Hanoi - Ha Long Bay - Da Nang - Hoi An - Ba Na Hills",
+    "price": 187999,
+    "earlyBirdPrice": null,
+    "singleSupplement": 55000,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Explore Vietnam's UNESCO World Heritage sites including Ha Long Bay, experience the Golden Bridge at Ba Na Hills, and discover charming Hoi An Ancient Town.",
+    "highlights": [
+      "UNESCO World Heritage Site – Ha Long Bay",
+      "Sunrise Tai Chi Session on the Cruise",
+      "Golden Bridge at Ba Na Hills",
+      "Hoi An Ancient Town",
+      "Temple of Literature",
+      "Hanoi Train Street Experience"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 30 days prior to arrival.",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "International Flights",
+      "Visa & Insurance",
+      "5% GST & 2% TCS"
+    ],
+    "exclusions": [
+      "Tipping for tour guide and driver"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1528127269322-539801943592?w=800",
+      "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800",
+      "https://images.unsplash.com/photo-1557750255-c76072a7aad1?w=800"
+    ]
+  },
+  {
+    "slug": "tawang-dirang-2027",
+    "title": "Serenity Trails Tawang, Dirang & Beyond",
+    "shortName": "Tawang & Dirang",
+    "destination": "India",
+    "sourcePdf": "DS_24-30_April_Tawang_Dirang_Beyond_Trip_-2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/tawang-dirang-2027.pdf",
+    "dates": "24th – 30th April",
+    "startDate": "2027-04-24",
+    "endDate": "2027-04-30",
+    "duration": "06 Nights / 07 Days",
+    "nights": 6,
+    "days": 7,
+    "pickupLocation": "Guwahati Airport",
+    "dropLocation": "Guwahati Airport",
+    "route": "Guwahati - Tezpur - Bomdila - Tawang - Dirang",
+    "price": 49900,
+    "earlyBirdPrice": 47900,
+    "singleSupplement": 64800,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Journey through the Eastern Himalayas exploring Tawang's monasteries, Sela Pass, Bumla Pass, and high-altitude lakes.",
+    "highlights": [
+      "Sela Pass",
+      "Jaswant Garh Memorial",
+      "Nuranang Falls",
+      "Bumla Pass",
+      "Shonga-tser Lake",
+      "Kamakhya Temple"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Permits for Arunachal Pradesh",
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800",
+      "https://images.unsplash.com/photo-1598894000489-4271e0e7e1ae?w=800"
+    ]
+  },
+  {
+    "slug": "pondicherry-mahabalipuram-2027",
+    "title": "Pondicherry & Mahabalipuram",
+    "shortName": "Pondicherry & Mahabalipuram",
+    "destination": "India",
+    "sourcePdf": "DS_23-26_Jan_Pondicherry_Mahabalipuram_Trip_-2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/pondicherry-mahabalipuram-2027.pdf",
+    "dates": "23rd - 26th January",
+    "startDate": "2027-01-23",
+    "endDate": "2027-01-26",
+    "duration": "03 Nights / 04 Days",
+    "nights": 3,
+    "days": 4,
+    "pickupLocation": "Chennai Airport",
+    "dropLocation": "Chennai Airport",
+    "route": "Chennai - Pondicherry - Auroville - Mahabalipuram",
+    "price": 29900,
+    "earlyBirdPrice": 27900,
+    "singleSupplement": 39900,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Explore French colonial charm in Pondicherry, experience spiritual Auroville, and discover UNESCO heritage monuments in Mahabalipuram.",
+    "highlights": [
+      "Sri Aurobindo Ashram",
+      "Auroville",
+      "Shore Temple",
+      "Panch Rathas",
+      "Arjuna's Penance"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "3 breakfasts & dinners",
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800"
+    ]
+  },
+  {
+    "slug": "gateway-to-ladakh-2027",
+    "title": "Gateway to Ladakh - Leh, Nubra & Pangong",
+    "shortName": "Gateway to Ladakh",
+    "destination": "India",
+    "sourcePdf": "DS_22-27_May_Gateway_to_Ladakh_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/gateway-to-ladakh-2027.pdf",
+    "dates": "22nd – 27th May",
+    "startDate": "2027-05-22",
+    "endDate": "2027-05-27",
+    "duration": "05 Nights / 06 Days",
+    "nights": 5,
+    "days": 6,
+    "pickupLocation": "Leh Airport",
+    "dropLocation": "Leh Airport",
+    "route": "Leh - Nubra Valley - Pangong Lake",
+    "price": 39500,
+    "earlyBirdPrice": 36500,
+    "singleSupplement": 56500,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Experience Ladakh's mesmerizing landscapes including Khardung La Pass, Nubra Valley sand dunes, and the breathtaking blue waters of Pangong Lake.",
+    "highlights": [
+      "Khardung La Pass",
+      "Nubra Valley",
+      "Pangong Lake",
+      "Magnetic Hills",
+      "Shanti Stupa"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Inner Line Permit",
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800"
+    ]
+  },
+  {
+    "slug": "tripura-mizoram-2027",
+    "title": "Tripura & Mizoram",
+    "shortName": "Tripura & Mizoram",
+    "destination": "India",
+    "sourcePdf": "DS_20-28_March_Tripura_Mizoram_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/tripura-mizoram-2027.pdf",
+    "dates": "20th – 28th March",
+    "startDate": "2027-03-20",
+    "endDate": "2027-03-28",
+    "duration": "08 Nights / 09 Days",
+    "nights": 8,
+    "days": 9,
+    "pickupLocation": "Aizwal Airport",
+    "dropLocation": "Agartala Airport",
+    "route": "Aizwal - Agartala - Kumarghat - Unakoti - Jampui Hills - Amarpur",
+    "price": 59500,
+    "earlyBirdPrice": 56500,
+    "singleSupplement": 89500,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Explore Northeast India's hidden gems including Solomon's Temple, Neermahal Water Palace, ancient Unakoti rock carvings, and scenic Jampui Hills.",
+    "highlights": [
+      "Solomon's Temple",
+      "Unakoti Rock Carvings",
+      "Neermahal Palace",
+      "Jampui Hills",
+      "Dumboor Lake"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1598894000489-4271e0e7e1ae?w=800"
+    ]
+  },
+  {
+    "slug": "georgia-armenia-2027",
+    "title": "Georgia & Armenia",
+    "shortName": "Georgia & Armenia",
+    "destination": "International",
+    "sourcePdf": "DS_17-24_April_Georgia_Armenia_2027.pdf",
+    "pdfPublicPath": "/international-trip-pdfs/georgia-armenia-2027.pdf",
+    "dates": "17th – 24th April",
+    "startDate": "2027-04-17",
+    "endDate": "2027-04-24",
+    "duration": "07 Nights / 08 Days",
+    "nights": 7,
+    "days": 8,
+    "pickupLocation": "Tbilisi Airport",
+    "dropLocation": "Yerevan Airport / Tbilisi Airport",
+    "route": "Tbilisi - Kazbegi - Kakheti - Lake Sevan - Yerevan - Khor Virap",
+    "price": 139500,
+    "earlyBirdPrice": 134500,
+    "singleSupplement": null,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Journey through the Caucasus discovering UNESCO sites, ancient monasteries, and stunning mountain landscapes from Tbilisi to Yerevan.",
+    "highlights": [
+      "Gergeti Trinity Church",
+      "Lake Sevan",
+      "Geghard Monastery",
+      "Khor Virap",
+      "Tbilisi Old City"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Visa & Insurance",
+      "5% GST & 2% TCS"
+    ],
+    "exclusions": [],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1529260830199-42c24126f198?w=800"
+    ]
+  },
+  {
+    "slug": "varanasi-prayagraj-ayodhya-2027",
+    "title": "Divine Trail: Varanasi, Prayagraj & Ayodhya",
+    "shortName": "Varanasi, Prayagraj & Ayodhya",
+    "destination": "India",
+    "sourcePdf": "DS_17-21_Feb_Divine_Trail-_Varanasi_Prayagraj_Ayodhya_-2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/varanasi-prayagraj-ayodhya-2027.pdf",
+    "dates": "17th – 21st February",
+    "startDate": "2027-02-17",
+    "endDate": "2027-02-21",
+    "duration": "04 Nights / 05 Days",
+    "nights": 4,
+    "days": 5,
+    "pickupLocation": "Varanasi Airport",
+    "dropLocation": "Ayodhya Airport",
+    "route": "Varanasi - Sarnath - Prayagraj - Ayodhya",
+    "price": 43666,
+    "earlyBirdPrice": 41666,
+    "singleSupplement": 68777,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Experience India's spiritual heart visiting Kashi Vishwanath Temple, Ganga Aarti, Triveni Sangam, and Ram Janmabhoomi Temple.",
+    "highlights": [
+      "Kashi Vishwanath Temple",
+      "Ganga Aarti",
+      "Triveni Sangam",
+      "Ram Janmabhoomi Temple",
+      "Sarnath"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included",
+      "VIP Darshan"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800"
+    ]
+  },
+  {
+    "slug": "mauritius-bliss-2027",
+    "title": "Mauritius Bliss",
+    "shortName": "Mauritius Bliss",
+    "destination": "International",
+    "sourcePdf": "DS_15-20_May_Mauritius_Bliss_2027.pdf",
+    "pdfPublicPath": "/international-trip-pdfs/mauritius-bliss-2027.pdf",
+    "dates": "15th – 20th May",
+    "startDate": "2027-05-15",
+    "endDate": "2027-05-20",
+    "duration": "05 Nights / 06 Days",
+    "nights": 5,
+    "days": 6,
+    "pickupLocation": "Sir Seewoosagur Ramgoolam International Airport",
+    "dropLocation": "Sir Seewoosagur Ramgoolam International Airport",
+    "route": "Mauritius - North Island - South Island - Île aux Cerfs",
+    "price": 132900,
+    "earlyBirdPrice": null,
+    "singleSupplement": null,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Experience tropical paradise with pristine beaches, Grand Bassin, Seven Coloured Earth at Chamarel, and water sports at Île aux Cerfs.",
+    "highlights": [
+      "Grand Bassin",
+      "Chamarel",
+      "Île aux Cerfs",
+      "Port Louis",
+      "SSR Botanical Garden"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 30 days prior to arrival.",
+    "notes": [
+      "3 Euro tourism fee per day payable at hotel"
+    ],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Visa & Insurance",
+      "5% GST & 2% TCS"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1608137373560-e01d0c8cdb8b?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1623048372665-a0326a21df6a?w=800"
+    ]
+  },
+  {
+    "slug": "sri-lanka-soul-2027",
+    "title": "Sri Lanka – Soul",
+    "shortName": "Sri Lanka Soul",
+    "destination": "International",
+    "sourcePdf": "DS_12-17_Jan_Sri_Lanka-Soul_-2027.pdf",
+    "pdfPublicPath": "/international-trip-pdfs/sri-lanka-soul-2027.pdf",
+    "dates": "12th – 17th January",
+    "startDate": "2027-01-12",
+    "endDate": "2027-01-17",
+    "duration": "05 Nights / 06 Days",
+    "nights": 5,
+    "days": 6,
+    "pickupLocation": "Colombo Bandaranayke International Airport",
+    "dropLocation": "Colombo Bandaranayke International Airport",
+    "route": "Colombo - Sigiriya - Kandy - Nuwara Eliya - Ella - Yala - Galle",
+    "price": 118000,
+    "earlyBirdPrice": 113000,
+    "singleSupplement": null,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Discover Sri Lanka's heritage from Sigiriya Lion Rock to Temple of the Tooth, scenic train journey through tea plantations, and Yala safari.",
+    "highlights": [
+      "Sigiriya Lion Rock",
+      "Temple of the Tooth",
+      "Nine Arches Bridge",
+      "Yala National Park",
+      "Galle Fort"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [
+      "Mandatory tips: USD 5 per person per day"
+    ],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Visa & Insurance",
+      "Train tickets",
+      "5% GST & 2% TCS"
+    ],
+    "exclusions": [
+      "Mandatory tips: USD 5 per person per day"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1566552881560-0be862a7c445?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800"
+    ]
+  },
+  {
+    "slug": "ujjain-2027",
+    "title": "Mahakal Ujjain Journey",
+    "shortName": "Mahakal Ujjain",
+    "destination": "India",
+    "sourcePdf": "DS_06-10_March_Mahakal_Ujjain_Journey_-_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/ujjain-2027.pdf",
+    "dates": "06th – 10th March",
+    "startDate": "2027-03-06",
+    "endDate": "2027-03-10",
+    "duration": "04 Nights / 05 Days",
+    "nights": 4,
+    "days": 5,
+    "pickupLocation": "Indore Airport",
+    "dropLocation": "Indore Airport",
+    "route": "Ujjain - Omkareshwar - Indore",
+    "price": 33900,
+    "earlyBirdPrice": 31900,
+    "singleSupplement": 43900,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Spiritual journey visiting Mahakaleshwar and Omkareshwar Jyotirlingas, and exploring Lal Bagh Palace in Indore.",
+    "highlights": [
+      "Mahakaleshwar Jyotirlinga",
+      "Omkareshwar Jyotirlinga",
+      "Harsiddhi Temple",
+      "Lal Bagh Palace"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [
+      "VIP Darshan subject to availability"
+    ],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=800"
+    ]
+  },
+  {
+    "slug": "jagannath-puri-2027",
+    "title": "Shree Jagannath Puri",
+    "shortName": "Jagannath Puri",
+    "destination": "India",
+    "sourcePdf": "DS_06-10_February_Shree_Jagannath_Puri_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/jagannath-puri-2027.pdf",
+    "dates": "06th – 10th February",
+    "startDate": "2027-02-06",
+    "endDate": "2027-02-10",
+    "duration": "04 Nights / 05 Days",
+    "nights": 4,
+    "days": 5,
+    "pickupLocation": "Bhubaneswar Airport",
+    "dropLocation": "Bhubaneswar Airport",
+    "route": "Bhubaneswar - Konark - Puri - Chilika Lake",
+    "price": 38500,
+    "earlyBirdPrice": 36500,
+    "singleSupplement": 52500,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Experience Odisha's spiritual richness visiting ancient temples, Konark Sun Temple, Jagannath Temple, and Chilika Lake.",
+    "highlights": [
+      "Jagannath Temple",
+      "Konark Sun Temple",
+      "Chilika Lake",
+      "Lingaraj Temple",
+      "Nandankanan Zoo"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800"
+    ]
+  },
+  {
+    "slug": "rann-of-kutch-2027",
+    "title": "Rann of Kutch with Dholavira",
+    "shortName": "Rann of Kutch",
+    "destination": "India",
+    "sourcePdf": "DS_04-10_Jan_Gujarat_Glory-_Rann_of_Kutch_Dholavira_Rani_Ka_Vav_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/rann-of-kutch-2027.pdf",
+    "dates": "04th – 10th January",
+    "startDate": "2027-01-04",
+    "endDate": "2027-01-10",
+    "duration": "06 Nights / 07 Days",
+    "nights": 6,
+    "days": 7,
+    "pickupLocation": "Ahmedabad Airport",
+    "dropLocation": "Ahmedabad Airport",
+    "route": "Ahmedabad - Bhuj - Mandvi - Rann of Kutch - Dholavira - Rani Ka Vav",
+    "price": 52444,
+    "earlyBirdPrice": 50444,
+    "singleSupplement": 73444,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Journey through Gujarat's treasures from the white salt desert of Rann of Kutch to ancient Harappan city Dholavira and stunning Rani Ka Vav stepwell.",
+    "highlights": [
+      "White Rann at Sunset",
+      "Dholavira Harappan Site",
+      "Rani Ka Vav",
+      "Vijay Vilas Palace",
+      "Kalo Dungar"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival.",
+    "notes": [
+      "Rann accommodation is non-AC"
+    ],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Rann Permits",
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=800"
+    ]
+  },
+  {
+    "slug": "guwahati-shillong-cherrapunji-2027",
+    "title": "North East Trip - Guwahati, Shillong & Cherrapunji",
+    "shortName": "Guwahati Shillong Cherrapunji",
+    "destination": "India",
+    "sourcePdf": "DS_01-06_June_Guwahati_Shillong_Cherrapunji_2027.pdf",
+    "pdfPublicPath": "/india-trip-pdfs/guwahati-shillong-cherrapunji-2027.pdf",
+    "dates": "01st – 06th June",
+    "startDate": "2027-06-01",
+    "endDate": "2027-06-06",
+    "duration": "05 Nights / 06 Days",
+    "nights": 5,
+    "days": 6,
+    "pickupLocation": "Guwahati Airport",
+    "dropLocation": "Guwahati Airport",
+    "route": "Guwahati - Shillong - Mawlynnong - Dawki - Cherrapunji",
+    "price": 56500,
+    "earlyBirdPrice": 53500,
+    "singleSupplement": 83500,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Explore Northeast India's natural wonders including Kamakhya Temple, Shillong, crystal-clear Umngot River at Dawki, Mawlynnong village, and Cherrapunji waterfalls.",
+    "highlights": [
+      "Kamakhya Temple",
+      "Umngot River Dawki",
+      "Living Root Bridge",
+      "Nohkalikai Falls",
+      "Seven Sisters Falls",
+      "Don Bosco Museum"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 15 days prior to arrival",
+    "notes": [],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Inner line permits",
+      "5% GST"
+    ],
+    "exclusions": [
+      "Lunch not included"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1609137144813-7d9921338f24?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1598894000489-4271e0e7e1ae?w=800"
+    ]
+  },
+  {
+    "slug": "kenya-trails-2027",
+    "title": "Into the Wild – Kenya Trails",
+    "shortName": "Kenya Trails",
+    "destination": "International",
+    "sourcePdf": "DS_26_June_-_02_July_Kenya_Trails_-2027.pdf",
+    "pdfPublicPath": "/international-trip-pdfs/kenya-trails-2027.pdf",
+    "dates": "26th June – 02nd July",
+    "startDate": "2027-06-26",
+    "endDate": "2027-07-02",
+    "duration": "06 Nights / 07 Days",
+    "nights": 6,
+    "days": 7,
+    "pickupLocation": "Jomo Kenyatta International Airport",
+    "dropLocation": "Jomo Kenyatta International Airport",
+    "route": "Nairobi - Masai Mara - Naivasha - Lake Nakuru",
+    "price": 214999,
+    "earlyBirdPrice": null,
+    "singleSupplement": null,
+    "singleOccupancyPrice": null,
+    "currency": "INR",
+    "overview": "Women-only adventure through Kenya's Maasai Mara witnessing the Big Five, Lake Naivasha excursion, Crescent Island walking safari, and Lake Nakuru.",
+    "highlights": [
+      "Maasai Mara Game Drives",
+      "Big Five Sightings",
+      "Bush Dinner Experience",
+      "Crescent Island Walking Safari",
+      "Lake Nakuru National Park"
+    ],
+    "paymentConditions": "50% at time of booking and remaining balance 30 days prior to arrival",
+    "notes": [
+      "Mandatory tips: USD 5 per person per day",
+      "30% booking amount non-refundable"
+    ],
+    "itinerary": [],
+    "accommodations": [],
+    "inclusions": [
+      "Visa & Insurance",
+      "4x4 Land Cruiser",
+      "5% GST & 2% TCS"
+    ],
+    "exclusions": [
+      "Mandatory tips: USD 5 per person per day",
+      "Hot Air Balloon Safari"
+    ],
+    "financialDetails": {
+      "company": "Divas Sojourn",
+      "accountNo": "034063200000551",
+      "bankName": "Yes Bank",
+      "ifsc": "YESB0000340",
+      "phonePay": "9990022835",
+      "upi": "pooja243273-1@oksbi"
+    },
+    "cancellationLinks": [
+      "https://divassojourn.com/terms-condition/",
+      "https://divassojourn.com/terms.html",
+      "https://divassojourn.com/privacy-policy/"
+    ],
+    "image": "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=1200",
+    "galleryImages": [
+      "https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800"
+    ]
+  }
+]

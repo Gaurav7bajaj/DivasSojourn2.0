@@ -528,8 +528,8 @@ const additionalTrips = [
     days: 8,
     pickupLocation: "Seoul Airport",
     dropLocation: "Seoul Airport",
-    price: 352000,
-    earlyBirdPrice: 342000,
+    price: 342500,
+    earlyBirdPrice: null,
     route: "Seoul - Jeju Island - Busan - Seoul - Nami Island - Seoul",
     overview:
       "An autumn South Korea journey through Seoul, Jeju, Busan, KTX bullet train and Nami Island with city lights, culture, nature and seasonal colors.",
@@ -676,8 +676,8 @@ const additionalTrips = [
     days: 9,
     pickupLocation: "Narita Airport, Tokyo",
     dropLocation: "Haneda Airport, Tokyo",
-    price: 396000,
-    earlyBirdPrice: 386000,
+    price: 385500,
+    earlyBirdPrice: null,
     route: "Tokyo - Hakone - Kyoto - Osaka - Tokyo",
     overview:
       "A magical festive escape to Japan during Christmas and New Year, exploring Tokyo's winter illuminations, Mount Fuji views, ancient shrines of Kyoto, and Osaka food trails.",

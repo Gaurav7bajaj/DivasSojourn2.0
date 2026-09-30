@@ -3,6 +3,7 @@ import TripCalendar from "../components/calendar/TripCalendar";
 import CalendarHero from "../components/calendar/CalendarHero";
 import ShortContactForm from "../components/international/ShortContactForm";
 import { getPublishedTrips } from "../lib/data/trips";
+import { isWithinPublicListingWindow } from "../lib/data/tripMappers";
 import { calendarHeroImages } from "../data/heroImages";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,9 @@ export const metadata = {
 };
 
 export default async function CalendarPage() {
-  const trips = await getPublishedTrips();
+  const trips = (await getPublishedTrips()).filter((trip) =>
+    isWithinPublicListingWindow(trip.startDate),
+  );
 
   const schema = {
     "@context": "https://schema.org",

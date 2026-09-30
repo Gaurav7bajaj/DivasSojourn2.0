@@ -26,6 +26,7 @@ function isTransientDbError(error: unknown): boolean {
     /Can't reach database server/i.test(message) ||
     /Server has closed the connection/i.test(message) ||
     /Connection reset/i.test(message) ||
+    /kind: Closed/i.test(message) ||
     /Timed out fetching a new connection/i.test(message)
   );
 }

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { BlogsSection, ContactForm, TravelerReviews } from "../components/international";
+import { BlogsSection, TravelerReviews } from "../components/international";
+import ShortContactForm from "../components/international/ShortContactForm";
 import IndiaTripsHeader from "../components/india/IndiaTripsHeader";
 import IndiaTripsClient from "../components/india/IndiaTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
@@ -179,7 +180,7 @@ export default async function IndiaTripsPage() {
         />
       ) : null}
       <WhyDivasSection />
-      <ContactForm destinationOptions={indiaNav} storageKey="divasIndiaLeads" pageLabel="India Trips" />
+      <ShortContactForm pageLabel="India Trips" storageKey="divasIndiaLeads" />
     </main>
   );
 }

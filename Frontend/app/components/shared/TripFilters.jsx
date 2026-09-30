@@ -174,7 +174,7 @@ export default function TripFilters({
       <RangeSlider
         variant="dark"
         label="Budget"
-        min={23000}
+        min={0}
         max={1000000}
         step={1000}
         value={budget}

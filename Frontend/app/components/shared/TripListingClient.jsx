@@ -9,7 +9,7 @@ import { buildCountryOptions } from "../../lib/data/tripCountry";
 import { buildRegionOptions } from "../../lib/data/tripRegion";
 
 const DEFAULT_DURATION = [2, 16];
-const DEFAULT_BUDGET = [23000, 1000000];
+const DEFAULT_BUDGET = [0, 1000000];
 const SORT_OPTIONS = [
   { value: "soonest", label: "Soonest first" },
   { value: "price-asc", label: "Price: low to high" },

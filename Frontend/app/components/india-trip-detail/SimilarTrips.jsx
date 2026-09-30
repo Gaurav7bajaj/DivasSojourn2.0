@@ -1,130 +1,110 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock3, MapPin } from "lucide-react";
-import { useRef } from "react";
-import { formatDualPrice } from "../../utils/formatPrice";
-import { useCarouselScroll } from "./useCarouselScroll";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useMemo, useRef } from "react";
+import UpcomingTripCard from "../upcoming/UpcomingTripCard";
+import { formatDepartureRange } from "./tripDetailUtils";
 
-export default function SimilarTrips({ trips, basePath = "/india-trips" }) {
-  const scrollRef = useRef(null);
-  const total = trips?.length ?? 0;
-  const { activeIndex, rangeStart, rangeEnd, atStart, atEnd, scrollBy } = useCarouselScroll(
-    scrollRef,
-    total,
-  );
+export default function SimilarTrips({ trips = [], basePath = "/india-trips", currentTrip }) {
+  const scrollerRef = useRef(null);
 
-  if (!total) {
-    return null;
-  }
+  const cards = useMemo(() => {
+    const currentStart = currentTrip?.startDate || "";
+    const sorted = [...trips].sort((a, b) => {
+      const aTime = new Date(a.startDate).getTime() || 0;
+      const bTime = new Date(b.startDate).getTime() || 0;
+      const currentTime = new Date(currentStart).getTime() || 0;
+      return Math.abs(aTime - currentTime) - Math.abs(bTime - currentTime);
+    });
+
+    return sorted.slice(0, 8).map((trip) => ({
+      id: trip.id,
+      title: trip.title,
+      slug: trip.slug,
+      shortName: trip.shortName,
+      image: trip.image,
+      destination: trip.destination,
+      country: trip.country,
+      region: trip.region,
+      duration: { nights: trip.nights, days: trip.days },
+      pickupLocation: trip.pickupLocation,
+      dropLocation: trip.dropLocation,
+      startDate: trip.startDate,
+      endDate: trip.endDate,
+      batches: 1,
+      originalPrice: trip.earlyBirdPrice ? trip.price : null,
+      currentPrice: trip.earlyBirdPrice || trip.price || 0,
+      soldOut: trip.soldOut,
+      datesLabel: formatDepartureRange(trip.startDate, trip.endDate, trip.dates),
+    }));
+  }, [trips, currentTrip]);
+
+  if (!cards.length) return null;
+
+  const categoryLabel =
+    currentTrip?.destination === "International" ? "international" : "India";
+
+  const scrollBy = (dir) => {
+    const node = scrollerRef.current;
+    if (!node) return;
+    node.scrollBy({ left: dir * Math.min(360, node.clientWidth * 0.8), behavior: "smooth" });
+  };
 
   return (
-    <section className="bg-[#0F0F0F] px-4 py-16">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.28em] text-[#D4AF37]">
-              Explore More Adventures
+    <section className="border-t border-white/8 bg-[#0B0B0C] px-5 py-16 md:px-12 xl:px-24">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <span className="h-[2px] w-9 shrink-0 bg-[#D6AE3C]" aria-hidden="true" />
+            <p className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.24em] text-[#D6AE3C]">
+              Similar trips
             </p>
-            <h2 className="mt-2 text-3xl font-black text-white md:text-5xl">Similar Trips</h2>
           </div>
-          <p className="rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white/90">
-            Showing trips {rangeStart}–{rangeEnd} of {total}
-          </p>
+          <h2 className="font-[family-name:var(--font-playfair)] text-[clamp(1.85rem,3vw,2.6rem)] font-semibold text-[#FBF8F1]">
+            You may <em className="italic text-[#E2BB4D]">also love</em>
+          </h2>
         </div>
-
-        <div className="relative">
-          <CarouselArrow
-            label="Previous trips"
-            direction="left"
-            disabled={atStart}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
             onClick={() => scrollBy(-1)}
-          />
-          <CarouselArrow
-            label="Next trips"
-            direction="right"
-            disabled={atEnd}
-            onClick={() => scrollBy(1)}
-          />
-
-          <div
-            ref={scrollRef}
-            className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-12 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            aria-label="Previous similar trips"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
           >
-            {trips.map((trip, index) => (
-              <Link
-                key={trip.slug}
-                href={`${basePath}/${trip.slug}`}
-                className="group relative w-[85%] shrink-0 snap-start overflow-hidden rounded-3xl border border-[#D4AF37]/25 bg-[#1A1A1A] shadow-2xl transition hover:-translate-y-1 hover:border-[#D4AF37] sm:w-[46%] lg:w-[31%] xl:w-[24%]"
-              >
-                <span className="absolute left-4 top-4 z-10 rounded-full bg-black/65 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
-                  {index + 1}/{total}
-                </span>
-                <Image
-                  src={trip.image}
-                  alt={`${trip.title} similar trip`}
-                  width={400}
-                  height={390}
-                  sizes="(max-width: 768px) 85vw, 25vw"
-                  className="aspect-[400/390] w-full object-cover transition duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                  <h3 className="text-xl font-black">{trip.shortName}</h3>
-                  <div className="mt-3 space-y-2 text-sm font-semibold text-white/85">
-                    <p className="flex gap-2">
-                      <Clock3 className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-                      {trip.nights}N/{trip.days}D
-                    </p>
-                    <p className="flex gap-2">
-                      <MapPin className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-                      {trip.pickupLocation}
-                    </p>
-                    <p className="flex gap-2">
-                      <CalendarDays className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-                      {trip.dates}
-                    </p>
-                  </div>
-                  <div className="mt-5 flex items-center justify-between gap-3">
-                  <p className="rounded-full bg-white px-3 py-2 text-sm font-black text-black">
-                    {formatDualPrice(trip.price)} Onwards
-                  </p>
-                    <span className="flex items-center gap-1 rounded-full bg-[#0F9B9B] px-3 py-2 text-xs font-black text-white transition group-hover:bg-[#0d8585]">
-                      View
-                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          <p className="mt-4 text-center text-sm font-semibold text-white/60">
-            Trip {activeIndex + 1} of {total} — swipe or use arrows to explore
-          </p>
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy(1)}
+            aria-label="Next similar trips"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-[#FBF8F1] transition hover:border-[#D6AE3C] hover:text-[#D6AE3C]"
+          >
+            <ArrowRight className="h-4 w-4" />
+          </button>
+          <Link
+            href={basePath}
+            className="ml-2 inline-flex items-center gap-1.5 font-[family-name:var(--font-dm-sans)] text-[14px] font-bold text-[#D6AE3C] transition hover:text-[#E6BF4C]"
+          >
+            All {categoryLabel} trips
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
         </div>
       </div>
-    </section>
-  );
-}
 
-function CarouselArrow({ label, direction, disabled, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      className={`absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border-2 transition md:h-12 md:w-12 ${
-        direction === "left" ? "left-0" : "right-0"
-      } ${
-        disabled
-          ? "cursor-not-allowed border-white/20 bg-white/5 text-white/30"
-          : "border-[#0F9B9B] bg-[#0F9B9B] text-white hover:scale-105 hover:bg-[#0d8585]"
-      }`}
-    >
-      {direction === "left" ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-    </button>
+      <div
+        ref={scrollerRef}
+        className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {cards.map((trip, index) => (
+          <div
+            key={trip.id || trip.slug}
+            className="w-[min(320px,85vw)] shrink-0 snap-start md:w-[calc((100%-3.75rem)/4)]"
+          >
+            <UpcomingTripCard trip={trip} variant="dark" priority={index < 2} />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -1,31 +1,41 @@
-import Image from "next/image";
 import Link from "next/link";
+import BlogCoverImage from "./BlogCoverImage";
+import { badgePair, formatReadingLabel } from "./blogListingUtils";
 
 export default function BlogListingCard({ blog }) {
+  const { destination, topic } = badgePair(blog);
+
   return (
-    <article className="group overflow-hidden rounded-2xl border border-[#D4AF37]/20 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 hover:border-[#D4AF37] hover:shadow-[0_14px_28px_rgba(212,175,55,0.18)]">
-      <Link href={`/blogs/${blog.slug}`} aria-label={`Read ${blog.title}`}>
-        <div className="relative aspect-video overflow-hidden">
-          <Image
-            src={blog.image}
-            alt={blog.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-110"
-          />
-          <span className="absolute left-3 top-3 rounded-full bg-[#D4AF37] px-3 py-1 text-xs font-black uppercase tracking-wide text-[#1A1A1A]">
-            {blog.category}
-          </span>
-        </div>
-        <div className="p-5">
-          <p className="text-xs font-bold text-[#666666]">
-            <time dateTime={blog.datePublished}>{blog.date}</time> | {blog.readingTime} read
-          </p>
-          <h3 className="mt-3 line-clamp-3 text-lg font-black leading-7 text-[#1A1A1A]">
-            {blog.title}
-          </h3>
-        </div>
-      </Link>
-    </article>
+    <Link
+      href={`/blogs/${blog.slug}`}
+      className="group flex h-full flex-col overflow-hidden rounded-[20px] border border-[rgba(255,255,255,0.08)] bg-[#141417] transition duration-300 hover:-translate-y-1 hover:border-[#D6AE3C]"
+      aria-label={`Read ${blog.title}`}
+    >
+      <div className="relative h-[230px] shrink-0 overflow-hidden">
+        <BlogCoverImage
+          src={blog.image}
+          alt={blog.title}
+          className="absolute inset-0 h-full w-full"
+          imageClassName="transition duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+        <span className="absolute left-3 top-3 rounded-full border border-[rgba(214,174,60,0.55)] bg-[rgba(8,8,10,0.72)] px-3 py-1.5 font-[family-name:var(--font-dm-sans)] text-[11px] font-bold uppercase tracking-[0.12em] text-[#D6AE3C] backdrop-blur-sm">
+          {destination} · {topic}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-3 p-[22px]">
+        <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#8F897D]">
+          <time dateTime={blog.datePublished}>{blog.date}</time>
+          {" · "}
+          {formatReadingLabel(blog.readingTime)}
+        </p>
+        <h3 className="line-clamp-3 min-h-[2.6em] font-[family-name:var(--font-playfair)] text-[22px] font-semibold leading-snug text-[#FBF8F1]">
+          {blog.title}
+        </h3>
+        <span className="mt-auto font-[family-name:var(--font-dm-sans)] text-[14px] font-bold text-[#D6AE3C] transition group-hover:text-[#E6BF4C]">
+          Read article →
+        </span>
+      </div>
+    </Link>
   );
 }

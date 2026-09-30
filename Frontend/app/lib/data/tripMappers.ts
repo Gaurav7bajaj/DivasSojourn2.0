@@ -16,6 +16,25 @@ export function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/**
+ * End of the public listing window: last day of the same calendar month next year.
+ * Example: in September 2026 → "2027-09-30".
+ */
+export function rollingYearEndIsoDate(now = new Date()): string {
+  const year = now.getUTCFullYear() + 1;
+  const monthIndex = now.getUTCMonth();
+  const lastDay = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+  const month = String(monthIndex + 1).padStart(2, "0");
+  const day = String(lastDay).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/** Public site: not departed yet, and within ~12 months through the same month next year. */
+export function isWithinPublicListingWindow(startDate: string, now = new Date()): boolean {
+  const today = now.toISOString().slice(0, 10);
+  return startDate >= today && startDate <= rollingYearEndIsoDate(now);
+}
+
 export function computeTripStatus(startDate: string): "upcoming" | "past" {
   return startDate >= todayIsoDate() ? "upcoming" : "past";
 }
