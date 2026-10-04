@@ -6,7 +6,7 @@
 const SMSALERT_BASE = "https://www.smsalert.co.in/api/mverify.json";
 
 const DEFAULT_TEMPLATE =
-  'Your Divas Sojourn OTP is [otp length="6" retry="3" validity="10"]';
+  'Your verification code for mobile verification is [otp length="4" retry="3" validity="10"]';
 
 type SmsAlertConfig =
   | { apiKey: string; sender: string; template: string }
@@ -126,14 +126,19 @@ export function toSmsAlertMobile(phone: string): string {
 }
 
 export async function sendOtp(mobile: string): Promise<SmsAlertResult> {
-  const config = getConfig();
-  if ("error" in config) {
-    return { ok: false, message: config.error };
-  }
-
   const mobileno = toSmsAlertMobile(mobile);
   if (mobileno.length < 10) {
     return { ok: false, message: "Enter a valid mobile number." };
+  }
+
+  // Dev-only mock: skip SMS provider when MOCK_OTP is set.
+  if (process.env.MOCK_OTP?.trim() && process.env.NODE_ENV !== "production") {
+    return { ok: true, message: "OTP sent (mock)." };
+  }
+
+  const config = getConfig();
+  if ("error" in config) {
+    return { ok: false, message: config.error };
   }
 
   return postSmsAlert({
@@ -145,11 +150,6 @@ export async function sendOtp(mobile: string): Promise<SmsAlertResult> {
 }
 
 export async function validateOtp(mobile: string, code: string): Promise<SmsAlertResult> {
-  const config = getConfig();
-  if ("error" in config) {
-    return { ok: false, message: config.error };
-  }
-
   const mobileno = toSmsAlertMobile(mobile);
   const otp = code.replace(/\D/g, "");
   if (mobileno.length < 10) {
@@ -157,6 +157,19 @@ export async function validateOtp(mobile: string, code: string): Promise<SmsAler
   }
   if (otp.length < 3 || otp.length > 8) {
     return { ok: false, message: "Enter a valid OTP." };
+  }
+
+  const mockOtp = process.env.MOCK_OTP?.trim();
+  if (mockOtp && process.env.NODE_ENV !== "production") {
+    if (otp === mockOtp.replace(/\D/g, "")) {
+      return { ok: true, message: "OTP verified (mock)." };
+    }
+    return { ok: false, message: "Invalid OTP." };
+  }
+
+  const config = getConfig();
+  if ("error" in config) {
+    return { ok: false, message: config.error };
   }
 
   const result = await postSmsAlert({

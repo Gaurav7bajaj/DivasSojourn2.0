@@ -6,7 +6,7 @@
 
 import { indiaHeroImages } from "./heroImages";
 
-export const INDIA_HERO_INTERVAL_MS = 6000;
+export const INDIA_HERO_INTERVAL_MS = 4000;
 
 /** Per-slide object-position overrides (1-based slide numbers in comments). */
 const SLIDE_OBJECT_POSITION = {

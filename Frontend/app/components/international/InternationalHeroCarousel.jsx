@@ -12,7 +12,7 @@ export default function InternationalHeroCarousel() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveIndex((index) => (index + 1) % internationalHeroSlides.length);
-    }, 2000);
+    }, 4000);
 
     return () => window.clearInterval(timer);
   }, []);

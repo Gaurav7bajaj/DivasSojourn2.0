@@ -11,8 +11,8 @@ export default function UpcomingTripsSection() {
         {/* Image — top on mobile, right ~64% on desktop */}
         <div className="relative h-[240px] w-full md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[64%]">
           <Image
-            src="/heroes/home/upcomingCommunityTrips.png"
-            alt="Women walking hand in hand along a tropical beach at golden hour"
+            src="/heroes/home/upcomingCommunityTrips-v2.jpg"
+            alt="Women travelers sitting together outdoors on a grassy hillside"
             fill
             sizes="(max-width: 768px) 100vw, 64vw"
             className="object-cover object-center"

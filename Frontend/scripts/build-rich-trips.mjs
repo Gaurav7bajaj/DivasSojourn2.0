@@ -73,11 +73,11 @@ const META = [
     singleSupplement: 21000,
     pdfPublicPath: "/india-trip-pdfs/rann-of-kutch-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1706013698821-3f417f9fcc0b?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1706013698821-3f417f9fcc0b?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -101,11 +101,11 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/international-trip-pdfs/sri-lanka-soul-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1566296314734-4b0c0b8b0b0b?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1653959699604-1eb000740b57?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1588598198322-b68e3c0c0b0b?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1653959699604-1eb000740b57?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1588666309992-0c0b0b0b0b0b?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -129,10 +129,10 @@ const META = [
     singleSupplement: 10000,
     pdfPublicPath: "/india-trip-pdfs/pondicherry-mahabalipuram-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1624257146471-78ea613e1649?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1624257146471-78ea613e1649?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -156,10 +156,10 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/india-trip-pdfs/jagannath-puri-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1706790574525-d218c4c52b5c?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1706790574525-d218c4c52b5c?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -183,10 +183,10 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/india-trip-pdfs/varanasi-prayagraj-ayodhya-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1561359313-0639aad49ca6?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
+      "https://images.unsplash.com/photo-1561359313-0639aad49ca6?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1595815771614-ade9d652a65d?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -210,9 +210,10 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/india-trip-pdfs/ujjain-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1658730458768-8b8cc0c00955?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1658730458768-8b8cc0c00955?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -263,9 +264,9 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/international-trip-pdfs/georgia-armenia-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1565008576549-57569a493962?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1565008576549-57569a49371d?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1565008576549-57569a493962?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1565008576549-57569a49371d?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1596422846543-75c6fc710e0a?auto=format&fit=crop&w=900&q=85",
     ],
   },
@@ -290,10 +291,10 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/india-trip-pdfs/tawang-dirang-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1626761627604-f27d98885f4b?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
+      "https://images.unsplash.com/photo-1626761627604-f27d98885f4b?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=85",
     ],
   },
   {
@@ -371,8 +372,9 @@ const META = [
     singleSupplement: null,
     pdfPublicPath: "/india-trip-pdfs/guwahati-shillong-cherrapunji-2027.pdf",
     image:
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1723651973403-a262cfd9db0f?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
+      "https://images.unsplash.com/photo-1723651973403-a262cfd9db0f?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=85",
     ],
   },
@@ -649,24 +651,36 @@ for (const meta of META) {
   let galleryImages = meta.galleryImages;
   if (meta.slug === "sri-lanka-soul-2027") {
     image =
-      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1600&q=85";
+      "https://images.unsplash.com/photo-1653959699604-1eb000740b57?auto=format&fit=crop&w=1600&q=85";
     galleryImages = [
+      "https://images.unsplash.com/photo-1653959699604-1eb000740b57?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1588598198322-b68e3c0c0b0b?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=900&q=85",
     ];
   }
   if (meta.slug === "pondicherry-mahabalipuram-2027") {
     image =
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=1600&q=85";
+      "https://images.unsplash.com/photo-1624257146471-78ea613e1649?auto=format&fit=crop&w=1600&q=85";
     galleryImages = [
-      "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1582510003544-4d00b8f57c20?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1624257146471-78ea613e1649?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=85",
     ];
   }
-  if (meta.slug === "jagannath-puri-2027" || meta.slug === "ujjain-2027") {
+  if (meta.slug === "jagannath-puri-2027") {
     image =
-      "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1600&q=85";
+      "https://images.unsplash.com/photo-1706790574525-d218c4c52b5c?auto=format&fit=crop&w=1600&q=85";
+    galleryImages = [
+      "https://images.unsplash.com/photo-1706790574525-d218c4c52b5c?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=85",
+    ];
+  }
+  if (meta.slug === "ujjain-2027") {
+    image =
+      "https://images.unsplash.com/photo-1658730458768-8b8cc0c00955?auto=format&fit=crop&w=1600&q=85";
+    galleryImages = [
+      "https://images.unsplash.com/photo-1658730458768-8b8cc0c00955?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=900&q=85",
+    ];
   }
 
   trips.push({

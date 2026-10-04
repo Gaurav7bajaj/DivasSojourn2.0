@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-const DEFAULT_INTERVAL_MS = 6000;
+const DEFAULT_INTERVAL_MS = 4000;
 
 export default function CategoryHero({
   slides = [],

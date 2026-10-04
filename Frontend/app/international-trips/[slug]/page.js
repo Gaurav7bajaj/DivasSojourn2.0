@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import TripDetailPage from "../../components/india-trip-detail/TripDetailPage";
 import { getPublishedTrips, getTripBySlug } from "../../lib/data/trips";
+import {
+  isItineraryUnlocked,
+  redactTripItinerary,
+} from "../../lib/itineraryUnlock";
 import { isWithinPublicListingWindow } from "../../lib/data/tripMappers";
 import { formatDualPrice } from "../../utils/formatPrice";
 
@@ -70,6 +74,10 @@ export default async function InternationalDestinationPage({ params }) {
       isWithinPublicListingWindow(item.startDate),
   );
 
+  const unlocked = await isItineraryUnlocked();
+  const hasItinerary = Array.isArray(trip.itinerary) && trip.itinerary.length > 0;
+  const publicTrip = unlocked ? trip : redactTripItinerary(trip);
+
   const schema = [
     {
       "@context": "https://schema.org",
@@ -115,11 +123,15 @@ export default async function InternationalDestinationPage({ params }) {
             : "https://schema.org/SoldOut",
         validFrom: trip.startDate,
       },
-      itinerary: trip.itinerary.map((day) => ({
-        "@type": "TouristAttraction",
-        name: day.title || `Day ${day.day}`,
-        description: day.description,
-      })),
+      ...(unlocked
+        ? {
+            itinerary: trip.itinerary.map((day) => ({
+              "@type": "TouristAttraction",
+              name: day.title || `Day ${day.day}`,
+              description: day.description,
+            })),
+          }
+        : {}),
     },
   ];
 
@@ -130,10 +142,12 @@ export default async function InternationalDestinationPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
       <TripDetailPage
-        trip={trip}
+        trip={publicTrip}
         similarTrips={similarTrips}
         basePath="/international-trips"
         baseLabel="International Trips"
+        itineraryUnlocked={unlocked}
+        hasItinerary={hasItinerary}
       />
     </>
   );

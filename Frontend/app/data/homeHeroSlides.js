@@ -12,7 +12,7 @@ export const HOME_HERO_STATS = [
 ];
 
 /** Autoplay duration in ms — keep in sync with progress-bar CSS animation. */
-export const HOME_HERO_INTERVAL_MS = 6000;
+export const HOME_HERO_INTERVAL_MS = 4000;
 
 const slideCopy = [
   {
@@ -23,24 +23,6 @@ const slideCopy = [
     text: "Curated journeys for women seeking comfort, connection and memorable adventures across India and the world.",
     primaryCta: { label: "Explore trips", href: "/upcoming-trips" },
     secondaryCta: { label: "View calendar", href: "/calendar" },
-  },
-  {
-    eyebrow: "INTERNATIONAL TRIPS",
-    title: "See the world,",
-    highlight: "together",
-    titleAfter: "",
-    text: "Small-group journeys abroad with women who travel like you.",
-    primaryCta: { label: "International trips", href: "/international-trips" },
-    secondaryCta: { label: "Upcoming trips", href: "/upcoming-trips" },
-  },
-  {
-    eyebrow: "INDIA TRIPS",
-    title: "Rediscover India,",
-    highlight: "your way",
-    titleAfter: "",
-    text: "From the mountains to the coast — join a group departure, or let us tailor a trip around you.",
-    primaryCta: { label: "India trips", href: "/india-trips" },
-    secondaryCta: { label: "Personalize a trip", href: "/personalize-trip" },
   },
   {
     eyebrow: "WOMEN-ONLY TRAVEL",

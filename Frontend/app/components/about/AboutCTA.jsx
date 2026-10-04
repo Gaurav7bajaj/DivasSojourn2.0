@@ -10,8 +10,8 @@ export default function AboutCTA() {
       <div className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[28px] border border-[rgba(214,174,60,0.2)] bg-[#121215] md:h-[420px]">
         <div className="relative h-[240px] w-full md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[60%]">
           <Image
-            src="/heroes/home/upcomingCommunityTrips.png"
-            alt="Women travelers walking together along a tropical beach at golden hour"
+            src="/heroes/home/upcomingCommunityTrips-v2.jpg"
+            alt="Women travelers sitting together outdoors on a grassy hillside"
             fill
             sizes="(max-width: 768px) 100vw, 60vw"
             className="object-cover object-center"

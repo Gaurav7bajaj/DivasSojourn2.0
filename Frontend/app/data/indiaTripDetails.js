@@ -185,12 +185,11 @@ export const indiaTripDetails = [
     sourcePdf: "DS 02-07 October 5 Jyotirlingas - One divine journey 2026.pdf",
     pdfPath: "/india-trip-pdfs/jyotirlingas-ellora-divine-historic-odyssey.pdf",
     image:
-      "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1600&q=85",
+      "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
+      "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=900&q=85",
       "https://images.unsplash.com/photo-1561361058-c24cecae35ca?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=85",
     ],
     dates: "02nd - 07th October 2026",
     startDate: "2026-10-02",
@@ -855,10 +854,10 @@ export const indiaTripDetails = [
     title: "Spiritual Gateway to Rameshwaram & Madurai",
     shortName: "Rameshwaram",
     slug: "rameshwaram-spiritual-gateway",
-    image: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1600&q=85",
+    image: "https://images.unsplash.com/photo-1572146462570-2129a547e6dd?auto=format&fit=crop&w=1600&q=85",
     galleryImages: [
-      "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=900&q=85",
-      "https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1572146462570-2129a547e6dd?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1593693411515-c20261bcad6e?auto=format&fit=crop&w=900&q=85",
     ],
     dates: "14th - 19th November 2026",
     startDate: "2026-11-14",

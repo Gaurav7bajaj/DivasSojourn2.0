@@ -109,7 +109,7 @@ export const galleryImages = [
   { src: "/heroes/home/HeroHome5.webp", alt: "Women travelers sharing a trip moment" },
   { src: "/heroes/home/HeroHome6.webp", alt: "Scenic destination from a Divas Sojourn journey" },
   { src: "/heroes/home/HeroHome7.webp", alt: "Solo women travelers exploring together" },
-  { src: "/heroes/home/upcomingCommunityTrips.png", alt: "Upcoming community trips" },
+  { src: "/heroes/home/upcomingCommunityTrips-v2.jpg", alt: "Women travelers sitting together outdoors" },
   { src: "/heroes/india/indianHero1.webp", alt: "India trip destination for women travelers" },
   { src: "/heroes/india/indianHero2.webp", alt: "Exploring India with Divas Sojourn" },
   { src: "/heroes/india/indianHero3.webp", alt: "Women-only India group travel" },

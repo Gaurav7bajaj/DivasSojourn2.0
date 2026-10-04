@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Trip } from "@/app/lib/data/types";
+import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 
 export default function TripsAdminClient() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadTrips = useCallback(async () => {
     setLoading(true);
@@ -57,6 +59,27 @@ export default function TripsAdminClient() {
     };
   }, []);
 
+  const filteredTrips = useMemo(
+    () =>
+      trips.filter((trip) =>
+        matchesAdminQuery(searchQuery, [
+          trip.title,
+          trip.shortName,
+          trip.destination,
+          trip.slug,
+          trip.status,
+          trip.dates,
+          trip.startDate,
+          trip.endDate,
+          trip.route,
+          trip.pickupLocation,
+          trip.dropLocation,
+          trip.published ? "live published" : "draft",
+        ]),
+      ),
+    [searchQuery, trips],
+  );
+
   const handleDelete = async (trip: Trip) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${trip.title}"? This cannot be undone.`,
@@ -99,7 +122,16 @@ export default function TripsAdminClient() {
       {message ? <p className="mt-4 text-sm font-semibold text-[#0F9B9B]">{message}</p> : null}
       {error ? <p className="mt-4 text-sm font-semibold text-red-600">{error}</p> : null}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-sm">
+      <AdminSearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        label="Search trips"
+        placeholder="Search by title, destination, dates, status…"
+        resultCount={filteredTrips.length}
+        totalCount={trips.length}
+      />
+
+      <div className="mt-4 overflow-x-auto rounded-2xl bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-black/10 bg-[#FAFAFA] text-xs uppercase tracking-wide text-[#666666]">
             <tr>
@@ -124,8 +156,14 @@ export default function TripsAdminClient() {
                   No trips yet.
                 </td>
               </tr>
+            ) : filteredTrips.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-[#666666]">
+                  No trips match “{searchQuery.trim()}”.
+                </td>
+              </tr>
             ) : (
-              trips.map((trip) => (
+              filteredTrips.map((trip) => (
                 <tr key={trip.id} className="border-t border-black/5">
                   <td className="px-4 py-3 font-semibold">{trip.shortName || trip.title}</td>
                   <td className="px-4 py-3">{trip.destination}</td>

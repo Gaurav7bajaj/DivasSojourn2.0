@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Mail, Phone, Trash2 } from "lucide-react";
+import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 
 type Enquiry = {
   id: string;
@@ -25,6 +26,7 @@ export default function EnquiriesAdminClient() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadEnquiries = useCallback(async () => {
     setError("");
@@ -149,7 +151,23 @@ export default function EnquiriesAdminClient() {
     }
   };
 
-  const visible = filter === "unread" ? enquiries.filter((item) => !item.read) : enquiries;
+  const visible = useMemo(() => {
+    const byRead = filter === "unread" ? enquiries.filter((item) => !item.read) : enquiries;
+    return byRead.filter((enquiry) =>
+      matchesAdminQuery(searchQuery, [
+        enquiry.name,
+        enquiry.email,
+        enquiry.phone,
+        enquiry.message,
+        enquiry.page,
+        enquiry.interestedIn,
+        enquiry.travelDate,
+        enquiry.travelers,
+        enquiry.formType,
+        enquiry.read ? "read" : "unread new",
+      ]),
+    );
+  }, [enquiries, filter, searchQuery]);
 
   return (
     <div>
@@ -213,14 +231,27 @@ export default function EnquiriesAdminClient() {
         </p>
       ) : null}
 
+      <AdminSearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        label="Search enquiries"
+        placeholder="Search by name, email, phone, page, interest…"
+        resultCount={visible.length}
+        totalCount={filter === "unread" ? unreadCount : enquiries.length}
+      />
+
       {loading ? (
         <p className="mt-8 text-sm text-[#555555]">Loading enquiries…</p>
       ) : visible.length === 0 ? (
         <p className="mt-8 rounded-2xl border border-dashed border-black/15 bg-white px-6 py-12 text-center text-sm text-[#555555]">
-          {filter === "unread" ? "No unread enquiries." : "No enquiries yet."}
+          {searchQuery.trim()
+            ? `No enquiries match “${searchQuery.trim()}”.`
+            : filter === "unread"
+              ? "No unread enquiries."
+              : "No enquiries yet."}
         </p>
       ) : (
-        <ul className="mt-8 space-y-4">
+        <ul className="mt-6 space-y-4">
           {visible.map((enquiry) => (
             <li
               key={enquiry.id}

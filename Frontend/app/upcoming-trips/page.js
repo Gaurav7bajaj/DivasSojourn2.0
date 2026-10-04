@@ -7,7 +7,7 @@ import { getUpcomingTrips } from "../lib/data/trips";
 export const dynamic = "force-dynamic";
 
 const pageUrl = "https://divassojourn.com/upcoming-trips";
-const heroImage = "https://divassojourn.com/heroes/home/upcomingCommunityTrips.png";
+const heroImage = "https://divassojourn.com/heroes/home/upcomingCommunityTrips-v2.jpg";
 
 export const metadata = {
   title: "Upcoming Women Travel Packages 2026",

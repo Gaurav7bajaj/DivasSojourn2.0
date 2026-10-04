@@ -16,7 +16,6 @@ export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [portraitFlags, setPortraitFlags] = useState(() => slides.map(() => false));
   const touchStartX = useRef(null);
   const sectionRef = useRef(null);
 
@@ -71,17 +70,6 @@ export default function HeroSection() {
     if (Math.abs(delta) < 48) return;
     if (delta > 0) goPrev();
     else goNext();
-  };
-
-  const markPortrait = (index, img) => {
-    if (!img?.naturalWidth || !img?.naturalHeight) return;
-    const isPortrait = img.naturalHeight > img.naturalWidth;
-    setPortraitFlags((current) => {
-      if (current[index] === isPortrait) return current;
-      const next = [...current];
-      next[index] = isPortrait;
-      return next;
-    });
   };
 
   const activeSlide = slides[activeIndex];
@@ -147,7 +135,6 @@ export default function HeroSection() {
 
       {slides.map((slide, index) => {
         const isActive = index === activeIndex;
-        const isPortrait = portraitFlags[index];
 
         return (
           <div
@@ -158,19 +145,6 @@ export default function HeroSection() {
             style={{ transitionDuration: reduceMotion ? "0ms" : "900ms" }}
             aria-hidden={!isActive}
           >
-            {isPortrait ? (
-              <Image
-                src={slide.image}
-                alt=""
-                fill
-                unoptimized
-                sizes="100vw"
-                aria-hidden="true"
-                className="scale-110 object-cover object-center blur-[40px] brightness-50"
-              />
-            ) : null}
-
-            {/* TODO: Replace with landscape photos, 1920×1080 or larger. */}
             <Image
               src={slide.image}
               alt={slide.alt}
@@ -180,12 +154,7 @@ export default function HeroSection() {
               priority={index === 0}
               fetchPriority={index === 0 ? "high" : "auto"}
               loading={index === 0 ? "eager" : "lazy"}
-              onLoad={(event) => markPortrait(index, event.currentTarget)}
-              className={
-                isPortrait
-                  ? "object-contain object-center"
-                  : "object-cover object-[center_40%] max-md:object-center"
-              }
+              className="object-cover object-[center_40%] max-md:object-center"
             />
           </div>
         );

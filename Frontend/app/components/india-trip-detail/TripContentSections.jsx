@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Check, ChevronDown, ChevronUp, Star, Users, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Lock, Star, Users, X } from "lucide-react";
 
 function Eyebrow({ children }) {
   return (
@@ -53,12 +53,67 @@ export function TripOverviewSection({ trip }) {
   );
 }
 
-export function TripItinerarySection({ trip }) {
+export function TripItinerarySection({ trip, locked = false, onRequestUnlock }) {
   const days = Array.isArray(trip.itinerary) ? trip.itinerary : [];
   const baseId = useId();
   const [openDays, setOpenDays] = useState(() => new Set(days.length ? [days[0].day || 1] : []));
 
-  if (!days.length) return null;
+  if (!days.length && !locked) return null;
+
+  if (locked) {
+    return (
+      <section id="itinerary" className="scroll-mt-40">
+        <Eyebrow>Itinerary</Eyebrow>
+        <h2 className="font-[family-name:var(--font-playfair)] text-[clamp(1.85rem,3vw,2.6rem)] font-semibold leading-tight text-[#FBF8F1]">
+          Day <em className="italic text-[#E2BB4D]">by day</em>
+        </h2>
+
+        <div className="relative mt-8 overflow-hidden rounded-[24px] border border-[rgba(214,174,60,0.35)] bg-[#121215]">
+          <div
+            className="pointer-events-none select-none px-6 py-8 blur-[2px] opacity-40"
+            aria-hidden="true"
+          >
+            <div className="space-y-3">
+              {(days.length ? days : [{ day: 1 }, { day: 2 }, { day: 3 }]).slice(0, 3).map((day, index) => (
+                <div
+                  key={day.day || index}
+                  className="rounded-2xl border border-white/8 bg-[#141417] px-5 py-4"
+                >
+                  <p className="font-[family-name:var(--font-dm-sans)] text-[12px] font-bold uppercase tracking-[0.14em] text-[#D6AE3C]">
+                    Day {day.day || index + 1}
+                  </p>
+                  <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[17px] font-bold text-[#FBF8F1]">
+                    Detailed plan locked
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="absolute inset-0 flex items-center justify-center bg-[rgba(8,8,10,0.72)] px-6 py-10 text-center">
+            <div className="max-w-md">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(214,174,60,0.45)] text-[#D6AE3C]">
+                <Lock className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h3 className="mt-4 font-[family-name:var(--font-playfair)] text-[1.6rem] font-semibold text-[#FBF8F1]">
+                Verify your phone to view
+              </h3>
+              <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
+                We&apos;ll send a one-time code to unlock the full day-by-day itinerary for this trip.
+              </p>
+              <button
+                type="button"
+                onClick={() => onRequestUnlock?.()}
+                className="mt-6 inline-flex h-12 min-h-11 items-center justify-center rounded-full bg-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
+              >
+                Verify phone number
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   const allOpen = openDays.size >= days.length;
 

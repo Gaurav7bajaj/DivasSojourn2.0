@@ -7,7 +7,7 @@ export default function InternationalTripsHeader() {
   return (
     <HeroImageCarousel
       images={internationalHeroImages}
-      intervalMs={2000}
+      intervalMs={4000}
       unoptimized
       imageClassName="object-contain object-center"
       className="relative flex h-[320px] w-full items-center justify-center bg-[#0F0F0F] text-center sm:h-[420px] md:h-[520px]"

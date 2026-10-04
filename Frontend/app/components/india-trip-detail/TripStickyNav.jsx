@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { formatInr, getDisplayPrice } from "./tripDetailUtils";
 
-export default function TripStickyNav({ sections, trip, bookHref }) {
+export default function TripStickyNav({ sections, trip, bookHref, onSectionClick }) {
   const [activeId, setActiveId] = useState(sections[0]?.id || "overview");
   const price = getDisplayPrice(trip);
 
@@ -37,6 +37,7 @@ export default function TripStickyNav({ sections, trip, bookHref }) {
   }, [ids]);
 
   const scrollTo = (id) => {
+    onSectionClick?.(id);
     const el = document.getElementById(id);
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "start" });

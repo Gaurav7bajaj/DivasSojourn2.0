@@ -11,7 +11,7 @@ export const GALLERY_DIMENSIONS = {
   "/heroes/home/HeroHome5.webp": { width: 3024, height: 4032 },
   "/heroes/home/HeroHome6.webp": { width: 3024, height: 4032 },
   "/heroes/home/HeroHome7.webp": { width: 3024, height: 3137 },
-  "/heroes/home/upcomingCommunityTrips.png": { width: 1024, height: 213 },
+  "/heroes/home/upcomingCommunityTrips-v2.jpg": { width: 2000, height: 1333 },
   "/heroes/india/indianHero1.webp": { width: 2400, height: 1800 },
   "/heroes/india/indianHero2.webp": { width: 2400, height: 1800 },
   "/heroes/india/indianHero3.webp": { width: 2400, height: 1800 },
@@ -61,7 +61,7 @@ export const GALLERY_DESTINATION_FALLBACKS = {
   "/heroes/home/HeroHome5.webp": "Community",
   "/heroes/home/HeroHome6.webp": "Community",
   "/heroes/home/HeroHome7.webp": "Community",
-  "/heroes/home/upcomingCommunityTrips.png": "Community",
+  "/heroes/home/upcomingCommunityTrips-v2.jpg": "Community",
   "/heroes/international/internationalHero1.webp": "International",
   "/heroes/international/internationalHero2.webp": "International",
   "/heroes/international/internationalHero3.webp": "International",
@@ -75,7 +75,7 @@ export const GALLERY_DESTINATION_FALLBACKS = {
 /** Optional object-position hints for cropped contexts (About teaser, lightbox thumbs). */
 export const GALLERY_FOCUS = {
   "/heroes/home/homeHero1.webp": "center 35%",
-  "/heroes/home/upcomingCommunityTrips.png": "center 40%",
+  "/heroes/home/upcomingCommunityTrips-v2.jpg": "center 40%",
   "/heroes/calendar/calendarHero5.webp": "center 30%",
 };
 

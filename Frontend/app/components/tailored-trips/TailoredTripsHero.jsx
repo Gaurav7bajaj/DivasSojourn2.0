@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { tailoredHeroImages } from "../../data/tailoredDestinations";
 
-const INTERVAL_MS = 6000;
+const INTERVAL_MS = 4000;
 
 function stripCacheBust(src) {
   return String(src || "").split("?")[0];

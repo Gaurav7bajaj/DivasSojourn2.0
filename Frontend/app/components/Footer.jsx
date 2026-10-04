@@ -22,7 +22,7 @@ export default function Footer() {
             />
           </Link>
           <p className="mt-4 max-w-md leading-7 text-white/80">
-            A global women&apos;s travel community creating secure, stylish and memorable journeys.
+            a global community of women travelling safely, beautifully, and together
           </p>
           <div className="mt-6 space-y-3 text-sm text-white/70">
             <p className="flex items-center gap-3">

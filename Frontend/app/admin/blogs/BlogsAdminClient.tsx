@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Blog } from "@/app/lib/data/types";
+import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 
 export default function BlogsAdminClient() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadBlogs = useCallback(async () => {
     setLoading(true);
@@ -57,6 +59,23 @@ export default function BlogsAdminClient() {
     };
   }, []);
 
+  const filteredBlogs = useMemo(
+    () =>
+      blogs.filter((blog) =>
+        matchesAdminQuery(searchQuery, [
+          blog.title,
+          blog.slug,
+          blog.author,
+          blog.excerpt,
+          blog.category,
+          blog.destination,
+          ...(blog.categories || []),
+          blog.published ? "published" : "draft",
+        ]),
+      ),
+    [blogs, searchQuery],
+  );
+
   const handleDelete = async (blog: Blog) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${blog.title}"? This cannot be undone.`,
@@ -97,7 +116,16 @@ export default function BlogsAdminClient() {
       {message ? <p className="mt-4 text-sm font-semibold text-[#0F9B9B]">{message}</p> : null}
       {error ? <p className="mt-4 text-sm font-semibold text-red-600">{error}</p> : null}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl bg-white shadow-sm">
+      <AdminSearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        label="Search blogs"
+        placeholder="Search by title, author, destination, status…"
+        resultCount={filteredBlogs.length}
+        totalCount={blogs.length}
+      />
+
+      <div className="mt-4 overflow-x-auto rounded-2xl bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-black/10 bg-[#FAFAFA] text-xs uppercase tracking-wide text-[#666666]">
             <tr>
@@ -120,8 +148,14 @@ export default function BlogsAdminClient() {
                   No blogs yet.
                 </td>
               </tr>
+            ) : filteredBlogs.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-4 py-8 text-center text-[#666666]">
+                  No blogs match “{searchQuery.trim()}”.
+                </td>
+              </tr>
             ) : (
-              blogs.map((blog) => (
+              filteredBlogs.map((blog) => (
                 <tr key={blog.id} className="border-t border-black/5">
                   <td className="px-4 py-3 font-semibold">{blog.title}</td>
                   <td className="px-4 py-3">

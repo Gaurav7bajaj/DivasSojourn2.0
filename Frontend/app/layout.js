@@ -1,5 +1,4 @@
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import AppShell from "./components/AppShell";
 import { getTripNavItems } from "./lib/data/trips";
@@ -80,20 +79,17 @@ export default async function RootLayout({ children }) {
     getTripNavItems("International"),
   ]);
 
-  const clerkEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim());
-  const shell = (
-    <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
-      {children}
-    </AppShell>
-  );
-
   return (
     <html
       lang="en-IN"
       data-scroll-behavior="smooth"
       className={`${playfair.variable} ${dmSans.variable}`}
     >
-      <body>{clerkEnabled ? <ClerkProvider>{shell}</ClerkProvider> : shell}</body>
+      <body>
+        <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
+          {children}
+        </AppShell>
+      </body>
     </html>
   );
 }

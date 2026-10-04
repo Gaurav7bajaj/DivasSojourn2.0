@@ -5,7 +5,7 @@
 
 import { internationalHeroImages } from "./heroImages";
 
-export const INTERNATIONAL_HERO_INTERVAL_MS = 6000;
+export const INTERNATIONAL_HERO_INTERVAL_MS = 4000;
 
 function stripCacheBust(src) {
   return String(src || "").split("?")[0];

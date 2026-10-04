@@ -4,8 +4,6 @@ import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import WhatsAppButton from "./WhatsAppButton";
-// Temporary: profile modal + phone OTP after signup disabled
-// import ProfileCompletionGate from "./ProfileCompletionGate";
 
 export default function AppShell({ children, indiaTrips = [], internationalTrips = [] }) {
   const pathname = usePathname();

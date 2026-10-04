@@ -16,7 +16,7 @@ Keep the app portable:
 |-------|--------|
 | `.env` / `.env.local` are **gitignored** (never commit them) | Required |
 | Only `.env.example` / `.env.local.example` are in git (placeholders only) | Required |
-| No real `CLERK_SECRET_KEY`, `SMSALERT_API_KEY`, or admin passwords in any tracked file | Required |
+| No real `SMSALERT_API_KEY` or admin passwords in any tracked file | Required |
 | `prisma/dev.db` and `public/uploads/*` (except `.gitkeep`) are ignored | Required |
 | Strong unique `ADMIN_PASSWORD` + `ADMIN_AUTH_SECRET` set **only** in Vercel env vars | Required |
 | `MOCK_OTP` left **unset** on Vercel | Required |
@@ -49,7 +49,7 @@ That guide builds a tiny demo (form → `comments` table) with `@neondatabase/se
 | 3. Install `@neondatabase/serverless` | **Skip** — Prisma uses `DATABASE_URL` |
 | 4. `CREATE TABLE comments` in SQL Editor | **Skip** — `prisma db push` creates real app tables |
 | 5. Sample comment form / Server Action | **Skip** — use `/admin` for content |
-| 6. `npm run dev` | Yes, after env pull + admin/Clerk vars |
+| 6. `npm run dev` | Yes, after env pull + admin/SMS Alert vars |
 
 ### Pull Neon env vars to your machine
 
@@ -63,7 +63,7 @@ npx vercel env pull .env.development.local
 
 That downloads `DATABASE_URL` and `DATABASE_URL_UNPOOLED` (and any other Vercel envs). The file is gitignored.
 
-Then create/update `.env.local` with admin + Clerk secrets (or merge them into `.env.development.local`). Next.js loads both.
+Then create/update `.env.local` with admin + SMS Alert secrets (or merge them into `.env.development.local`). Next.js loads both.
 
 ### Apply tables (first time)
 
@@ -95,20 +95,12 @@ On Vercel deploy, `npm run vercel-build` also runs `prisma db push` so tables ex
 | `ADMIN_EMAIL` | Email the client will type on `/admin/login` |
 | `ADMIN_PASSWORD` | Strong password — share privately with client |
 | `ADMIN_AUTH_SECRET` | Long random string (e.g. 32+ chars) |
-| `AUTH_SECRET` | Optional; can match `ADMIN_AUTH_SECRET` |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | From Clerk dashboard |
-| `CLERK_SECRET_KEY` | From Clerk dashboard (server only) |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | `/sign-up` |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | `/` |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | `/` |
-| `SMSALERT_API_KEY` | Optional until OTP is re-enabled |
-| `SMSALERT_SENDER` | Optional |
-| `SMSALERT_OTP_TEMPLATE` | Optional |
+| `AUTH_SECRET` | Signs itinerary unlock cookie (can match `ADMIN_AUTH_SECRET`) |
+| `SMSALERT_API_KEY` | From SMS Alert dashboard |
+| `SMSALERT_SENDER` | Approved sender ID (e.g. `ESTORE`) |
+| `SMSALERT_OTP_TEMPLATE` | Must include `[otp]` tag |
 
 7. Deploy.
-
-In Clerk, add your Vercel URL to **Allowed origins / redirect URLs** (e.g. `https://your-app.vercel.app` and `https://*.vercel.app` for previews).
 
 ---
 
@@ -140,7 +132,7 @@ There is no default production password. If `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `
 |-------|---------------------|
 | Trip/blog/gallery **data** | Works if Postgres is configured |
 | **Image uploads** to `public/uploads/` | Do **not** persist on serverless; prefer Unsplash/HTTPS image URLs in admin forms for the client demo |
-| Profile SMS OTP | Needs approved SMS Alert sender; safe to leave unset for UI preview |
+| Itinerary phone OTP | Needs approved SMS Alert sender + template |
 
 Cloud uploads (Vercel Blob / S3 / Cloudinary) can replace `app/lib/uploads.ts` later without changing the admin UI.
 
@@ -152,7 +144,7 @@ Cloud uploads (Vercel Blob / S3 / Cloudinary) can replace `app/lib/uploads.ts` l
 - [ ] India / International / Upcoming trips load from DB  
 - [ ] `/admin/login` accepts Vercel credentials  
 - [ ] `/admin` redirects to login when logged out  
-- [ ] Clerk sign-in / sign-up open (if keys set)  
+- [ ] Trip itinerary OTP unlock works (if SMS Alert keys set)  
 - [ ] Confirm `.env.local` was never pushed (`git status` / GitHub file search)
 
 ---
@@ -162,7 +154,7 @@ Cloud uploads (Vercel Blob / S3 / Cloudinary) can replace `app/lib/uploads.ts` l
 ```text
 Local:           Neon URLs in .env.local / .env.development.local  +  npm run dev
 Vercel preview:  same Neon + Vercel env vars  +  npm run vercel-build  (client demo only)
-Final live host: same codebase + same (or new) Postgres URLs + same ADMIN_*/Clerk env vars
+Final live host: same codebase + same (or new) Postgres URLs + same ADMIN_*/SMS Alert env vars
 Admin (preview): https://YOUR-APP.vercel.app/admin/login
 ```
 

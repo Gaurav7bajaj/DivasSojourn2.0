@@ -8,7 +8,7 @@ cp .env.local.example .env.local
 # Prefer pulling DB URLs from Vercel after Neon is connected:
 #   npx vercel link
 #   npx vercel env pull .env.development.local
-# Then keep ADMIN_* and Clerk keys in .env.local
+# Then keep ADMIN_* and SMS Alert keys in .env.local
 npm install
 npx prisma db push
 npx prisma db seed

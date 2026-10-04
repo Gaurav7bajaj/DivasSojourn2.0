@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import ShortContactForm from "../international/ShortContactForm";
 import { deriveCountryLabel } from "../../lib/data/tripCountry";
 import { deriveRegionLabel } from "../../lib/data/tripRegion";
+import ItineraryUnlockModal from "./ItineraryUnlockModal";
 import TripBookingCard from "./TripBookingCard";
 import {
   TripInclusionsSection,
@@ -22,7 +24,12 @@ export default function TripDetailPage({
   similarTrips = [],
   basePath = "/india-trips",
   baseLabel = "India Trips",
+  itineraryUnlocked = false,
+  hasItinerary = false,
 }) {
+  const router = useRouter();
+  const [unlockOpen, setUnlockOpen] = useState(false);
+
   const enrichedTrip = useMemo(() => {
     const country =
       trip.destination === "International" ? deriveCountryLabel(trip) : undefined;
@@ -30,9 +37,11 @@ export default function TripDetailPage({
     return { ...trip, country, region };
   }, [trip]);
 
+  const locked = hasItinerary && !itineraryUnlocked;
+
   const sections = useMemo(() => {
     const list = [{ id: "overview", label: "Overview" }];
-    if (Array.isArray(enrichedTrip.itinerary) && enrichedTrip.itinerary.length) {
+    if (hasItinerary || (Array.isArray(enrichedTrip.itinerary) && enrichedTrip.itinerary.length)) {
       list.push({ id: "itinerary", label: "Itinerary" });
     }
     if (
@@ -51,7 +60,7 @@ export default function TripDetailPage({
       list.push({ id: "gallery", label: "Gallery" });
     }
     return list;
-  }, [enrichedTrip]);
+  }, [enrichedTrip, hasItinerary]);
 
   const firstDeparture = getDepartures(enrichedTrip).find((d) => !d.soldOut);
   const bookHref = `/payments?trip=${encodeURIComponent(enrichedTrip.slug)}${
@@ -60,7 +69,6 @@ export default function TripDetailPage({
       : ""
   }`;
 
-  // Enrich similar trips with country/region for cards
   const similar = useMemo(
     () =>
       similarTrips.map((item) => ({
@@ -72,16 +80,38 @@ export default function TripDetailPage({
     [similarTrips],
   );
 
+  const openUnlock = () => setUnlockOpen(true);
+
+  const handleSectionClick = (id) => {
+    if (id === "itinerary" && locked) {
+      openUnlock();
+    }
+  };
+
+  const handleUnlocked = () => {
+    setUnlockOpen(false);
+    router.refresh();
+  };
+
   return (
     <main className="bg-[#0B0B0C] pb-24 text-[#FBF8F1] md:pb-0">
       <TripDetailHero trip={enrichedTrip} basePath={basePath} baseLabel={baseLabel} />
-      <TripStickyNav sections={sections} trip={enrichedTrip} bookHref={bookHref} />
+      <TripStickyNav
+        sections={sections}
+        trip={enrichedTrip}
+        bookHref={bookHref}
+        onSectionClick={handleSectionClick}
+      />
 
       <div className="px-5 pt-14 md:px-12 xl:px-24">
         <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-12">
           <div className="flex min-w-0 flex-col gap-[72px]">
             <TripOverviewSection trip={enrichedTrip} />
-            <TripItinerarySection trip={enrichedTrip} />
+            <TripItinerarySection
+              trip={enrichedTrip}
+              locked={locked}
+              onRequestUnlock={openUnlock}
+            />
             <TripInclusionsSection trip={enrichedTrip} />
             <TripWhoGoingSection trip={enrichedTrip} />
             <TripMomentsGallery trip={enrichedTrip} />
@@ -105,6 +135,13 @@ export default function TripDetailPage({
         eyebrow="Planning this trip?"
         titleLead="Reach out"
         titleEm="to us"
+      />
+
+      <ItineraryUnlockModal
+        open={unlockOpen}
+        onClose={() => setUnlockOpen(false)}
+        onUnlocked={handleUnlocked}
+        tripName={enrichedTrip.shortName || enrichedTrip.title}
       />
     </main>
   );

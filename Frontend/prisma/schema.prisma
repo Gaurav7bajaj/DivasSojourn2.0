@@ -99,7 +99,7 @@ model Trip {
   updatedAt            DateTime @updatedAt
 }
 
-/// Traveler profile collected after Clerk sign-up (name + phone for leads).
+/// Legacy traveler profile table (unused — phone OTP unlock replaced Clerk auth).
 model CustomerProfile {
   id          String   @id @default(uuid())
   clerkUserId String   @unique

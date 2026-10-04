@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Trash2 } from "lucide-react";
 import type { GalleryImage } from "@/app/lib/data/types";
+import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 
 export default function GalleryAdminClient() {
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -14,6 +15,7 @@ export default function GalleryAdminClient() {
   const [caption, setCaption] = useState("");
   const [category, setCategory] = useState("");
   const [files, setFiles] = useState<FileList | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -61,6 +63,14 @@ export default function GalleryAdminClient() {
       active = false;
     };
   }, []);
+
+  const filteredImages = useMemo(
+    () =>
+      images.filter((image) =>
+        matchesAdminQuery(searchQuery, [image.caption, image.category]),
+      ),
+    [images, searchQuery],
+  );
 
   const handleUpload = async (event: FormEvent) => {
     event.preventDefault();
@@ -175,11 +185,28 @@ export default function GalleryAdminClient() {
       {message ? <p className="mt-4 text-sm font-semibold text-[#0F9B9B]">{message}</p> : null}
       {error ? <p className="mt-4 text-sm font-semibold text-red-600">{error}</p> : null}
 
+      <AdminSearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        label="Search gallery"
+        placeholder="Search by caption or category…"
+        resultCount={filteredImages.length}
+        totalCount={images.length}
+      />
+
       {loading ? (
         <p className="mt-8 text-sm text-[#666666]">Loading gallery...</p>
+      ) : images.length === 0 ? (
+        <p className="mt-8 rounded-2xl border border-dashed border-black/15 bg-white px-6 py-12 text-center text-sm text-[#555555]">
+          No photos yet.
+        </p>
+      ) : filteredImages.length === 0 ? (
+        <p className="mt-8 rounded-2xl border border-dashed border-black/15 bg-white px-6 py-12 text-center text-sm text-[#555555]">
+          No photos match “{searchQuery.trim()}”.
+        </p>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {images.map((image) => (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredImages.map((image) => (
             <article key={image.id} className="group relative overflow-hidden rounded-2xl bg-white shadow-sm">
               <div className="relative aspect-[4/3]">
                 <Image

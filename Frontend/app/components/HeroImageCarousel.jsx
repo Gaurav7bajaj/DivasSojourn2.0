@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export default function HeroImageCarousel({
   images,
-  intervalMs = 2000,
+  intervalMs = 4000,
   className = "",
   imageClassName = "object-cover object-center",
   children,
