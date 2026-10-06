@@ -5,6 +5,18 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Trip } from "@/app/lib/data/types";
 import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 
+function currentYearMonth(now = new Date()) {
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function sortByStartDateAsc(a: Trip, b: Trip) {
+  return a.startDate.localeCompare(b.startDate);
+}
+
+function sortByStartDateDesc(a: Trip, b: Trip) {
+  return b.startDate.localeCompare(a.startDate);
+}
+
 export default function TripsAdminClient() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,10 +43,6 @@ export default function TripsAdminClient() {
   }, []);
 
   useEffect(() => {
-    // Fetch on mount without calling setState synchronously in the effect
-    // body (react-hooks/set-state-in-effect fails `next build`'s lint step
-    // otherwise). `loading`/`error` already start at the right values, so
-    // this only needs to set state after the request resolves.
     let active = true;
 
     (async () => {
@@ -80,6 +88,35 @@ export default function TripsAdminClient() {
     [searchQuery, trips],
   );
 
+  const { currentMonthUpcoming, otherUpcoming, pastTrips } = useMemo(() => {
+    const ym = currentYearMonth();
+    const currentMonth: Trip[] = [];
+    const other: Trip[] = [];
+    const past: Trip[] = [];
+
+    for (const trip of filteredTrips) {
+      if (trip.status === "past") {
+        past.push(trip);
+        continue;
+      }
+      if (trip.startDate.slice(0, 7) === ym) {
+        currentMonth.push(trip);
+      } else {
+        other.push(trip);
+      }
+    }
+
+    currentMonth.sort(sortByStartDateAsc);
+    other.sort(sortByStartDateAsc);
+    past.sort(sortByStartDateDesc);
+
+    return {
+      currentMonthUpcoming: currentMonth,
+      otherUpcoming: other,
+      pastTrips: past,
+    };
+  }, [filteredTrips]);
+
   const handleDelete = async (trip: Trip) => {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${trip.title}"? This cannot be undone.`,
@@ -101,6 +138,14 @@ export default function TripsAdminClient() {
       setError("Unable to delete trip.");
     }
   };
+
+  const emptyMessage = loading
+    ? "Loading trips..."
+    : trips.length === 0
+      ? "No trips yet."
+      : filteredTrips.length === 0
+        ? `No trips match “${searchQuery.trim()}”.`
+        : null;
 
   return (
     <div>
@@ -131,7 +176,65 @@ export default function TripsAdminClient() {
         totalCount={trips.length}
       />
 
-      <div className="mt-4 overflow-x-auto rounded-2xl bg-white shadow-sm">
+      {emptyMessage ? (
+        <div className="mt-4 rounded-2xl bg-white px-4 py-8 text-center text-sm text-[#666666] shadow-sm">
+          {emptyMessage}
+        </div>
+      ) : (
+        <div className="mt-6 space-y-8">
+          <TripSection
+            title="This month’s upcoming trips"
+            description="Departures starting in the current calendar month."
+            trips={currentMonthUpcoming}
+            emptyLabel="No upcoming trips this month."
+            onDelete={handleDelete}
+          />
+          <TripSection
+            title="Other upcoming trips"
+            description="All other trips that have not departed yet."
+            trips={otherUpcoming}
+            emptyLabel="No other upcoming trips."
+            onDelete={handleDelete}
+          />
+          <TripSection
+            title="Past trips"
+            description="Trips whose start date has already passed."
+            trips={pastTrips}
+            emptyLabel="No past trips."
+            onDelete={handleDelete}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TripSection({
+  title,
+  description,
+  trips,
+  emptyLabel,
+  onDelete,
+}: {
+  title: string;
+  description: string;
+  trips: Trip[];
+  emptyLabel: string;
+  onDelete: (trip: Trip) => void;
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 className="text-xl font-black text-[#111111]">{title}</h2>
+          <p className="mt-0.5 text-sm text-[#666666]">{description}</p>
+        </div>
+        <p className="text-xs font-bold uppercase tracking-wide text-[#888888]">
+          {trips.length} {trips.length === 1 ? "trip" : "trips"}
+        </p>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-black/10 bg-[#FAFAFA] text-xs uppercase tracking-wide text-[#666666]">
             <tr>
@@ -144,30 +247,20 @@ export default function TripsAdminClient() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
+            {trips.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-[#666666]">
-                  Loading trips...
-                </td>
-              </tr>
-            ) : trips.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[#666666]">
-                  No trips yet.
-                </td>
-              </tr>
-            ) : filteredTrips.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[#666666]">
-                  No trips match “{searchQuery.trim()}”.
+                  {emptyLabel}
                 </td>
               </tr>
             ) : (
-              filteredTrips.map((trip) => (
+              trips.map((trip) => (
                 <tr key={trip.id} className="border-t border-black/5">
                   <td className="px-4 py-3 font-semibold">{trip.shortName || trip.title}</td>
                   <td className="px-4 py-3">{trip.destination}</td>
-                  <td className="px-4 py-3 text-[#555555]">{trip.dates || `${trip.startDate} → ${trip.endDate}`}</td>
+                  <td className="px-4 py-3 text-[#555555]">
+                    {trip.dates || `${trip.startDate} → ${trip.endDate}`}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-1 text-xs font-bold ${
@@ -198,7 +291,7 @@ export default function TripsAdminClient() {
                       </Link>
                       <button
                         type="button"
-                        onClick={() => handleDelete(trip)}
+                        onClick={() => onDelete(trip)}
                         className="font-bold text-red-600 hover:underline"
                       >
                         Delete
@@ -211,6 +304,6 @@ export default function TripsAdminClient() {
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
   );
 }
