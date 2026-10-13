@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { UpcomingTripsClient, UpcomingTripsHeader } from "../components/upcoming";
 import ShortContactForm from "../components/international/ShortContactForm";
+import GoogleReviews from "../components/shared/GoogleReviews";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
 import { getUpcomingTrips } from "../lib/data/trips";
 
@@ -115,6 +116,11 @@ export default async function UpcomingTripsPage() {
       >
         <UpcomingTripsClient trips={trips} months={months} />
       </Suspense>
+      <GoogleReviews
+        title="Hear from Divas"
+        titleAccent="who went before you"
+        suffix=""
+      />
       <ShortContactForm
         pageLabel="Upcoming Trips"
         storageKey="divasUpcomingLeads"

@@ -17,6 +17,10 @@ function sortByStartDateDesc(a: Trip, b: Trip) {
   return b.startDate.localeCompare(a.startDate);
 }
 
+function isItineraryComplete(trip: Trip) {
+  return Array.isArray(trip.itinerary) && trip.itinerary.length > 0;
+}
+
 export default function TripsAdminClient() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,9 +87,15 @@ export default function TripsAdminClient() {
           trip.pickupLocation,
           trip.dropLocation,
           trip.published ? "live published" : "draft",
+          isItineraryComplete(trip) ? "itinerary completed" : "itinerary pending empty",
         ]),
       ),
     [searchQuery, trips],
+  );
+
+  const pendingItineraryTrips = useMemo(
+    () => trips.filter((trip) => !isItineraryComplete(trip)),
+    [trips],
   );
 
   const { currentMonthUpcoming, otherUpcoming, pastTrips } = useMemo(() => {
@@ -167,11 +177,34 @@ export default function TripsAdminClient() {
       {message ? <p className="mt-4 text-sm font-semibold text-[#0F9B9B]">{message}</p> : null}
       {error ? <p className="mt-4 text-sm font-semibold text-red-600">{error}</p> : null}
 
+      {!loading && pendingItineraryTrips.length > 0 ? (
+        <div
+          role="alert"
+          className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
+          <p className="font-bold">
+            {pendingItineraryTrips.length} trip
+            {pendingItineraryTrips.length === 1 ? "" : "s"} missing an itinerary
+          </p>
+          <p className="mt-1 text-amber-800/90">
+            Add day-by-day itinerary details before publishing. Pending:{" "}
+            {pendingItineraryTrips
+              .slice(0, 6)
+              .map((trip) => trip.shortName || trip.title)
+              .join(", ")}
+            {pendingItineraryTrips.length > 6
+              ? ` +${pendingItineraryTrips.length - 6} more`
+              : ""}
+            .
+          </p>
+        </div>
+      ) : null}
+
       <AdminSearchBar
         value={searchQuery}
         onChange={setSearchQuery}
         label="Search trips"
-        placeholder="Search by title, destination, dates, status…"
+        placeholder="Search by title, destination, dates, status, itinerary…"
         resultCount={filteredTrips.length}
         totalCount={trips.length}
       />
@@ -243,63 +276,96 @@ function TripSection({
               <th className="px-4 py-3">Dates</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Published</th>
+              <th className="px-4 py-3">Itinerary</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {trips.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[#666666]">
+                <td colSpan={7} className="px-4 py-8 text-center text-[#666666]">
                   {emptyLabel}
                 </td>
               </tr>
             ) : (
-              trips.map((trip) => (
-                <tr key={trip.id} className="border-t border-black/5">
-                  <td className="px-4 py-3 font-semibold">{trip.shortName || trip.title}</td>
-                  <td className="px-4 py-3">{trip.destination}</td>
-                  <td className="px-4 py-3 text-[#555555]">
-                    {trip.dates || `${trip.startDate} → ${trip.endDate}`}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        trip.status === "upcoming"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {trip.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        trip.published ? "bg-teal-50 text-teal-700" : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      {trip.published ? "Live" : "Draft"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3">
-                      <Link
-                        href={`/admin/trips/${trip.id}/edit`}
-                        className="font-bold text-[#0F9B9B] hover:underline"
+              trips.map((trip) => {
+                const itineraryComplete = isItineraryComplete(trip);
+                return (
+                  <tr
+                    key={trip.id}
+                    className={`border-t border-black/5 ${
+                      itineraryComplete ? "" : "bg-amber-50/60"
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-semibold">
+                      <span className="inline-flex items-center gap-2">
+                        {trip.shortName || trip.title}
+                        {!itineraryComplete ? (
+                          <span
+                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-white"
+                            title="Itinerary is empty"
+                            aria-label="Itinerary is empty"
+                          >
+                            !
+                          </span>
+                        ) : null}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{trip.destination}</td>
+                    <td className="px-4 py-3 text-[#555555]">
+                      {trip.dates || `${trip.startDate} → ${trip.endDate}`}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                          trip.status === "upcoming"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
                       >
-                        Edit
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(trip)}
-                        className="font-bold text-red-600 hover:underline"
+                        {trip.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                          trip.published ? "bg-teal-50 text-teal-700" : "bg-amber-50 text-amber-700"
+                        }`}
                       >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        {trip.published ? "Live" : "Draft"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                          itineraryComplete
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {itineraryComplete ? "Completed" : "Pending"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-3">
+                        <Link
+                          href={`/admin/trips/${trip.id}/edit`}
+                          className="font-bold text-[#0F9B9B] hover:underline"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(trip)}
+                          className="font-bold text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

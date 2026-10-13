@@ -34,7 +34,6 @@ const FILTERS = [
   { value: "international", label: "International" },
 ];
 const MAX_LANES = 2;
-const DEFAULT_MONTH = "2026-07";
 
 const inrFmt = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 const usdFmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
@@ -313,7 +312,7 @@ export default function TripCalendar({ trips = [] }) {
   const searchParams = useSearchParams();
 
   const initialMonth =
-    parseMonthKey(searchParams.get("month")) || parseMonthKey(DEFAULT_MONTH);
+    parseMonthKey(searchParams.get("month")) || parseMonthKey(toMonthKey(new Date()));
   const [currentDate, setCurrentDate] = useState(initialMonth);
   const [filterType, setFilterType] = useState(parseType(searchParams.get("type")));
   const [selectedTripId, setSelectedTripId] = useState(null);
@@ -379,6 +378,15 @@ export default function TripCalendar({ trips = [] }) {
     [filteredTrips, monthStart, monthEnd],
   );
 
+  // Sidebar "Departing in …" — only trips that actually depart (start) this month.
+  const departingTripsInMonth = useMemo(
+    () =>
+      filteredTrips
+        .filter((trip) => trip.startDate >= monthStart && trip.startDate <= monthEnd)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate)),
+    [filteredTrips, monthStart, monthEnd],
+  );
+
   const calendarCells = useMemo(() => buildCalendarCells(year, month), [year, month]);
   const weeks = useMemo(() => {
     const rows = [];
@@ -411,9 +419,9 @@ export default function TripCalendar({ trips = [] }) {
   }, [tripsInMonth, monthStart, monthEnd]);
 
   const mobileList = useMemo(() => {
-    if (!mobileDay) return tripsInMonth;
+    if (!mobileDay) return departingTripsInMonth;
     return (tripsByDate[mobileDay] || []).slice().sort((a, b) => a.startDate.localeCompare(b.startDate));
-  }, [mobileDay, tripsInMonth, tripsByDate]);
+  }, [mobileDay, departingTripsInMonth, tripsByDate]);
 
   const clearSelection = useCallback(() => {
     setSelectedTripId(null);

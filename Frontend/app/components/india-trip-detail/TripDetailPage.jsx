@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ShortContactForm from "../international/ShortContactForm";
+import GoogleReviews from "../shared/GoogleReviews";
 import { deriveCountryLabel } from "../../lib/data/tripCountry";
 import { deriveRegionLabel } from "../../lib/data/tripRegion";
 import ItineraryUnlockModal from "./ItineraryUnlockModal";
@@ -120,6 +121,8 @@ export default function TripDetailPage({
           <TripBookingCard trip={enrichedTrip} />
         </div>
       </div>
+
+      <GoogleReviews title="What our Divas" titleAccent="say" suffix="" />
 
       <div className="mt-16">
         <SimilarTrips

@@ -7,44 +7,50 @@ import {
   WhyDivasSection,
 } from "./components/home";
 import ShortContactForm from "./components/international/ShortContactForm";
-import TravelerReviews from "./components/international/TravelerReviews";
-import {
-  getGoogleReviewsForUi,
-  mergePlatformReviewsWithGoogle,
-} from "./lib/data/googleReviews";
+import GoogleReviews from "./components/shared/GoogleReviews";
+import { GOOGLE } from "./data/googleReviews";
+import { getPlatformStats } from "./lib/data/siteReviews";
 
-// Re-render at most once an hour; Google data itself is cached in the DB for 24h.
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const google = await getGoogleReviewsForUi();
-  const platformReviews = mergePlatformReviewsWithGoogle(google);
-  const isLiveGoogle = google.source === "google";
+  const platforms = await getPlatformStats();
+  const platformReviews = platforms.map((p) => ({
+    platform: p.platform,
+    rating: p.rating ?? undefined,
+    ratingLabel: p.ratingLabel || undefined,
+    countLabel: p.countLabel || `${p.count}+ reviews`,
+    href: p.href,
+  }));
+
+  const google = platforms.find((p) => p.id === "google");
+  const reviewsSchema = {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    name: "Divas Sojourn",
+    url: "https://divassojourn.com",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: google?.rating ?? GOOGLE.rating,
+      reviewCount: google?.count ?? GOOGLE.count,
+      bestRating: 5,
+      worstRating: 1,
+    },
+  };
 
   return (
     <main className="bg-[#0B0B0C]">
-      <HeroSection />
-      <ReviewsSection
-        reviews={platformReviews}
-        mapsUri={isLiveGoogle ? google.mapsUri : null}
-        attributionLabel={
-          isLiveGoogle ? `${google.placeName} rating powered by Google.` : null
-        }
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewsSchema) }}
       />
-      {/* Only show individual reviews when they are real Google reviews —
-          never the placeholder sample reviews. */}
-      {isLiveGoogle && google.reviews?.length ? (
-        <TravelerReviews
-          reviews={google.reviews}
-          title="What Travelers Say on Google"
-          subtitle="Real Google reviews from the Divas Sojourn community"
-          mapsUri={google.mapsUri}
-        />
-      ) : null}
+      <HeroSection />
+      <ReviewsSection reviews={platformReviews} />
       <IndiaTripsSection />
       <InternationalTripsSection />
       <UpcomingTripsSection />
       <WhyDivasSection />
+      <GoogleReviews title="Don't take" titleAccent="our word" suffix=" for it" />
       <ShortContactForm pageLabel="Home" storageKey="divasHomeLeads" />
     </main>
   );

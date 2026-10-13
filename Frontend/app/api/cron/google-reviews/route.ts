@@ -15,7 +15,6 @@ function isAuthorized(request: NextRequest) {
     return true;
   }
 
-  // Vercel Cron also sends this header on Hobby/Pro when CRON_SECRET is set in some setups
   const cronHeader = request.headers.get("x-vercel-cron-secret") || "";
   return cronHeader === secret;
 }
@@ -29,8 +28,8 @@ export async function GET(request: NextRequest) {
     const result = await refreshGooglePlaceIfStale({ force: true });
     return NextResponse.json({
       ok: true,
-      refreshed: result.refreshed,
-      skipped: "skipped" in result ? result.skipped : undefined,
+      refreshed: false,
+      skipped: "disabled",
       fetchedAt: result.cache?.fetchedAt ?? null,
       rating: result.cache?.rating ?? null,
       userRatingsTotal: result.cache?.userRatingsTotal ?? null,

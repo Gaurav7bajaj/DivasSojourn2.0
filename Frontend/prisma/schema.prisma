@@ -128,6 +128,33 @@ model GooglePlaceCache {
   updatedAt        DateTime @updatedAt
 }
 
+/// Google review wall cards shown on public pages (admin-managed).
+model SiteReview {
+  id        String   @id @default(uuid())
+  sortOrder Int
+  name      String
+  date      String
+  rating    Int      @default(5)
+  text      String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+/// Platform rating cards (Google / TripAdvisor / Facebook) — admin-editable counts.
+model PlatformStat {
+  id          String   @id
+  platform    String
+  rating      Float?
+  ratingLabel String?
+  count       Int      @default(0)
+  countLabel  String   @default("")
+  href        String   @default("")
+  updatedAt   DateTime @updatedAt
+}
+
 /// Website contact / enquiry form submissions for the admin panel.
 model Enquiry {
   id            String   @id @default(uuid())

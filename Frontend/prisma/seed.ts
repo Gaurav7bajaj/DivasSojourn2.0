@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import { PLATFORM_STATS, REVIEWS } from "../app/data/googleReviews";
 import { SEED_BLOGS } from "../app/lib/data/seedBlogs";
 import { SEED_GALLERY } from "../app/lib/data/seedGallery";
 import { seedTrips } from "./seedTrips";
@@ -67,8 +68,40 @@ async function main() {
 
   const tripCount = await seedTrips(prisma);
 
+  const existingReviews = await prisma.siteReview.count();
+  if (existingReviews === 0) {
+    await prisma.siteReview.createMany({
+      data: REVIEWS.map((review) => ({
+        sortOrder: review.id,
+        name: review.name,
+        date: review.date,
+        rating: review.rating,
+        text: review.text,
+        url: review.url,
+      })),
+    });
+  }
+
+  for (const p of PLATFORM_STATS) {
+    await prisma.platformStat.upsert({
+      where: { id: p.id },
+      update: {},
+      create: {
+        id: p.id,
+        platform: p.platform,
+        rating: p.rating,
+        ratingLabel: p.ratingLabel,
+        count: p.count,
+        countLabel: p.countLabel,
+        href: p.href,
+      },
+    });
+  }
+
+  const reviewCount = await prisma.siteReview.count();
+
   console.log(
-    `Seeded ${SEED_BLOGS.length} blogs, ${SEED_GALLERY.length} gallery images, and ${tripCount} trips.`,
+    `Seeded ${SEED_BLOGS.length} blogs, ${SEED_GALLERY.length} gallery images, ${tripCount} trips, ${reviewCount} reviews, and ${PLATFORM_STATS.length} platform stats.`,
   );
 }
 
