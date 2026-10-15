@@ -292,6 +292,7 @@ export async function initiateEasebuzzPayment(fields: {
     status?: number | string;
     data?: string | Record<string, unknown>;
     error?: string | string[];
+    error_desc?: string;
     msg?: string;
     message?: string;
   };
@@ -318,6 +319,7 @@ export async function initiateEasebuzzPayment(fields: {
     httpStatus: response.status,
     status: payload.status,
     error: payload.error,
+    error_desc: payload.error_desc,
     msg: payload.msg,
     message: payload.message,
     data: payload.data,
@@ -333,7 +335,7 @@ export async function initiateEasebuzzPayment(fields: {
     ? payload.error.filter(Boolean).join("; ")
     : payload.error;
 
-  // On failure Easebuzz often puts the reason in `data` (string or object).
+  // On failure Easebuzz often puts the reason in `data` / `error_desc`.
   let dataError = "";
   if (statusNum !== 1 && payload.data != null) {
     dataError =
@@ -342,13 +344,23 @@ export async function initiateEasebuzzPayment(fields: {
         : JSON.stringify(payload.data);
   }
 
+  const detail =
+    (typeof payload.error_desc === "string" && payload.error_desc) ||
+    (typeof errorField === "string" && errorField) ||
+    payload.msg ||
+    payload.message ||
+    "";
+
+  // Prefer the specific reason; keep generic data message as fallback.
+  const combined =
+    detail && dataError && detail !== dataError
+      ? `${dataError} (${detail})`
+      : detail || dataError;
+
   return {
     ok: false,
     error:
-      dataError ||
-      (typeof errorField === "string" && errorField) ||
-      payload.msg ||
-      payload.message ||
+      combined ||
       `Unable to start Easebuzz checkout (status=${String(payload.status ?? "unknown")})`,
   };
 }
