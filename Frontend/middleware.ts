@@ -104,6 +104,8 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Admin-only. Public Easebuzz callback/webhook live under /api/payments/*
+  // and are intentionally NOT matched here (Easebuzz POSTs without admin cookies).
   matcher: [
     "/admin/:path*",
     "/api/admin/:path*",
