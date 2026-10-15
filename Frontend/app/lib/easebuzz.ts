@@ -288,15 +288,16 @@ export async function initiateEasebuzzPayment(fields: {
   });
 
   const rawText = await response.text();
-  let payload: {
+  type EasebuzzInitiatePayload = {
     status?: number | string;
     data?: string | Record<string, unknown>;
     error?: string | string[];
     msg?: string;
     message?: string;
-  } | null = null;
+  };
+  let payload: EasebuzzInitiatePayload | null = null;
   try {
-    payload = JSON.parse(rawText) as typeof payload;
+    payload = JSON.parse(rawText) as EasebuzzInitiatePayload;
   } catch {
     payload = null;
   }
