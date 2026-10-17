@@ -66,9 +66,20 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <p className="mx-auto mt-10 max-w-7xl border-t border-white/10 pt-6 text-sm text-white/60">
-        Copyright &copy; 2015&ndash;{new Date().getFullYear()} Divas Sojourn. All rights reserved.
-      </p>
+      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-white/10 pt-6 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
+        <p>
+          Copyright &copy; 2015&ndash;{new Date().getFullYear()} Divas Sojourn. All
+          rights reserved.
+        </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link href="/terms-condition" className="transition hover:text-[#D4AF37]">
+            Terms &amp; Conditions
+          </Link>
+          <Link href="/privacy-policy" className="transition hover:text-[#D4AF37]">
+            Privacy Policy
+          </Link>
+        </div>
+      </div>
     </footer>
   );
 }

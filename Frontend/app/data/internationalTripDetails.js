@@ -8,8 +8,8 @@ export const internationalFinancialDetails = {
 };
 
 export const internationalCancellationLinks = [
-  "https://divassojourn.com/terms.html",
-  "https://divassojourn.com/privacy-policy/",
+  "/terms-condition",
+  "/privacy-policy",
 ];
 
 const commonInternationalExclusions = [

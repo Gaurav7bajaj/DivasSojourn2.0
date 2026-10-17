@@ -8,8 +8,8 @@ export const financialDetails = {
 };
 
 export const cancellationLinks = [
-  "https://divassojourn.com/terms.html",
-  "https://divassojourn.com/privacy-policy/",
+  "/terms-condition",
+  "/privacy-policy",
 ];
 
 const commonNorthEastInclusions = [

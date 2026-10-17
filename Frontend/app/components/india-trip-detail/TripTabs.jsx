@@ -302,17 +302,26 @@ function OtherInfo({ trip }) {
         </ul>
         <div className="mt-5">
           <p className="font-black">Cancellation Policy</p>
-          {trip.cancellationLinks.map((link) => (
-            <a
-              key={link}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 block text-sm font-bold text-[#0F9B9B] underline-offset-4 hover:underline"
-            >
-              {link}
-            </a>
-          ))}
+          {trip.cancellationLinks.map((link) => {
+            const label = /privacy/i.test(link)
+              ? "Privacy Policy"
+              : /terms/i.test(link)
+                ? "Terms & Conditions"
+                : link;
+            const isInternal = link.startsWith("/");
+            return (
+              <a
+                key={link}
+                href={link}
+                {...(isInternal
+                  ? {}
+                  : { target: "_blank", rel: "noopener noreferrer" })}
+                className="mt-2 block text-sm font-bold text-[#0F9B9B] underline-offset-4 hover:underline"
+              >
+                {label}
+              </a>
+            );
+          })}
         </div>
       </section>
     </div>
