@@ -16,10 +16,16 @@ export default function LegalPage({ title, children }) {
   );
 }
 
-export function LegalSection({ title, children }) {
+export function LegalSection({ title, children, large = false }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold tracking-wide text-[#D4AF37]">
+      <h2
+        className={
+          large
+            ? "font-serif text-2xl font-semibold tracking-wide text-[#D4AF37] md:text-3xl"
+            : "text-lg font-semibold tracking-wide text-[#D4AF37]"
+        }
+      >
         {title}
       </h2>
       <div className="space-y-3">{children}</div>

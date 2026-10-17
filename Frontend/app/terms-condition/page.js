@@ -381,6 +381,85 @@ export default function TermsConditionPage() {
           the government excluding taxes.
         </p>
       </LegalSection>
+
+      <LegalSection
+        large
+        title="Special Terms & Conditions for Flight-Inclusive Trips"
+      >
+        <p>
+          These terms apply specifically to all trips offered by Divas Sojourn
+          where airfare is included in the package price and shall be read
+          together with the general Terms &amp; Conditions of the website.
+        </p>
+
+        <h3 className="pt-2 text-base font-semibold text-white">
+          1. Flight Selection and Disclosure
+        </h3>
+        <p>
+          Flights shall be selected and arranged by Divas Sojourn at its
+          discretion, based on the itinerary, availability, convenience, and
+          overall trip arrangements. The airline, flight timings, routes, and
+          other relevant details will be communicated to participants in advance.
+          Participants acknowledge that flight selection is managed by Divas
+          Sojourn and is not individually customizable unless expressly agreed in
+          writing.
+        </p>
+
+        <h3 className="pt-2 text-base font-semibold text-white">
+          2. Cancellation After Flight Booking
+        </h3>
+        <p>
+          Once flight tickets for a participant have been booked, any request to
+          cancel participation in the trip shall be subject to a cancellation
+          charge of up to 100% of the total trip cost, reflecting the
+          non-refundable flight costs and other committed or non-recoverable
+          expenses. The participant remains liable for the applicable
+          cancellation amount, subject to applicable law and the specific
+          cancellation terms communicated at the time of booking.
+        </p>
+
+        <h3 className="pt-2 text-base font-semibold text-white">
+          3. Flight Delays, Cancellations and Rescheduling
+        </h3>
+        <p>
+          Divas Sojourn shall not be responsible for flight delays,
+          cancellations, rescheduling, changes in flight timings, missed
+          connections, or other disruptions caused by airlines or circumstances
+          beyond its reasonable control, except to the extent that liability
+          arises under applicable law or from Divas Sojourn&apos;s own breach of
+          duty.
+        </p>
+        <p>
+          Any resulting missed activities, changes to the itinerary, additional
+          accommodation, meals, transportation, or other incidental expenses
+          shall not automatically be borne by Divas Sojourn. Any assistance,
+          alternative arrangements, or refunds shall be handled in accordance
+          with applicable law, airline policies, and the circumstances of the
+          disruption.
+        </p>
+
+        <h3 className="pt-2 text-base font-semibold text-white">
+          4. Airline Responsibility
+        </h3>
+        <p>
+          The operation of flights, including their punctuality, cancellations,
+          schedule changes, and applicable passenger compensation or refunds,
+          remains subject to the relevant airline&apos;s conditions of carriage
+          and applicable aviation laws. Divas Sojourn will provide reasonable
+          assistance with communication or coordination where practicable,
+          without guaranteeing an outcome controlled by the airline.
+        </p>
+
+        <h3 className="pt-2 text-base font-semibold text-white">
+          5. Acknowledgement
+        </h3>
+        <p>
+          By confirming a booking for a flight-inclusive trip, participants
+          acknowledge that they have read, understood, and agreed to these
+          special terms in conjunction with the website&apos;s general Terms
+          &amp; Conditions.
+        </p>
+      </LegalSection>
     </LegalPage>
   );
 }
