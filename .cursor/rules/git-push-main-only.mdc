@@ -1,0 +1,11 @@
+---
+description: Always commit and push directly to main; never create feature branches for pushes
+alwaysApply: true
+---
+
+# Git: push main only
+
+- Do **not** create new branches for routine work or pushes.
+- Commit on `main` and `git push origin main` only.
+- Do not open PRs from side branches unless the user explicitly asks.
+- If currently on another branch, switch to `main`, merge or cherry-pick the needed commits onto `main`, then push `main`.
