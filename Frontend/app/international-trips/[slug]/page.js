@@ -8,7 +8,8 @@ import {
 import { isWithinPublicListingWindow } from "../../lib/data/tripMappers";
 import { formatDualPrice } from "../../utils/formatPrice";
 
-export const revalidate = 3600;
+// Cookie-based login unlocks itinerary — must not be statically cached.
+export const dynamic = "force-dynamic";
 
 const pageBaseUrl = "https://divassojourn.com/international-trips";
 

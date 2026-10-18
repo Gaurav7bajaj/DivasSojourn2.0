@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata = {
   title: "Payment Methods & Policy | Divas Sojourn",
   description:
-    "Divas Sojourn payment methods including bank transfer, UPI, Easebuzz checkout, and Razorpay. Learn our payment policy for short haul and long haul packages.",
+    "Divas Sojourn payment methods including bank transfer, UPI, Easebuzz checkout, and Razorpay. Learn our payment schedule for India and international trips.",
   keywords: [
     "payment methods",
     "bank transfer",

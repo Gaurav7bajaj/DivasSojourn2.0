@@ -5,12 +5,14 @@ import { Loader2 } from "lucide-react";
 
 type Props = {
   bookingId: string;
+  installmentId?: string;
   label?: string;
   className?: string;
 };
 
 export default function PayNowButton({
   bookingId,
+  installmentId,
   label = "Pay Now",
   className = "",
 }: Props) {
@@ -25,7 +27,10 @@ export default function PayNowButton({
       const response = await fetch("/api/payments/easebuzz/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId }),
+        body: JSON.stringify({
+          bookingId,
+          ...(installmentId ? { installmentId } : {}),
+        }),
       });
       const data = await response.json();
       if (!response.ok || !data.checkoutUrl) {

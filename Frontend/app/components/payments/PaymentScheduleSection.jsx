@@ -4,12 +4,12 @@ import { useId, useState } from "react";
 import { scheduleConfig, scheduleFootnote } from "../../data/paymentData";
 
 const TABS = [
-  { id: "short", label: "Short haul" },
-  { id: "long", label: "Long haul" },
+  { id: "india", label: "India Trips" },
+  { id: "international", label: "International Trips" },
 ];
 
 export default function PaymentScheduleSection() {
-  const [active, setActive] = useState("short");
+  const [active, setActive] = useState("india");
   const baseId = useId();
   const tablistId = `${baseId}-tablist`;
 
@@ -38,13 +38,14 @@ export default function PaymentScheduleSection() {
               </em>
             </h2>
             <p className="mt-4 font-[family-name:var(--font-dm-sans)] text-[16px] leading-[1.55] text-[#D9D3C6] md:text-[17px]">
-              Your schedule depends on whether your destination is short haul or long haul.
+              Your schedule depends on whether you are booking an India trip or an
+              international trip.
             </p>
           </div>
 
           <div
             role="tablist"
-            aria-label="Haul type"
+            aria-label="Trip type"
             id={tablistId}
             className="inline-flex h-12 shrink-0 rounded-full border border-white/[0.14] bg-[#121215] p-1"
           >
@@ -63,10 +64,12 @@ export default function PaymentScheduleSection() {
                   onKeyDown={(event) => {
                     if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
                       event.preventDefault();
-                      setActive((current) => (current === "short" ? "long" : "short"));
+                      setActive((current) =>
+                        current === "india" ? "international" : "india",
+                      );
                     }
                   }}
-                  className={`inline-flex h-10 min-w-[120px] items-center justify-center rounded-full px-5 font-[family-name:var(--font-dm-sans)] text-[14px] font-bold transition ${
+                  className={`inline-flex h-10 min-w-[140px] items-center justify-center rounded-full px-5 font-[family-name:var(--font-dm-sans)] text-[14px] font-bold transition ${
                     selected
                       ? "bg-[#D6AE3C] text-[#1A1405]"
                       : "text-[#C9C3B6] hover:text-[#FBF8F1]"
@@ -82,6 +85,11 @@ export default function PaymentScheduleSection() {
         {TABS.map((tab) => {
           const panelConfig = scheduleConfig[tab.id];
           const isActive = active === tab.id;
+          const stepCount = panelConfig.steps.length;
+          const gridClass =
+            stepCount <= 3
+              ? "mt-10 grid gap-8 md:grid-cols-3 md:gap-4"
+              : "mt-10 grid gap-8 md:grid-cols-4 md:gap-4";
           return (
             <div
               key={tab.id}
@@ -110,12 +118,11 @@ export default function PaymentScheduleSection() {
                     </span>
                   </div>
 
-                  <ol className="mt-10 grid gap-8 md:grid-cols-4 md:gap-4">
+                  <ol className={gridClass}>
                     {panelConfig.steps.map((step, index) => {
                       const isLast = index === panelConfig.steps.length - 1;
                       return (
                         <li key={step.when} className="relative flex gap-4 md:flex-col md:gap-0">
-                          {/* Connector + circle */}
                           <div className="flex flex-col items-center md:mb-5 md:flex-row md:items-center">
                             <span
                               className={`relative z-[1] flex h-[18px] w-[18px] shrink-0 rounded-full border-2 border-[#D6AE3C] ${

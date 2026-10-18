@@ -1,12 +1,13 @@
 import "server-only";
 
-import { PaymentStatus, Prisma } from "@prisma/client";
+import { InstallmentStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import {
   fetchTransactionStatus,
   formatAmount,
   verifyResponseHash,
 } from "../easebuzz";
+import { roundMoney } from "../paymentSchedule";
 
 export function formDataToRecord(formData: FormData): Record<string, string> {
   const out: Record<string, string> = {};
@@ -42,6 +43,80 @@ function amountsMatch(dbAmount: Prisma.Decimal | number | string, reported: stri
 export type ProcessResult =
   | { ok: true; status: PaymentStatus; txnid: string; alreadyProcessed?: boolean }
   | { ok: false; error: string; statusCode?: number };
+
+async function applySuccessfulPayment(
+  tx: Prisma.TransactionClient,
+  payment: {
+    id: string;
+    bookingId: string;
+    installmentId: string | null;
+    amount: Prisma.Decimal;
+  },
+  meta: { easepayid: string | null; mode: string | null; raw: Prisma.InputJsonValue },
+) {
+  await tx.payment.update({
+    where: { id: payment.id },
+    data: {
+      status: PaymentStatus.SUCCESS,
+      easepayid: meta.easepayid,
+      mode: meta.mode,
+      rawResponse: meta.raw,
+    },
+  });
+
+  if (payment.installmentId) {
+    await tx.bookingInstallment.update({
+      where: { id: payment.installmentId },
+      data: {
+        status: InstallmentStatus.PAID,
+        paidAt: new Date(),
+        paymentId: payment.id,
+      },
+    });
+  }
+
+  const booking = await tx.booking.findUnique({
+    where: { id: payment.bookingId },
+    include: { installments: true },
+  });
+  if (!booking) return;
+
+  const paidSum = roundMoney(
+    booking.installments
+      .filter((row) =>
+        row.id === payment.installmentId
+          ? true
+          : row.status === InstallmentStatus.PAID,
+      )
+      .reduce((acc, row) => {
+        if (row.id === payment.installmentId) {
+          return acc + Number(payment.amount);
+        }
+        return acc + (row.status === InstallmentStatus.PAID ? Number(row.amountDue) : 0);
+      }, 0),
+  );
+
+  // Prefer summing already-PAID rows after this update.
+  const refreshed = await tx.bookingInstallment.findMany({
+    where: { bookingId: booking.id },
+  });
+  const amountPaid = roundMoney(
+    refreshed
+      .filter((row) => row.status === InstallmentStatus.PAID)
+      .reduce((acc, row) => acc + Number(row.amountDue), 0),
+  );
+  const total = roundMoney(Number(booking.amount));
+  const fullyPaid = amountPaid + 0.001 >= total;
+
+  await tx.booking.update({
+    where: { id: booking.id },
+    data: {
+      amountPaid: new Prisma.Decimal(formatAmount(amountPaid || paidSum)),
+      paid: fullyPaid,
+      paidAt: fullyPaid ? new Date() : booking.paidAt,
+    },
+  });
+}
 
 /**
  * Verify Easebuzz callback/webhook body and apply idempotent Payment + Booking updates.
@@ -80,6 +155,15 @@ export async function processEasebuzzNotification(
   const mode = body.mode ? String(body.mode) : null;
 
   await prisma.$transaction(async (tx) => {
+    if (nextStatus === PaymentStatus.SUCCESS) {
+      await applySuccessfulPayment(tx, payment, {
+        easepayid,
+        mode,
+        raw: body as Prisma.InputJsonValue,
+      });
+      return;
+    }
+
     await tx.payment.update({
       where: { id: payment.id },
       data: {
@@ -89,13 +173,6 @@ export async function processEasebuzzNotification(
         rawResponse: body as Prisma.InputJsonValue,
       },
     });
-
-    if (nextStatus === PaymentStatus.SUCCESS) {
-      await tx.booking.update({
-        where: { id: payment.bookingId },
-        data: { paid: true, paidAt: new Date() },
-      });
-    }
   });
 
   return { ok: true, status: nextStatus, txnid };
@@ -146,10 +223,23 @@ export async function recheckPaymentByTxnid(txnid: string): Promise<ProcessResul
     udf9: "",
     udf10: "",
     key: process.env.EASEBUZZ_KEY?.trim() || "",
-    hash: "", // not used — we update directly after API fetch
+    hash: "",
   };
 
   await prisma.$transaction(async (tx) => {
+    if (nextStatus === PaymentStatus.SUCCESS) {
+      await applySuccessfulPayment(tx, payment, {
+        easepayid: result.easepayid || payment.easepayid,
+        mode: result.mode || payment.mode,
+        raw: {
+          source: "status_api",
+          retrieved: result.raw,
+          synthetic,
+        } as Prisma.InputJsonValue,
+      });
+      return;
+    }
+
     await tx.payment.update({
       where: { id: payment.id },
       data: {
@@ -163,12 +253,6 @@ export async function recheckPaymentByTxnid(txnid: string): Promise<ProcessResul
         } as Prisma.InputJsonValue,
       },
     });
-    if (nextStatus === PaymentStatus.SUCCESS) {
-      await tx.booking.update({
-        where: { id: payment.bookingId },
-        data: { paid: true, paidAt: new Date() },
-      });
-    }
   });
 
   return { ok: true, status: nextStatus, txnid };

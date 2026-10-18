@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, Phone, X } from "lucide-react";
+import { ChevronDown, Menu, Phone, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { navLinks, tripMenus } from "../data/mockData";
 
@@ -50,6 +50,14 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
         </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-3 xl:ml-0">
+          <Link
+            href="/account"
+            className="hidden items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-sm font-semibold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37] lg:flex"
+            aria-label="My Account"
+          >
+            <UserRound className="h-4 w-4" aria-hidden="true" />
+            Account
+          </Link>
           <Link
             href="tel:+919990022835"
             className="hidden items-center gap-2 rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition-all duration-300 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)] lg:flex"

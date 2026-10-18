@@ -7,6 +7,11 @@ import {
   createItineraryUnlockToken,
   itineraryUnlockCookieOptions,
 } from "@/app/lib/itineraryUnlock";
+import {
+  TRAVELER_COOKIE_NAME,
+  createTravelerToken,
+  travelerCookieOptions,
+} from "@/app/lib/travelerSession";
 import { validateOtp } from "@/app/lib/smsalert";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +45,7 @@ export async function POST(request: Request) {
     }
 
     const digits = normalizePhone(phone);
+    const phone10 = digits.slice(-10);
     const ip = getClientIp(request);
 
     const verifyLimit = await checkRateLimit(
@@ -74,6 +80,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Create / update traveler account — itinerary unlock = signed in.
+    const traveler = await prisma.traveler.upsert({
+      where: { phone: phone10 },
+      create: {
+        phone: phone10,
+        fullName,
+        email: "",
+      },
+      update: { fullName },
+    });
+
+    await prisma.booking.updateMany({
+      where: { phone: phone10, travelerId: null },
+      data: { travelerId: traveler.id },
+    });
+
     // Save verified lead so the team can call knowing the person's name.
     try {
       const pageLabel = tripName || tripSlug || "Itinerary unlock";
@@ -81,7 +103,7 @@ export async function POST(request: Request) {
         data: {
           name: fullName,
           email: `itinerary.${digits}@leads.divassojourn.local`,
-          phone: digits.slice(-10),
+          phone: phone10,
           message: tripSlug
             ? `Unlocked itinerary for trip: ${tripSlug}`
             : "Unlocked trip itinerary via phone OTP",
@@ -91,19 +113,34 @@ export async function POST(request: Request) {
         },
       });
     } catch (leadError) {
-      // Unlock should still succeed even if lead logging fails.
       console.error("Failed to save itinerary unlock lead", leadError);
     }
 
-    const token = createItineraryUnlockToken(digits);
-    const response = NextResponse.json({ ok: true, unlocked: true });
+    const travelerToken = createTravelerToken({
+      travelerId: traveler.id,
+      phone: traveler.phone,
+      fullName: traveler.fullName,
+    });
+    const unlockToken = createItineraryUnlockToken(digits);
+
+    const response = NextResponse.json({
+      ok: true,
+      unlocked: true,
+      traveler: {
+        id: traveler.id,
+        fullName: traveler.fullName,
+        phone: traveler.phone,
+      },
+    });
+    response.cookies.set(TRAVELER_COOKIE_NAME, travelerToken, travelerCookieOptions());
     response.cookies.set(
       ITINERARY_UNLOCK_COOKIE,
-      token,
+      unlockToken,
       itineraryUnlockCookieOptions(),
     );
     return response;
-  } catch {
+  } catch (error) {
+    console.error("itinerary verify failed", error);
     return NextResponse.json({ error: "Unable to verify OTP." }, { status: 500 });
   }
 }

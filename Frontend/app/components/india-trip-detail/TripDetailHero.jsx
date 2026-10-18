@@ -8,14 +8,9 @@ import {
   formatDepartureRange,
   getTripCategoryLabel,
   getTripPlaceLabel,
-  splitTitleForHighlight,
 } from "./tripDetailUtils";
 
 export default function TripDetailHero({ trip, basePath, baseLabel }) {
-  const { lead, emphasis } = splitTitleForHighlight(
-    trip.title,
-    trip.titleHighlightWords,
-  );
   const category = getTripCategoryLabel(trip);
   const place = getTripPlaceLabel(trip);
   const seatsLeft =
@@ -111,8 +106,7 @@ export default function TripDetailHero({ trip, basePath, baseLabel }) {
           </div>
 
           <h1 className="mt-4 font-[family-name:var(--font-playfair)] text-[clamp(2.75rem,5.5vw,4.75rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-[#FBF8F1]">
-            {lead ? <>{lead} </> : null}
-            <em className="not-italic text-[#E2BB4D] italic">{emphasis}</em>
+            {trip.title}
           </h1>
 
           <div className="mt-7 flex flex-wrap gap-x-7 gap-y-4">

@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
+import { getTravelerSession } from "@/app/lib/travelerSession";
 
 export const ITINERARY_UNLOCK_COOKIE = "divasItineraryUnlock";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
@@ -70,7 +71,14 @@ export function verifyItineraryUnlockToken(
   }
 }
 
+/**
+ * Itinerary is visible only when the traveler is signed in
+ * (phone OTP account). Legacy unlock cookie is still accepted.
+ */
 export async function isItineraryUnlocked(): Promise<boolean> {
+  const traveler = await getTravelerSession();
+  if (traveler) return true;
+
   const cookieStore = await cookies();
   return Boolean(
     verifyItineraryUnlockToken(cookieStore.get(ITINERARY_UNLOCK_COOKIE)?.value),
