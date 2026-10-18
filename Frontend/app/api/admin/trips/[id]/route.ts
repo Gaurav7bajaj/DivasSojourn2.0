@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/app/lib/admin/session";
 import { parseTripPayload } from "@/app/lib/data/parseTripPayload";
 import { deleteTrip, getTripById, updateTrip } from "@/app/lib/data/trips";
-import { revalidateTripPages } from "@/app/lib/revalidateTrips";
 import { deleteUploadedFileIfLocal, saveUploadedImage, saveUploadedPdf } from "@/app/lib/uploads";
 
 export const dynamic = "force-dynamic";
@@ -79,7 +78,6 @@ export async function PUT(request: Request, context: RouteContext) {
       sourcePdf,
     });
 
-    revalidateTripPages(trip.slug);
     return NextResponse.json({ trip });
   } catch (error) {
     console.error(error);
@@ -95,12 +93,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const existing = await getTripById(id);
     const deleted = await deleteTrip(id);
     if (!deleted) {
       return NextResponse.json({ error: "Trip not found." }, { status: 404 });
     }
-    revalidateTripPages(existing?.slug);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Unable to delete trip." }, { status: 500 });
