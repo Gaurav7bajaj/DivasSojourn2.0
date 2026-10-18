@@ -233,6 +233,48 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 ## Open items needing your action
 _(filled as audit progresses)_
 
-1. **Approve or edit the Phase 1 deletion list** (A–E above), then I will delete, re-verify build, and commit.
+1. **Approve Phase 1 group C keep/delete split** (see below) before those files are removed/moved.
 2. Confirm Easebuzz Test vs Live keys for public launch.
 3. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
+
+### Phase 1 progress (2026-10-18)
+
+**Verified before deleting A:** no `dynamic()` / `lazy()` / string component maps referencing those files.
+
+**Verified before deleting B:** no API/server/scripts imports of `store.ts`, `app/data/blogs.js`, or `upcomingTrips.js` (Prisma `lib/data/blogs.ts` is different and kept).
+
+**Deleted (approved A + B + D + partial E):**
+- All Group A unused components/barrels listed above
+- Group B: `store.ts`, `app/data/blogs.js`, `upcomingTrips.js`, `data/store/`
+- Group D: `_DELETE_ME_old_modules/`
+- E: removed redundant `jsconfig.json` (`tsconfig.json` already has `@/*`)
+- E: kept `AGENTS.md` / `CLAUDE.md`; kept `dotenv` (`prisma/seed.ts` imports `dotenv/config`)
+- Updated `international/index.js` to only export live exports (`BlogsSection`, `ShortContactForm`, `TravelerReviews`)
+
+#### Group C — proposed KEEP vs DELETE (awaiting your OK)
+
+**KEEP → move to `Frontend/scripts/data/` + add `scripts/README.md`:**
+
+| File | Why keep |
+|---|---|
+| `build-rich-trips.mjs` | Generates `new-trips-rich.json` from PDF text |
+| `generate-trips.js` | Trip generation helper |
+| `extract-pdfs.mjs` | Extracts PDF → text for import pipeline |
+| `parse_all_trips.py` | Parses trip content |
+| `upsert-new-trips.mjs` | Upserts trips into Prisma DB |
+| `update-2026-prices.mjs` | Content price updates in DB |
+| `new-trips-parsed.json` | Source trip JSON |
+| `new-trips-rich.json` | Source trip JSON used by upsert |
+| `pdf-text/` (15 files) | Source text for trip content pipeline |
+
+**DELETE (throwaway fix/check/list/probe):**
+
+| File | Why delete |
+|---|---|
+| `fix-*.mjs` (all cover fix scripts) | One-off image fixes |
+| `check-georgia.mjs`, `check-trip-covers.mjs`, `check-trip-images.mjs` | Diagnostics |
+| `list-all-trips.mjs`, `list-blogs.mjs`, `list-broken-trip-images.mjs` | Listing utilities |
+| `probe-easebuzz.mjs`, `probe-hash-variants.mjs`, `probe-validation.mjs` | Payment debug probes |
+| `ping-db.mjs` | Connectivity smoke test only |
+
+**Note:** Runtime seeding for production is `prisma/seed.ts` + `prisma/seedTrips.ts` (not under `scripts/`) — those stay put.
