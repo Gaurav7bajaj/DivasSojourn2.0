@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, LogOut, UserRound } from "lucide-react";
 import PayNowButton from "../components/payments/PayNowButton";
@@ -49,18 +48,40 @@ type BookingRow = {
   }[];
 };
 
+type BookingsPayload = {
+  bookings: BookingRow[];
+  previous: BookingRow[];
+  upcoming: BookingRow[];
+  pendingPayments: BookingRow[];
+};
+
 type TabId = "upcoming" | "previous" | "pending" | "profile";
 
-export default function AccountClient() {
+type Props = {
+  initialTraveler?: Traveler | null;
+  initialBookings?: BookingsPayload;
+};
+
+export default function AccountClient({
+  initialTraveler = null,
+  initialBookings,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNextPath(searchParams.get("next"), "");
 
-  const [traveler, setTraveler] = useState<Traveler | null>(null);
-  const [previous, setPrevious] = useState<BookingRow[]>([]);
-  const [upcoming, setUpcoming] = useState<BookingRow[]>([]);
-  const [pendingPayments, setPendingPayments] = useState<BookingRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [traveler, setTraveler] = useState<Traveler | null>(initialTraveler);
+  const [previous, setPrevious] = useState<BookingRow[]>(
+    initialBookings?.previous || [],
+  );
+  const [upcoming, setUpcoming] = useState<BookingRow[]>(
+    initialBookings?.upcoming || [],
+  );
+  const [pendingPayments, setPendingPayments] = useState<BookingRow[]>(
+    initialBookings?.pendingPayments || [],
+  );
+  const [loading, setLoading] = useState(!initialTraveler);
+  const [bookingsError, setBookingsError] = useState("");
   const [tab, setTab] = useState<TabId>("upcoming");
 
   const [fullName, setFullName] = useState("");
@@ -72,16 +93,26 @@ export default function AccountClient() {
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
 
-  const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
+  const [editName, setEditName] = useState(initialTraveler?.fullName || "");
+  const [editEmail, setEditEmail] = useState(initialTraveler?.email || "");
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
 
+  const applyBookings = useCallback((data: BookingsPayload) => {
+    setPrevious(data.previous || []);
+    setUpcoming(data.upcoming || []);
+    setPendingPayments(data.pendingPayments || []);
+  }, []);
+
   const loadAccount = useCallback(async () => {
     setLoading(true);
+    setBookingsError("");
     try {
-      const meRes = await fetch("/api/account/me");
+      const meRes = await fetch("/api/account/me", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (!meRes.ok) {
         setTraveler(null);
         setPrevious([]);
@@ -95,23 +126,34 @@ export default function AccountClient() {
       setEditName(t.fullName);
       setEditEmail(t.email || "");
 
-      const bookingsRes = await fetch("/api/account/bookings");
+      const bookingsRes = await fetch("/api/account/bookings", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (bookingsRes.ok) {
-        const data = await bookingsRes.json();
-        setPrevious(data.previous || []);
-        setUpcoming(data.upcoming || []);
-        setPendingPayments(data.pendingPayments || []);
+        const data = (await bookingsRes.json()) as BookingsPayload;
+        applyBookings(data);
+      } else {
+        setBookingsError("Could not refresh bookings. Pull to refresh or try again.");
       }
     } catch {
-      setTraveler(null);
+      // Keep any server-provided initial data; only clear if we had no session seed.
+      if (!initialTraveler) setTraveler(null);
+      setBookingsError("Could not load account. Please refresh.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyBookings, initialTraveler]);
 
   useEffect(() => {
+    // Server already hydrated a signed-in account — still refresh in background.
+    if (initialTraveler) {
+      setLoading(false);
+      void loadAccount();
+      return;
+    }
     void loadAccount();
-  }, [loadAccount]);
+  }, [initialTraveler, loadAccount]);
 
   useEffect(() => {
     if (!loading && traveler && nextPath) {
@@ -160,6 +202,7 @@ export default function AccountClient() {
       }
       setOtp("");
       setOtpSent(false);
+      router.refresh();
       if (nextPath) {
         router.replace(nextPath);
         return;
@@ -389,6 +432,19 @@ export default function AccountClient() {
           </button>
         </div>
 
+        {bookingsError ? (
+          <p className="mt-4 font-[family-name:var(--font-dm-sans)] text-sm text-red-400" role="alert">
+            {bookingsError}{" "}
+            <button
+              type="button"
+              onClick={() => void loadAccount()}
+              className="underline underline-offset-2"
+            >
+              Retry
+            </button>
+          </p>
+        ) : null}
+
         <div
           role="tablist"
           aria-label="Account sections"
@@ -491,12 +547,11 @@ export default function AccountClient() {
                 <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start md:p-6">
                   {booking.tripImage ? (
                     <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-2xl sm:h-24 sm:w-36">
-                      <Image
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                         src={booking.tripImage}
                         alt=""
-                        fill
-                        className="object-cover"
-                        sizes="144px"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                   ) : null}
