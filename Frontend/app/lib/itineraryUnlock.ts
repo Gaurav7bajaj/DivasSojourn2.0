@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
 export const ITINERARY_UNLOCK_COOKIE = "divasItineraryUnlock";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 const DEV_FALLBACK_SECRET = "divas-itinerary-unlock-dev-secret";
 

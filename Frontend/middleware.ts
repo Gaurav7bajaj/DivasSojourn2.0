@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const ADMIN_COOKIE_NAME = "divasAdminSession";
+/** Keep in sync with SESSION_MAX_AGE_SECONDS in app/lib/admin/session.ts */
+const SESSION_MAX_AGE_MS = 60 * 60 * 24 * 1000; // 24 hours
 
 // Kept in sync with app/lib/admin/session.ts's DEV_FALLBACK_SECRET — this
 // file runs on the Edge runtime, which can't use Node's `crypto` module, so
@@ -65,11 +67,47 @@ async function isValidAdminToken(token: string | undefined): Promise<boolean> {
     if (mismatch !== 0) return false;
 
     const json = new TextDecoder().decode(base64UrlToBytes(payload));
-    const session = JSON.parse(json) as { email?: string };
-    return Boolean(session?.email);
+    const session = JSON.parse(json) as { email?: string; iat?: number };
+    if (!session?.email || typeof session.iat !== "number") return false;
+    const ageMs = Date.now() - session.iat;
+    if (ageMs < 0 || ageMs > SESSION_MAX_AGE_MS) return false;
+    return true;
   } catch {
     return false;
   }
+}
+
+/**
+ * Reject cross-site state-changing admin API calls (CSRF defense-in-depth).
+ * Same-origin browser fetches send Origin matching the request host.
+ */
+function isSameOriginMutation(request: NextRequest): boolean {
+  const method = request.method.toUpperCase();
+  if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
+    return true;
+  }
+
+  const requestHost = request.nextUrl.host;
+  const origin = request.headers.get("origin");
+  if (origin) {
+    try {
+      return new URL(origin).host === requestHost;
+    } catch {
+      return false;
+    }
+  }
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      return new URL(referer).host === requestHost;
+    } catch {
+      return false;
+    }
+  }
+
+  // No Origin/Referer on a mutating request — reject (typical of cross-site form posts).
+  return false;
 }
 
 async function handleAdminAuth(request: NextRequest) {
@@ -81,6 +119,10 @@ async function handleAdminAuth(request: NextRequest) {
   const isLoginPage = pathname === "/admin/login";
   const isAdminApi = pathname.startsWith("/api/admin");
   const isLoginApi = pathname === "/api/admin/login";
+
+  if (isAdminApi && !isSameOriginMutation(request)) {
+    return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
+  }
 
   if (isAdminPage && !isLoginPage && !authenticated) {
     const loginUrl = new URL("/admin/login", request.url);
@@ -106,8 +148,5 @@ export default async function middleware(request: NextRequest) {
 export const config = {
   // Admin-only. Public Easebuzz callback/webhook live under /api/payments/*
   // and are intentionally NOT matched here (Easebuzz POSTs without admin cookies).
-  matcher: [
-    "/admin/:path*",
-    "/api/admin/:path*",
-  ],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

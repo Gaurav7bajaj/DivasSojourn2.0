@@ -4,7 +4,7 @@ import ShortContactForm from "../components/international/ShortContactForm";
 import { getGalleryImages } from "../lib/data/gallery";
 import { toPublicGalleryItem } from "../lib/data/mappers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Gallery | Divas Sojourn",

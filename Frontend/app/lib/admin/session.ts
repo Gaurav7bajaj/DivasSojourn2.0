@@ -2,7 +2,8 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 
 export const ADMIN_COOKIE_NAME = "divasAdminSession";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
+/** Cookie + token lifetime. Kept at 24h to limit stolen-session window. */
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
 
 // Only used outside production, so local `npm run dev` keeps working
 // without an .env file. In production a missing secret means every admin
@@ -71,7 +72,11 @@ export function verifyAdminToken(token: string | undefined | null): AdminSession
 
   try {
     const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as AdminSession;
-    if (!session?.email) {
+    if (!session?.email || typeof session.iat !== "number") {
+      return null;
+    }
+    const ageMs = Date.now() - session.iat;
+    if (ageMs < 0 || ageMs > SESSION_MAX_AGE_SECONDS * 1000) {
       return null;
     }
     return session;
@@ -125,6 +130,8 @@ export function getAdminCredentials(): { email: string; password: string } | nul
 }
 
 export function adminCookieOptions(maxAge = SESSION_MAX_AGE_SECONDS) {
+  // path must stay "/" so the cookie is sent to both /admin/* pages and /api/admin/*.
+  // Do not set `domain` here — that would break Vercel preview hosts.
   return {
     httpOnly: true,
     sameSite: "lax" as const,

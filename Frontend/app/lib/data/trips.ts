@@ -3,6 +3,7 @@
  * Function signatures stay stable for admin UI, APIs, and public pages.
  */
 
+import { Prisma } from "@prisma/client";
 import { slugify } from "../slugify";
 import { prisma, withDbRetry } from "./prisma";
 import {
@@ -89,51 +90,70 @@ export async function getTripNavItems(destination?: TripDestination): Promise<Tr
 }
 
 export async function createTrip(input: TripCreateInput): Promise<Trip> {
-  const slug = await ensureUniqueSlug(slugify(input.slug || input.title));
   const nights = input.nights ?? 0;
   const days = input.days ?? (nights ? nights + 1 : 0);
+  const baseSlug = slugify(input.slug || input.title);
 
-  const row = await prisma.trip.create({
-    data: {
-      title: input.title.trim(),
-      shortName: input.shortName.trim(),
-      slug,
-      destination: input.destination,
-      image: input.image?.trim() || "",
-      galleryImages: input.galleryImages ?? [],
-      pdfPath: input.pdfPath || null,
-      sourcePdf: input.sourcePdf || null,
-      dates: input.dates?.trim() || "",
-      startDate: input.startDate,
-      endDate: input.endDate,
-      duration: input.duration?.trim() || `${String(nights).padStart(2, "0")} Nights / ${String(days).padStart(2, "0")} Days`,
-      nights,
-      days,
-      pickupLocation: input.pickupLocation?.trim() || "",
-      dropLocation: input.dropLocation?.trim() || "",
-      route: input.route?.trim() || "",
-      price: input.price ?? 0,
-      currency: input.currency || "INR",
-      earlyBirdPrice: input.earlyBirdPrice ?? null,
-      singleSupplement: input.singleSupplement ?? null,
-      singleOccupancyPrice: input.singleOccupancyPrice ?? null,
-      soldOut: input.soldOut ?? false,
-      overview: input.overview?.trim() || "",
-      highlights: input.highlights ?? [],
-      paymentConditions: input.paymentConditions?.trim() || "",
-      notes: input.notes ?? [],
-      itinerary: input.itinerary ?? [],
-      accommodations: input.accommodations ?? [],
-      inclusions: input.inclusions ?? [],
-      exclusions: input.exclusions ?? [],
-      womenJoiningFrom: input.womenJoiningFrom ?? [],
-      financialDetails: input.financialDetails ?? {},
-      cancellationLinks: input.cancellationLinks ?? [],
-      published: input.published ?? true,
-    },
-  });
+  // Retry on rare unique-slug races between ensureUniqueSlug and create.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const slug = await ensureUniqueSlug(baseSlug);
+    try {
+      const row = await prisma.trip.create({
+        data: {
+          title: input.title.trim(),
+          shortName: input.shortName.trim(),
+          slug,
+          destination: input.destination,
+          image: input.image?.trim() || "",
+          galleryImages: input.galleryImages ?? [],
+          pdfPath: input.pdfPath || null,
+          sourcePdf: input.sourcePdf || null,
+          dates: input.dates?.trim() || "",
+          startDate: input.startDate,
+          endDate: input.endDate,
+          duration:
+            input.duration?.trim() ||
+            `${String(nights).padStart(2, "0")} Nights / ${String(days).padStart(2, "0")} Days`,
+          nights,
+          days,
+          pickupLocation: input.pickupLocation?.trim() || "",
+          dropLocation: input.dropLocation?.trim() || "",
+          route: input.route?.trim() || "",
+          price: input.price ?? 0,
+          currency: input.currency || "INR",
+          earlyBirdPrice: input.earlyBirdPrice ?? null,
+          singleSupplement: input.singleSupplement ?? null,
+          singleOccupancyPrice: input.singleOccupancyPrice ?? null,
+          soldOut: input.soldOut ?? false,
+          overview: input.overview?.trim() || "",
+          highlights: input.highlights ?? [],
+          paymentConditions: input.paymentConditions?.trim() || "",
+          notes: input.notes ?? [],
+          itinerary: input.itinerary ?? [],
+          accommodations: input.accommodations ?? [],
+          inclusions: input.inclusions ?? [],
+          exclusions: input.exclusions ?? [],
+          womenJoiningFrom: input.womenJoiningFrom ?? [],
+          financialDetails: input.financialDetails ?? {},
+          cancellationLinks: input.cancellationLinks ?? [],
+          published: input.published ?? true,
+        },
+      });
+      return toTrip(row);
+    } catch (error) {
+      lastError = error;
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        continue;
+      }
+      throw error;
+    }
+  }
 
-  return toTrip(row);
+  throw lastError;
 }
 
 export async function updateTrip(id: string, input: TripUpdateInput): Promise<Trip | null> {

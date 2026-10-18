@@ -1,161 +1,104 @@
-# Deploy Divas Sojourn to Vercel (temporary client preview only)
+# Deploy Divas Sojourn (Vercel + Neon)
 
-**Purpose:** Vercel is only for showing the client a working URL. The **final live site** will run on a **different hosting platform** later.
+Portable stack: **Next.js + Prisma + Postgres**. Vercel is the current host; the same env vars work on another host later.
 
-Keep the app portable:
+**Root Directory on Vercel must be `Frontend`.**
 
-- Use standard Next.js + Prisma + Postgres (Neon) — not Vercel-only APIs
-- Prefer HTTPS image URLs for the preview (local disk uploads won’t transfer cleanly)
-- When you go live elsewhere: point the same env vars at the new host; you can keep this Neon DB or migrate to another Postgres
-
----
-
-## 1. Security checklist (do this before `git push`)
-
-| Check | Status |
-|-------|--------|
-| `.env` / `.env.local` are **gitignored** (never commit them) | Required |
-| Only `.env.example` / `.env.local.example` are in git (placeholders only) | Required |
-| No real `SMSALERT_API_KEY` or admin passwords in any tracked file | Required |
-| `prisma/dev.db` and `public/uploads/*` (except `.gitkeep`) are ignored | Required |
-| Strong unique `ADMIN_PASSWORD` + `ADMIN_AUTH_SECRET` set **only** in Vercel env vars | Required |
-| `MOCK_OTP` left **unset** on Vercel | Required |
-
-If an API key was ever pasted into `.env.example` and pushed, **rotate that key** in the provider dashboard and treat the old one as compromised.
+Build command (already in `vercel.json`): `npm run vercel-build`  
+→ `prisma generate && prisma migrate deploy && next build --webpack`
 
 ---
 
-## 2. Create Neon on Vercel (database)
+## 1. Security before push / go-live
 
-1. Open [Vercel Dashboard](https://vercel.com/dashboard) → your project (create the project first if you have not).
-2. Go to the **Storage** tab → **Create Database** / **Browse Storage**.
-3. Choose **Neon** → **Continue**.
-4. Pick a region close to you / your users (e.g. Singapore / Mumbai if listed).
-5. Name it something like `divas-sojourn` → **Create**.
-6. When asked, **connect** the database to this Vercel project for **Production** and **Preview**. Leave **Custom Prefix** blank.
-7. Confirm env vars were added. Neon on Vercel usually creates:
-   - `DATABASE_URL` (pooled — app runtime)
-   - `DATABASE_URL_UNPOOLED` (direct — Prisma `db push` / migrations)
-8. Open **Settings → Environment Variables** and confirm both exist for **Production** and **Preview**.
+| Check | Required |
+|-------|----------|
+| `.env` / `.env.local` gitignored — never commit real secrets | Yes |
+| Only `.env.example` / `.env.local.example` in git (placeholders) | Yes |
+| `MOCK_OTP` **unset** on Production | Yes |
+| Strong unique `ADMIN_PASSWORD` + `ADMIN_AUTH_SECRET` + `AUTH_SECRET` | Yes |
+| Production `EASEBUZZ_ENV` intentional (`test` vs `prod`) | Yes |
+| Production `NEXT_PUBLIC_SITE_URL` = real public origin (no trailing slash) | Yes |
 
-### If you opened Neon’s “Getting started” guide on Vercel
+If a secret was ever committed or pasted into chat, **rotate it** in the provider dashboard.
 
-That guide builds a tiny demo (form → `comments` table) with `@neondatabase/serverless`. **Do not follow steps 3–5 of that guide for Divas Sojourn.** This app already uses **Prisma** and has Blog / Trip / Gallery tables.
+---
 
-| Their guide step | What you do instead |
-|------------------|---------------------|
-| 1. Connect to a project | Done when Neon is linked to this Vercel project |
-| 2. `vercel env pull .env.development.local` | **Do this** (see below) so local `npm run dev` can reach Neon |
-| 3. Install `@neondatabase/serverless` | **Skip** — Prisma uses `DATABASE_URL` |
-| 4. `CREATE TABLE comments` in SQL Editor | **Skip** — `prisma db push` creates real app tables |
-| 5. Sample comment form / Server Action | **Skip** — use `/admin` for content |
-| 6. `npm run dev` | Yes, after env pull + admin/SMS Alert vars |
+## 2. Environment variables (Production + Preview)
 
-### Pull Neon env vars to your machine
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `DATABASE_URL` | Yes | Neon pooled |
+| `DATABASE_URL_UNPOOLED` | Yes | Neon direct (migrations) |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Yes | Admin login |
+| `ADMIN_AUTH_SECRET` | Yes | Admin session HMAC |
+| `AUTH_SECRET` | Yes | Itinerary unlock (+ fallback signing) |
+| `NEXT_PUBLIC_SITE_URL` | Yes | e.g. `https://divassojourn.com` — used for Easebuzz surl/furl |
+| `EASEBUZZ_KEY` / `EASEBUZZ_SALT` | Yes | Payments |
+| `EASEBUZZ_ENV` | Yes | `test` or `prod` |
+| `SMSALERT_API_KEY` / `SMSALERT_SENDER` / `SMSALERT_OTP_TEMPLATE` | Yes for OTP | Template must include `[otp]` |
+| `BLOB_READ_WRITE_TOKEN` | Yes for admin uploads | Vercel Blob store |
+| `GOOGLE_PLACES_API_KEY` / `GOOGLE_PLACE_ID` | Optional | Reviews cache (currently static path OK) |
+| `CRON_SECRET` | Optional | `/api/cron/google-reviews` auth |
+| `MOCK_OTP` | **Never** on prod | Dev-only |
 
-From `Frontend/` (requires [Vercel CLI](https://vercel.com/docs/cli) logged in):
+Templates: `.env.example` / `.env.local.example` (names only).
+
+---
+
+## 3. First-time / database
+
+Local (after env is set):
 
 ```bash
 cd Frontend
-npx vercel link          # once: pick the Vercel project
-npx vercel env pull .env.development.local
+npm install
+npx prisma migrate deploy
+npx prisma db seed   # optional content seed
+npm run dev
 ```
 
-That downloads `DATABASE_URL` and `DATABASE_URL_UNPOOLED` (and any other Vercel envs). The file is gitignored.
-
-Then create/update `.env.local` with admin + SMS Alert secrets (or merge them into `.env.development.local`). Next.js loads both.
-
-### Apply tables (first time)
-
-```bash
-cd Frontend
-npx prisma db push
-npx prisma db seed
-```
-
-On Vercel deploy, `npm run vercel-build` also runs `prisma db push` so tables exist in production even if you skip local push.
+On every Vercel deploy, `vercel-build` runs **`prisma migrate deploy`** (not `db push`).
 
 ---
 
-## 3. Vercel project setup
+## 4. Domain & payments
 
-1. Push this repo to GitHub (do **not** include `.env.local`).
-2. In [Vercel](https://vercel.com) → **Add New Project** → import the repo.
-3. **Root Directory:** set to `Frontend` (important — the Next app is not at the repo root).
-4. Framework: Next.js (auto-detected).
-5. Install / Build: leave defaults, or use:
-   - Install: `npm install`
-   - Build: `npm run vercel-build`
-6. Add **Environment Variables** (Production + Preview):
-
-| Variable | Notes |
-|----------|--------|
-| `DATABASE_URL` | Neon **pooled** connection string (auto from Storage) |
-| `DATABASE_URL_UNPOOLED` | Neon **direct** connection string (auto from Storage) |
-| `ADMIN_EMAIL` | Email the client will type on `/admin/login` |
-| `ADMIN_PASSWORD` | Strong password — share privately with client |
-| `ADMIN_AUTH_SECRET` | Long random string (e.g. 32+ chars) |
-| `AUTH_SECRET` | Signs itinerary unlock cookie (can match `ADMIN_AUTH_SECRET`) |
-| `SMSALERT_API_KEY` | From SMS Alert dashboard |
-| `SMSALERT_SENDER` | Approved sender ID (e.g. `ESTORE`) |
-| `SMSALERT_OTP_TEMPLATE` | Must include `[otp]` tag |
-
-7. Deploy.
+1. Attach custom domain in Vercel (or final host DNS → that host).
+2. Set `NEXT_PUBLIC_SITE_URL` to that HTTPS origin and **redeploy**.
+3. In Easebuzz dashboard, ensure webhook / callback URLs match:
+   - Callback: `{NEXT_PUBLIC_SITE_URL}/api/payments/easebuzz/callback`
+   - Webhook (if used): `{NEXT_PUBLIC_SITE_URL}/api/payments/easebuzz/webhook`
+4. Switch `EASEBUZZ_ENV=prod` and live keys only when ready to take real money.
 
 ---
 
-## 4. How the client accesses the admin page
+## 5. Admin access
 
-Admin is **not** a separate Vercel project. It is part of the same deployment.
-
-1. Public site: `https://YOUR-APP.vercel.app`
-2. Admin login: `https://YOUR-APP.vercel.app/admin/login`
-3. Client signs in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set in Vercel.
-4. After login they land on `/admin` (blogs, gallery, trips).
-5. Middleware blocks `/admin/*` and `/api/admin/*` (except login) unless the signed session cookie is valid.
-
-**Share with the client (privately — not in GitHub / Slack public channels):**
-
-- Site URL  
-- Admin URL: `…/admin/login`  
-- Admin email + password  
-
-Anyone with the URL can *see* the login form; only people with the password can manage content. Use a strong password and rotate it after the preview period if needed.
-
-There is no default production password. If `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_AUTH_SECRET` are missing on Vercel, admin login is refused (fail-closed).
+- Login: `{SITE}/admin/login`
+- Middleware gates `/admin/*` and `/api/admin/*` (except login).
+- Missing admin env in production → login fails closed.
 
 ---
 
-## 5. Known limits on this preview deploy
+## 6. Post-deploy smoke test
 
-| Topic | Behaviour on Vercel |
-|-------|---------------------|
-| Trip/blog/gallery **data** | Works if Postgres is configured |
-| **Image uploads** to `public/uploads/` | Do **not** persist on serverless; prefer Unsplash/HTTPS image URLs in admin forms for the client demo |
-| Itinerary phone OTP | Needs approved SMS Alert sender + template |
-
-Cloud uploads (Vercel Blob / S3 / Cloudinary) can replace `app/lib/uploads.ts` later without changing the admin UI.
-
----
-
-## 6. After deploy — quick smoke test
-
-- [ ] Homepage loads  
-- [ ] India / International / Upcoming trips load from DB  
-- [ ] `/admin/login` accepts Vercel credentials  
-- [ ] `/admin` redirects to login when logged out  
-- [ ] Trip itinerary OTP unlock works (if SMS Alert keys set)  
-- [ ] Confirm `.env.local` was never pushed (`git status` / GitHub file search)
+- [ ] `/` loads
+- [ ] `/india-trips`, `/international-trips`, `/upcoming-trips` show DB trips
+- [ ] `/blogs`, `/faqs`, `/gallery`, `/calendar` load
+- [ ] `/robots.txt` and `/sitemap.xml` return 200
+- [ ] `/admin/login` works; logged-out `/admin` redirects
+- [ ] Admin upload (image) works if Blob token set
+- [ ] Itinerary OTP send/verify (if SMS Alert configured)
+- [ ] Payments checkout on the **deployed** URL (Easebuzz working on Vercel already confirmed)
+- [ ] `/payment/success` and `/payment/failed` reachable after a test payment
 
 ---
 
-## 7. Local vs preview vs final host
+## 7. Local vs deploy
 
 ```text
-Local:           Neon URLs in .env.local / .env.development.local  +  npm run dev
-Vercel preview:  same Neon + Vercel env vars  +  npm run vercel-build  (client demo only)
-Final live host: same codebase + same (or new) Postgres URLs + same ADMIN_*/SMS Alert env vars
-Admin (preview): https://YOUR-APP.vercel.app/admin/login
+Local:     .env.local  →  npm run dev
+Vercel:    Project env vars  →  npm run vercel-build
+Admin:     {SITE}/admin/login
 ```
-
-When you pick the real host later, you mainly re-set env vars and deploy `Frontend/` — no need to rebuild the app around Vercel.

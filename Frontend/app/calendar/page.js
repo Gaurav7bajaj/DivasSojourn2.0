@@ -6,7 +6,7 @@ import { getPublishedTrips } from "../lib/data/trips";
 import { isWithinPublicListingWindow } from "../lib/data/tripMappers";
 import { calendarHeroImages } from "../data/heroImages";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageUrl = "https://divassojourn.com/calendar";
 const heroImage = `https://divassojourn.com${(calendarHeroImages[0]?.src || "/heroes/calendar/calendarHero1.webp").split("?")[0]}`;

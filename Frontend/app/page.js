@@ -11,7 +11,7 @@ import GoogleReviews from "./components/shared/GoogleReviews";
 import { GOOGLE } from "./data/googleReviews";
 import { getPlatformStats } from "./lib/data/siteReviews";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function Home() {
   const platforms = await getPlatformStats();

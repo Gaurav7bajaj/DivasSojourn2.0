@@ -35,6 +35,23 @@ const nextConfig = {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
+          {
+            // Defense-in-depth. 'unsafe-inline'/'unsafe-eval' kept for Next.js
+            // runtime; tighten further with nonces in a later pass if needed.
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://lh3.googleusercontent.com https://*.public.blob.vercel-storage.com",
+              "font-src 'self' data:",
+              "connect-src 'self' https://pay.easebuzz.in https://testpay.easebuzz.in https://*.public.blob.vercel-storage.com",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https://pay.easebuzz.in https://testpay.easebuzz.in",
+              "object-src 'none'",
+            ].join("; "),
+          },
         ],
       },
     ];

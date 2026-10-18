@@ -84,7 +84,13 @@ export default function TripListingClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [filters, setFilters] = useState(() => parseFilters(searchParams, primaryGroup));
+  
+  // Track URL changes for filter sync
+  const urlKey = searchParams.toString() + primaryGroup;
+  const [filterState, setFilterState] = useState(() => ({
+    syncedFromUrlKey: urlKey,
+    filters: parseFilters(searchParams, primaryGroup),
+  }));
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef(null);
@@ -92,9 +98,22 @@ export default function TripListingClient({
   const filterTriggerRef = useRef(null);
   const sliderTimer = useRef(null);
 
-  useEffect(() => {
-    setFilters(parseFilters(searchParams, primaryGroup));
-  }, [searchParams, primaryGroup]);
+  // Sync filters from URL when it changes
+  if (filterState.syncedFromUrlKey !== urlKey) {
+    const parsed = parseFilters(searchParams, primaryGroup);
+    setFilterState({
+      syncedFromUrlKey: urlKey,
+      filters: parsed,
+    });
+  }
+  
+  const filters = filterState.filters;
+  const setFilters = (updater) => {
+    setFilterState((prev) => ({
+      ...prev,
+      filters: typeof updater === "function" ? updater(prev.filters) : updater,
+    }));
+  };
 
   const pushFilters = useCallback(
     (next) => {
@@ -219,31 +238,20 @@ export default function TripListingClient({
     return sorted;
   }, [filters, primaryGroup, trips]);
 
-  const activeChips = useMemo(() => {
+  // Compute active chip data (labels only, handlers added inline in JSX)
+  const activeChipData = useMemo(() => {
     const chips = [];
     if (filters.primaryValue !== "all") {
-      chips.push({
-        id: "primary",
-        label: filters.primaryValue,
-        clear: () => updateFilters({ primaryValue: "all" }),
-      });
+      chips.push({ id: "primary", label: filters.primaryValue });
     }
     if (filters.month !== "all") {
-      chips.push({
-        id: "month",
-        label: formatMonthLabel(filters.month),
-        clear: () => updateFilters({ month: "all" }),
-      });
+      chips.push({ id: "month", label: formatMonthLabel(filters.month) });
     }
     if (
       filters.duration[0] !== DEFAULT_DURATION[0] ||
       filters.duration[1] !== DEFAULT_DURATION[1]
     ) {
-      chips.push({
-        id: "duration",
-        label: `${filters.duration[0]}–${filters.duration[1]}N`,
-        clear: () => updateFilters({ duration: DEFAULT_DURATION }),
-      });
+      chips.push({ id: "duration", label: `${filters.duration[0]}–${filters.duration[1]}N` });
     }
     if (filters.budget[0] !== DEFAULT_BUDGET[0] || filters.budget[1] !== DEFAULT_BUDGET[1]) {
       chips.push({
@@ -253,13 +261,20 @@ export default function TripListingClient({
             ? `${Math.round(filters.budget[1] / 100000)}L`
             : `${Math.round(filters.budget[1] / 1000)}K`
         }`,
-        clear: () => updateFilters({ budget: DEFAULT_BUDGET }),
       });
     }
     return chips;
-  }, [filters, updateFilters]);
+  }, [filters]);
 
-  const activeFilterCount = activeChips.length;
+  // Clear handler for chips - called from event handlers only
+  const clearChip = useCallback((chipId) => {
+    if (chipId === "primary") updateFilters({ primaryValue: "all" });
+    else if (chipId === "month") updateFilters({ month: "all" });
+    else if (chipId === "duration") updateFilters({ duration: DEFAULT_DURATION });
+    else if (chipId === "budget") updateFilters({ budget: DEFAULT_BUDGET });
+  }, [updateFilters]);
+
+  const activeFilterCount = activeChipData.length;
   const sortLabel =
     SORT_OPTIONS.find((option) => option.value === filters.sort)?.label || "Soonest first";
 
@@ -383,11 +398,11 @@ export default function TripListingClient({
                 {trips.length} trips
               </p>
               <div className="hidden flex-wrap gap-2 md:flex">
-                {activeChips.map((chip) => (
+                {activeChipData.map((chip) => (
                   <button
                     key={chip.id}
                     type="button"
-                    onClick={chip.clear}
+                    onClick={() => clearChip(chip.id)}
                     aria-label={`Remove filter ${chip.label}`}
                     className="inline-flex h-[34px] items-center gap-1.5 rounded-full border border-[rgba(214,174,60,0.5)] bg-[rgba(214,174,60,0.12)] px-3 font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#D6AE3C]"
                   >

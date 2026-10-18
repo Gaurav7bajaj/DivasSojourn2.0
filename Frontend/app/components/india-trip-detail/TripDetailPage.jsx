@@ -145,6 +145,7 @@ export default function TripDetailPage({
         onClose={() => setUnlockOpen(false)}
         onUnlocked={handleUnlocked}
         tripName={enrichedTrip.shortName || enrichedTrip.title}
+        tripSlug={enrichedTrip.slug}
       />
     </main>
   );

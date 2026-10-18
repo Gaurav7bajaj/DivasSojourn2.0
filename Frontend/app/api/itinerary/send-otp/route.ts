@@ -12,6 +12,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const phone = String(body.phone || "").trim();
+    const fullName = String(body.fullName || body.name || "").trim();
+
+    if (fullName.length < 2) {
+      return NextResponse.json(
+        { error: "Enter your full name." },
+        { status: 400 },
+      );
+    }
 
     if (!isValidPhone(phone)) {
       return NextResponse.json(

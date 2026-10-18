@@ -20,7 +20,7 @@ export default async function AdminDashboardPage() {
     <div>
       <h1 className="text-3xl font-black">Dashboard</h1>
       <p className="mt-2 text-sm text-[#555555]">
-        Manage enquiries, blogs, gallery photos, trips, and reviews.
+        Manage enquiries, blogs, gallery photos, trips, reviews, and FAQs.
       </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -79,6 +79,17 @@ export default async function AdminDashboardPage() {
           <h2 className="mt-2 text-xl font-black">Manage Reviews</h2>
           <p className="mt-2 text-sm text-[#555555]">
             Edit Google wall reviews and Google / TripAdvisor / Facebook rating counts.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/faqs"
+          className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm transition hover:border-[#0F9B9B]"
+        >
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#0F9B9B]">Content</p>
+          <h2 className="mt-2 text-xl font-black">Manage FAQs</h2>
+          <p className="mt-2 text-sm text-[#555555]">
+            Add, edit, reorder, and delete questions on the public FAQs page.
           </p>
         </Link>
       </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/data/prisma";
+import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -9,17 +10,26 @@ function isValidEmail(email: string) {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const limit = await checkRateLimit(`enquiry:${ip}`, 12, 15 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many submissions. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
-    const name = String(body.name || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
+    const name = String(body.name || "").trim().slice(0, 120);
+    const email = String(body.email || "").trim().toLowerCase().slice(0, 200);
     const phoneRaw = String(body.phone || "").trim();
-    const phone = phoneRaw.replace(/\D/g, "");
-    const message = String(body.message || "").trim();
-    const page = String(body.page || body.source || "").trim();
-    const interestedIn = String(body.interestedIn || "").trim();
-    const travelDate = String(body.travelDate || "").trim();
-    const travelers = String(body.travelers || "").trim();
-    const formType = String(body.formType || "short").trim() || "short";
+    const phone = phoneRaw.replace(/\D/g, "").slice(0, 15);
+    const message = String(body.message || "").trim().slice(0, 4000);
+    const page = String(body.page || body.source || "").trim().slice(0, 200);
+    const interestedIn = String(body.interestedIn || "").trim().slice(0, 200);
+    const travelDate = String(body.travelDate || "").trim().slice(0, 100);
+    const travelers = String(body.travelers || "").trim().slice(0, 50);
+    const formType = String(body.formType || "short").trim().slice(0, 32) || "short";
 
     if (name.length < 2) {
       return NextResponse.json({ error: "Please enter a valid name." }, { status: 400 });
@@ -45,7 +55,12 @@ export async function POST(request: Request) {
         interestedIn,
         travelDate,
         travelers,
-        formType: formType === "contact" ? "contact" : "short",
+        formType:
+          formType === "contact"
+            ? "contact"
+            : formType === "itinerary"
+              ? "itinerary"
+              : "short",
       },
     });
 

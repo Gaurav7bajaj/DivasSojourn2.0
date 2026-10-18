@@ -12,7 +12,7 @@ import { toPublicBlogCard } from "../lib/data/mappers";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
 import { getTripNavItems, getUpcomingTripsByDestination } from "../lib/data/trips";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageUrl = "https://divassojourn.com/india-trips";
 const heroImage =

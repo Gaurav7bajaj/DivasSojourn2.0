@@ -7,15 +7,34 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
+function createPrismaClient() {
+  return new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
 }
+
+/**
+ * After `prisma generate` adds models, a Next.js HMR process may still hold an
+ * older client on globalThis (missing delegates like `faq`). Recreate when that
+ * happens so local/dev does not crash until a full restart.
+ */
+function getPrismaClient(): PrismaClient {
+  let client = globalForPrisma.prisma ?? createPrismaClient();
+
+  // Faq was added after some long-lived would-be clients were created.
+  if (!(client as { faq?: unknown }).faq) {
+    void client.$disconnect().catch(() => undefined);
+    client = createPrismaClient();
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+
+  return client;
+}
+
+export const prisma = getPrismaClient();
 
 function isTransientDbError(error: unknown): boolean {
   const message = String((error as { message?: string })?.message || error || "");

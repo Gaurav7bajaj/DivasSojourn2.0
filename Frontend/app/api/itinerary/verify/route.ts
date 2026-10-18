@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/app/lib/data/prisma";
 import { isValidPhone, normalizePhone } from "@/app/lib/phone";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import {
@@ -15,7 +16,16 @@ export async function POST(request: Request) {
     const body = await request.json();
     const phone = String(body.phone || "").trim();
     const code = String(body.code || body.otp || "").trim();
+    const fullName = String(body.fullName || body.name || "").trim();
+    const tripName = String(body.tripName || "").trim();
+    const tripSlug = String(body.tripSlug || "").trim();
 
+    if (fullName.length < 2) {
+      return NextResponse.json(
+        { error: "Enter your full name." },
+        { status: 400 },
+      );
+    }
     if (!isValidPhone(phone)) {
       return NextResponse.json(
         { error: "Enter a valid phone number (at least 10 digits)." },
@@ -62,6 +72,27 @@ export async function POST(request: Request) {
         { error: otpResult.message || "Invalid OTP. Please try again." },
         { status: 400 },
       );
+    }
+
+    // Save verified lead so the team can call knowing the person's name.
+    try {
+      const pageLabel = tripName || tripSlug || "Itinerary unlock";
+      await prisma.enquiry.create({
+        data: {
+          name: fullName,
+          email: `itinerary.${digits}@leads.divassojourn.local`,
+          phone: digits.slice(-10),
+          message: tripSlug
+            ? `Unlocked itinerary for trip: ${tripSlug}`
+            : "Unlocked trip itinerary via phone OTP",
+          page: pageLabel,
+          interestedIn: tripName || tripSlug || "",
+          formType: "itinerary",
+        },
+      });
+    } catch (leadError) {
+      // Unlock should still succeed even if lead logging fails.
+      console.error("Failed to save itinerary unlock lead", leadError);
     }
 
     const token = createItineraryUnlockToken(digits);

@@ -14,7 +14,19 @@ type TripFormProps = {
   initial?: Trip | null;
 };
 
-const emptyDay = (): TripItineraryDay => ({
+function newClientId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `k-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+type DayRow = TripItineraryDay & { clientId: string };
+type StayRow = TripAccommodation & { clientId: string };
+type WomanRow = TripWomanJoining & { clientId: string };
+
+const emptyDay = (): DayRow => ({
+  clientId: newClientId(),
   day: 1,
   date: "",
   title: "",
@@ -24,17 +36,34 @@ const emptyDay = (): TripItineraryDay => ({
   description: "",
 });
 
-const emptyStay = (): TripAccommodation => ({
+const emptyStay = (): StayRow => ({
+  clientId: newClientId(),
   destination: "",
   hotel: "",
   category: "",
   nights: 1,
 });
 
-const emptyWomanJoining = (): TripWomanJoining => ({
+const emptyWomanJoining = (): WomanRow => ({
+  clientId: newClientId(),
   name: "",
   location: "",
 });
+
+function withClientIds<T extends object>(rows: T[]): (T & { clientId: string })[] {
+  return rows.map((row) =>
+    "clientId" in row && typeof (row as { clientId?: string }).clientId === "string"
+      ? (row as T & { clientId: string })
+      : { ...row, clientId: newClientId() },
+  );
+}
+
+function stripClientId<T extends { clientId: string }>({
+  clientId: _clientId,
+  ...rest
+}: T): Omit<T, "clientId"> {
+  return rest;
+}
 
 function linesToArray(text: string) {
   return text
@@ -90,14 +119,16 @@ export default function TripForm({ mode, initial }: TripFormProps) {
     (initial?.cancellationLinks || []).join("\n"),
   );
   const [paymentConditions, setPaymentConditions] = useState(initial?.paymentConditions || "");
-  const [itinerary, setItinerary] = useState<TripItineraryDay[]>(
-    initial?.itinerary?.length ? initial.itinerary : [emptyDay()],
+  const [itinerary, setItinerary] = useState<DayRow[]>(
+    initial?.itinerary?.length ? withClientIds(initial.itinerary) : [emptyDay()],
   );
-  const [accommodations, setAccommodations] = useState<TripAccommodation[]>(
-    initial?.accommodations?.length ? initial.accommodations : [emptyStay()],
+  const [accommodations, setAccommodations] = useState<StayRow[]>(
+    initial?.accommodations?.length ? withClientIds(initial.accommodations) : [emptyStay()],
   );
-  const [womenJoiningFrom, setWomenJoiningFrom] = useState<TripWomanJoining[]>(
-    initial?.womenJoiningFrom?.length ? initial.womenJoiningFrom : [emptyWomanJoining()],
+  const [womenJoiningFrom, setWomenJoiningFrom] = useState<WomanRow[]>(
+    initial?.womenJoiningFrom?.length
+      ? withClientIds(initial.womenJoiningFrom)
+      : [emptyWomanJoining()],
   );
   const [financial, setFinancial] = useState({
     company: initial?.financialDetails?.company || "",
@@ -174,9 +205,11 @@ export default function TripForm({ mode, initial }: TripFormProps) {
         notes: linesToArray(notesText),
         cancellationLinks: linesToArray(cancellationText),
         paymentConditions,
-        itinerary,
-        accommodations,
-        womenJoiningFrom: womenJoiningFrom.filter((entry) => entry.name.trim() || entry.location.trim()),
+        itinerary: itinerary.map(stripClientId),
+        accommodations: accommodations.map(stripClientId),
+        womenJoiningFrom: womenJoiningFrom
+          .filter((entry) => entry.name.trim() || entry.location.trim())
+          .map(stripClientId),
         financialDetails: financial,
       };
 
@@ -452,7 +485,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
           </button>
         </div>
         {itinerary.map((day, index) => (
-          <div key={index} className="space-y-3 rounded-xl border border-black/10 p-4">
+          <div key={day.clientId} className="space-y-3 rounded-xl border border-black/10 p-4">
             <div className="flex items-center justify-between">
               <p className="text-sm font-black">Day {day.day || index + 1}</p>
               <button type="button" className="text-xs font-bold text-red-600" onClick={() => setItinerary((prev) => prev.filter((_, i) => i !== index))}>
@@ -487,7 +520,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
           Add traveler names and the cities/locations they are joining this trip from.
         </p>
         {womenJoiningFrom.map((entry, index) => (
-          <div key={index} className="grid gap-3 rounded-xl border border-black/10 p-4 sm:grid-cols-2">
+          <div key={entry.clientId} className="grid gap-3 rounded-xl border border-black/10 p-4 sm:grid-cols-2">
             <input
               placeholder="Traveler name"
               value={entry.name}
@@ -527,7 +560,7 @@ export default function TripForm({ mode, initial }: TripFormProps) {
           </button>
         </div>
         {accommodations.map((stay, index) => (
-          <div key={index} className="grid gap-3 rounded-xl border border-black/10 p-4 sm:grid-cols-2">
+          <div key={stay.clientId} className="grid gap-3 rounded-xl border border-black/10 p-4 sm:grid-cols-2">
             <input placeholder="Destination" value={stay.destination} onChange={(e) => setAccommodations((prev) => prev.map((item, i) => (i === index ? { ...item, destination: e.target.value } : item)))} className={inputClass} />
             <input placeholder="Hotel" value={stay.hotel} onChange={(e) => setAccommodations((prev) => prev.map((item, i) => (i === index ? { ...item, hotel: e.target.value } : item)))} className={inputClass} />
             <input placeholder="Category" value={stay.category || ""} onChange={(e) => setAccommodations((prev) => prev.map((item, i) => (i === index ? { ...item, category: e.target.value } : item)))} className={inputClass} />

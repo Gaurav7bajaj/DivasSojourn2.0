@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getBlogBySlug, getPublishedBlogs } from "../../lib/data/blogs";
 import { toPublicBlogCard } from "../../lib/data/mappers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageBaseUrl = "https://divassojourn.com/blogs";
 

@@ -4,45 +4,61 @@ import ShortContactForm from "../components/international/ShortContactForm";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageUrl = "https://divassojourn.com/blogs";
 
-export const metadata = {
-  title: "Travel Blog | Tips, Guides & Stories",
-  description:
-    "Read our latest travel blogs featuring destination guides, travel tips, and real stories from our community of female travelers.",
-  keywords: [
-    "travel blog",
-    "travel guides",
-    "destination guides",
-    "travel tips",
-    "travel stories",
-    "women travelers",
-    "travel journal",
-  ],
-  alternates: {
-    canonical: "/blogs",
-  },
-  openGraph: {
-    title: "Travel Blog | Tips, Guides & Stories | Divas Sojourn",
-    description:
-      "Explore travel destinations, tips, and stories from experienced women travelers.",
-    url: pageUrl,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Travel Blog | Tips, Guides & Stories | Divas Sojourn",
-    description: "Destination guides, travel tips, and stories from the Divas Sojourn community.",
-  },
-};
-
-export default async function BlogsPage() {
+export async function generateMetadata() {
   const blogs = (await getPublishedBlogs()).map(toPublicBlogCard);
   const featuredImage =
     blogs.find((blog) => blog.featured && blog.image)?.image ||
     blogs.find((blog) => blog.image)?.image;
+
+  return {
+    title: "Travel Blog | Tips, Guides & Stories",
+    description:
+      "Read our latest travel blogs featuring destination guides, travel tips, and real stories from our community of female travelers.",
+    keywords: [
+      "travel blog",
+      "travel guides",
+      "destination guides",
+      "travel tips",
+      "travel stories",
+      "women travelers",
+      "travel journal",
+    ],
+    alternates: {
+      canonical: "/blogs",
+    },
+    openGraph: {
+      title: "Travel Blog | Tips, Guides & Stories | Divas Sojourn",
+      description:
+        "Explore travel destinations, tips, and stories from experienced women travelers.",
+      url: pageUrl,
+      type: "website",
+      ...(featuredImage
+        ? {
+            images: [
+              {
+                url: featuredImage,
+                alt: "Divas Sojourn travel journal",
+              },
+            ],
+          }
+        : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Travel Blog | Tips, Guides & Stories | Divas Sojourn",
+      description:
+        "Destination guides, travel tips, and stories from the Divas Sojourn community.",
+      ...(featuredImage ? { images: [featuredImage] } : {}),
+    },
+  };
+}
+
+export default async function BlogsPage() {
+  const blogs = (await getPublishedBlogs()).map(toPublicBlogCard);
 
   const itemList = {
     "@context": "https://schema.org",
@@ -109,7 +125,6 @@ export default async function BlogsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      {featuredImage ? <meta property="og:image" content={featuredImage} /> : null}
       <Suspense
         fallback={
           <div className="px-6 py-24 text-center font-[family-name:var(--font-dm-sans)] text-[#D9D3C6]">
