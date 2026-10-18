@@ -311,6 +311,17 @@ _(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --a
 - Admin cookie `path=/` required so `/api/admin` receives it; no `domain=` (would break Vercel previews).
 - CSP still allows `'unsafe-inline'` / `'unsafe-eval'` for Next.js; tighten with nonces later if needed.
 
+### Phase 4 — Code quality & scalability (2026-10-18)
+
+**Applied:**
+- Startup env assert (`instrumentation.ts` + `app/lib/env.ts`) — fail-fast in production for critical vars
+- Stop leaking raw `error.message` from FAQ admin routes and payment initiate 500s
+- Enquiry API: IP rate limit + field length caps
+- `createTrip` retries on Prisma `P2002` slug races
+- Admin `TripForm` list rows use stable `clientId` keys (stripped before save)
+
+**Deferred (documented, not blocking):** TripForm size, structured logging, Zod dependency (not in package.json — kept existing validators), in-memory trip window filter at current scale.
+
 ### Phase 3 — Connectivity & integrations (2026-10-18)
 
 **Runner:** `Frontend/scripts/phase3-connectivity.mjs` (safe logs — lengths/status only, no secrets).

@@ -38,9 +38,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ faq }, { status: 201 });
   } catch (error) {
     console.error("POST /api/admin/faqs failed", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to create FAQ." },
-      { status: 400 },
-    );
+    const message =
+      error instanceof Error && error.message === "Category, question, and answer are required."
+        ? error.message
+        : "Unable to create FAQ.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

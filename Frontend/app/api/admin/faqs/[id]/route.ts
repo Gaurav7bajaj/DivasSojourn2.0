@@ -26,10 +26,11 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json({ faq });
   } catch (error) {
     console.error("PUT /api/admin/faqs/[id] failed", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to update FAQ." },
-      { status: 400 },
-    );
+    const message =
+      error instanceof Error && error.message === "Category, question, and answer are required."
+        ? error.message
+        : "Unable to update FAQ.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
 
