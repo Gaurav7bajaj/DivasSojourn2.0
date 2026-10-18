@@ -1,12 +1,13 @@
 /**
  * Re-parse PDF text into richer trip JSON with itinerary / inclusions / accommodations.
- * Writes scripts/new-trips-rich.json
+ * Writes scripts/data/new-trips-rich.json
  */
 import fs from "fs";
 import path from "path";
 
-const TEXT_DIR = path.join(process.cwd(), "scripts", "pdf-text");
-const OUT = path.join(process.cwd(), "scripts", "new-trips-rich.json");
+const DATA_DIR = path.join(process.cwd(), "scripts", "data");
+const TEXT_DIR = path.join(DATA_DIR, "pdf-text");
+const OUT = path.join(DATA_DIR, "new-trips-rich.json");
 
 const FINANCIAL = {
   company: "Divas Sojourn",

@@ -233,9 +233,20 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 ## Open items needing your action
 _(filled as audit progresses)_
 
-1. **Approve Phase 1 group C keep/delete split** (see below) before those files are removed/moved.
+1. ~~Approve Phase 1 group C keep/delete split~~ — **approved and applied 2026-10-18**.
 2. Confirm Easebuzz Test vs Live keys for public launch.
 3. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
+
+### Keys to rotate
+
+_(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --all -- <file>`.)_
+
+| Item | Finding | Action |
+|---|---|---|
+| Easebuzz merchant key / salt | **Not hardcoded** in any deleted or kept script (current or historical). Probes read `EASEBUZZ_KEY` / `EASEBUZZ_SALT` from `.env.local` only. `probe-hash-variants.mjs` / `probe-validation.mjs` were **never committed** (disk-only). | No rotation required from scripts. |
+| `DATABASE_URL` | **Not hardcoded.** DB scripts use `PrismaClient()` (env only). | No rotation required from scripts. |
+| API keys / tokens / passwords | **None found** in scripts (current tree or committed history of those paths). | No rotation required from scripts. |
+| Company bank account / IFSC / UPI | **Present as trip content** in kept pipeline files (`build-rich-trips.mjs`, `upsert-new-trips.mjs`, `generate-trips.js`, `parse_all_trips.py`, JSON). Same details appear on public trip PDFs. **Not** API secrets. | Optional: change UPI/account at the bank if you want them out of future content; **no provider API key rotation**. Values not printed here. |
 
 ### Phase 1 progress (2026-10-18)
 
@@ -251,9 +262,11 @@ _(filled as audit progresses)_
 - E: kept `AGENTS.md` / `CLAUDE.md`; kept `dotenv` (`prisma/seed.ts` imports `dotenv/config`)
 - Updated `international/index.js` to only export live exports (`BlogsSection`, `ShortContactForm`, `TravelerReviews`)
 
-#### Group C — proposed KEEP vs DELETE (awaiting your OK)
+#### Group C — applied (approved)
 
-**KEEP → move to `Frontend/scripts/data/` + add `scripts/README.md`:**
+**Secret scan before delete/move:** scanned all keep + delete scripts (esp. probes, `ping-db.mjs`, `fix-*`). No Easebuzz key/salt, `DATABASE_URL`, API keys, tokens, or passwords hardcoded. Kept DB scripts remain env-only. Absolute Windows output paths in `generate-trips.js` / `parse_all_trips.py` replaced with script-relative paths.
+
+**KEEP → moved to `Frontend/scripts/data/` + `scripts/README.md` added:**
 
 | File | Why keep |
 |---|---|
@@ -278,3 +291,7 @@ _(filled as audit progresses)_
 | `ping-db.mjs` | Connectivity smoke test only |
 
 **Note:** Runtime seeding for production is `prisma/seed.ts` + `prisma/seedTrips.ts` (not under `scripts/`) — those stay put.
+
+### Phase 3 note (payments)
+
+Easebuzz must be verified **end-to-end in test mode**, not page-load only: initiate checkout → server hash verification → success **and** failure callbacks (and webhook if configured).

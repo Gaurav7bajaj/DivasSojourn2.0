@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 // Due to length constraints, I'll create a smaller valid sample first
 // This will be the complete list with proper data
@@ -64,8 +65,8 @@ const trips = [
   }
 ];
 
-// Write to file
-const outputPath = 'c:/Users/gaura/OneDrive/Desktop/DivasSojourn2.0/Frontend/scripts/new-trips-parsed.json';
+// Write to file (run from Frontend/: node scripts/data/generate-trips.js)
+const outputPath = path.join(__dirname, 'new-trips-parsed.json');
 fs.writeFileSync(outputPath, JSON.stringify(trips, null, 2));
 console.log(`Successfully wrote ${trips.length} trips to ${outputPath}`);
 console.log('\nTrip Summary:');

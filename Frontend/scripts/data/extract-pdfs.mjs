@@ -3,7 +3,7 @@ import path from "path";
 import { PDFParse } from "pdf-parse";
 
 const dir = path.join(process.cwd(), "new trips details");
-const outDir = path.join(process.cwd(), "scripts", "pdf-text");
+const outDir = path.join(process.cwd(), "scripts", "data", "pdf-text");
 fs.mkdirSync(outDir, { recursive: true });
 
 const files = fs.readdirSync(dir).filter((f) => f.toLowerCase().endsWith(".pdf"));

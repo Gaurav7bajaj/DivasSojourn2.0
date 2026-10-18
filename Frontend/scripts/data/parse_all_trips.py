@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+from pathlib import Path
 
 # All 14 trips with complete data
 trips = []
@@ -635,8 +636,8 @@ trips.append({
     "galleryImages": ["https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?w=800"]
 })
 
-# Write JSON
-output_path = "c:/Users/gaura/OneDrive/Desktop/DivasSojourn2.0/Frontend/scripts/new-trips-parsed.json"
+# Write JSON (run from Frontend/ or any cwd — output next to this script)
+output_path = Path(__file__).resolve().parent / "new-trips-parsed.json"
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(trips, f, indent=2, ensure_ascii=False)
 

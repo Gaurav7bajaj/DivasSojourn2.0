@@ -5,7 +5,9 @@ import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 const ROOT = process.cwd();
-const trips = JSON.parse(fs.readFileSync(path.join(ROOT, "scripts", "new-trips-rich.json"), "utf8"));
+const trips = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "scripts", "data", "new-trips-rich.json"), "utf8"),
+);
 
 // Patch incomplete highlights (PDF says SPECIAL ATTRACTION singular)
 const highlightPatches = {
