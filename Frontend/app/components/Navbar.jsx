@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, Phone, UserRound, X } from "lucide-react";
+import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navLinks, tripMenus } from "../data/mockData";
 
@@ -87,22 +87,19 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
 
         <div className="ml-auto flex shrink-0 items-center gap-3 xl:ml-0">
           <Link
-            href="/account"
-            className="hidden items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-sm font-semibold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37] lg:flex"
-            aria-label={accountInitials ? `Account (${accountInitials})` : "Sign in to account"}
-            title={accountInitials ? "My account" : "Sign in"}
-          >
-            <UserRound className="h-4 w-4" aria-hidden="true" />
-            <span className="min-w-[1.5rem] tracking-wide">
-              {accountInitials || "Sign in"}
-            </span>
-          </Link>
-          <Link
             href="tel:+919990022835"
             className="hidden items-center gap-2 rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition-all duration-300 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)] lg:flex"
           >
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
+          </Link>
+          <Link
+            href="/account"
+            className="hidden h-10 w-10 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)] lg:flex"
+            aria-label={accountInitials ? `Account (${accountInitials})` : "Sign in"}
+            title={accountInitials ? "My account" : "Sign in"}
+          >
+            {accountInitials || "SI"}
           </Link>
           <button
             type="button"
@@ -300,20 +297,19 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           </div>
 
           <Link
-            href="/account"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center gap-2 rounded-full border border-white/15 px-4 py-3 text-sm font-semibold text-white"
-          >
-            <UserRound className="h-4 w-4" aria-hidden="true" />
-            {accountInitials || "Sign in"}
-          </Link>
-
-          <Link
             href="tel:+919990022835"
             className="flex items-center justify-center gap-2 rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F]"
           >
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
+          </Link>
+
+          <Link
+            href="/account"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D4AF37] px-4 py-3 text-sm font-bold text-[#D4AF37]"
+          >
+            {accountInitials || "Sign in"}
           </Link>
         </div>
       )}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, UserRound } from "lucide-react";
+import { Phone } from "lucide-react";
 import { useEffect, useState } from "react";
 
 function initialsFromName(fullName) {
@@ -52,11 +52,11 @@ export default function FooterContactBar() {
 
       <Link
         href="/account"
-        aria-label={initials ? `Account (${initials})` : "Sign in to account"}
+        aria-label={initials ? `Account (${initials})` : "Sign in"}
         title={initials ? "My account" : "Sign in"}
-        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] font-[family-name:var(--font-dm-sans)] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)]"
+        className="inline-flex h-11 min-w-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] px-3 font-[family-name:var(--font-dm-sans)] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)]"
       >
-        {initials || <UserRound className="h-4 w-4" aria-hidden="true" />}
+        {initials || "SI"}
       </Link>
     </div>
   );
