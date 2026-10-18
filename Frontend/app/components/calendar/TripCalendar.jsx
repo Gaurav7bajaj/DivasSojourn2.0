@@ -311,16 +311,40 @@ export default function TripCalendar({ trips = [] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const initialMonth =
-    parseMonthKey(searchParams.get("month")) || parseMonthKey(toMonthKey(new Date()));
-  const [currentDate, setCurrentDate] = useState(initialMonth);
-  const [filterType, setFilterType] = useState(parseType(searchParams.get("type")));
+  const urlMonth = parseMonthKey(searchParams.get("month")) || parseMonthKey(toMonthKey(new Date()));
+  const urlType = parseType(searchParams.get("type"));
+  const urlKey = `${toMonthKey(urlMonth)}-${urlType}`;
+
+  // Store date/type together with the URL key they were synced from
+  const [calendarState, setCalendarState] = useState({
+    syncedFromUrlKey: urlKey,
+    currentDate: urlMonth,
+    filterType: urlType,
+  });
   const [selectedTripId, setSelectedTripId] = useState(null);
   const [mobileDay, setMobileDay] = useState(null);
   const [overflowPopover, setOverflowPopover] = useState(null);
   const [focusCellIndex, setFocusCellIndex] = useState(null);
   const cardRefs = useRef({});
   const gridRef = useRef(null);
+
+  // Sync from URL when it changes
+  if (calendarState.syncedFromUrlKey !== urlKey) {
+    setCalendarState({
+      syncedFromUrlKey: urlKey,
+      currentDate: urlMonth,
+      filterType: urlType,
+    });
+  }
+
+  const currentDate = calendarState.currentDate;
+  const filterType = calendarState.filterType;
+  const setCurrentDate = (date) => {
+    setCalendarState((prev) => ({ ...prev, currentDate: date }));
+  };
+  const setFilterType = (type) => {
+    setCalendarState((prev) => ({ ...prev, filterType: type }));
+  };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -333,17 +357,7 @@ export default function TripCalendar({ trips = [] }) {
     return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
   }, []);
 
-  useEffect(() => {
-    const nextMonth = parseMonthKey(searchParams.get("month"));
-    const nextType = parseType(searchParams.get("type"));
-    if (nextMonth && toMonthKey(nextMonth) !== monthKey) {
-      setCurrentDate(nextMonth);
-    }
-    if (nextType !== filterType) {
-      setFilterType(nextType);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync from URL only
-  }, [searchParams]);
+  // URL sync handled during render above
 
   const pushUrl = useCallback(
     (nextMonth, nextType) => {
@@ -427,6 +441,28 @@ export default function TripCalendar({ trips = [] }) {
     setSelectedTripId(null);
   }, []);
 
+  // Track filter changes to reset UI state
+  const uiFilterKey = `${monthKey}-${filterType}`;
+  const [uiState, setUiState] = useState({
+    filterKey: uiFilterKey,
+    selectedTripId: null,
+    mobileDay: null,
+    overflowPopover: null,
+  });
+
+  // Reset UI state when filters change
+  if (uiState.filterKey !== uiFilterKey) {
+    setUiState({
+      filterKey: uiFilterKey,
+      selectedTripId: null,
+      mobileDay: null,
+      overflowPopover: null,
+    });
+    setSelectedTripId(null);
+    setMobileDay(null);
+    setOverflowPopover(null);
+  }
+
   const selectTrip = useCallback(
     (tripId) => {
       setSelectedTripId((current) => {
@@ -457,11 +493,7 @@ export default function TripCalendar({ trips = [] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [clearSelection]);
 
-  useEffect(() => {
-    clearSelection();
-    setMobileDay(null);
-    setOverflowPopover(null);
-  }, [monthKey, filterType, clearSelection]);
+  // Filter change reset handled during render above
 
   const goMonth = (delta) => {
     const next = new Date(year, month + delta, 1);

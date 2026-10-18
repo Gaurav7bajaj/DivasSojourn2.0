@@ -43,12 +43,30 @@ export default function GalleryClient({ images }) {
     return images.filter((image) => image.destination === activePlace);
   }, [activePlace, images]);
 
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Track activePlace for pagination reset and hash handling
+  const [pagination, setPagination] = useState({ 
+    placeKey: activePlace, 
+    count: PAGE_SIZE,
+    hashHandled: false,
+  });
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [activePlace]);
+  // Reset pagination when activePlace changes
+  if (pagination.placeKey !== activePlace) {
+    setPagination({ 
+      placeKey: activePlace, 
+      count: PAGE_SIZE, 
+      hashHandled: false, // Allow hash to be re-processed for new filter
+    });
+  }
+
+  const visibleCount = pagination.count;
+  const setVisibleCount = (updater) => {
+    setPagination((prev) => ({
+      ...prev,
+      count: typeof updater === "function" ? updater(prev.count) : updater,
+    }));
+  };
 
   const visibleImages = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
@@ -96,18 +114,30 @@ export default function GalleryClient({ images }) {
   };
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || pagination.hashHandled) return;
     const hash = window.location.hash.replace(/^#/, "");
     const match = /^photo-(\d+)$/.exec(hash);
-    if (!match) return;
-    const photoIndex = Number(match[1]);
-    const filteredIndex = filtered.findIndex((image) => image.index === photoIndex);
-    if (filteredIndex < 0) return;
-    setLightboxIndex(filteredIndex);
-    setVisibleCount((count) => Math.max(count, filteredIndex + 1, PAGE_SIZE));
-    // Only honor the initial deep link once per place filter
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePlace, filtered]);
+    
+    // Use requestAnimationFrame to avoid sync setState in effect
+    window.requestAnimationFrame(() => {
+      if (!match) {
+        setPagination((prev) => ({ ...prev, hashHandled: true }));
+        return;
+      }
+      const photoIndex = Number(match[1]);
+      const filteredIndex = filtered.findIndex((image) => image.index === photoIndex);
+      if (filteredIndex < 0) {
+        setPagination((prev) => ({ ...prev, hashHandled: true }));
+        return;
+      }
+      setLightboxIndex(filteredIndex);
+      setPagination((prev) => ({
+        ...prev,
+        hashHandled: true,
+        count: Math.max(prev.count, filteredIndex + 1, PAGE_SIZE),
+      }));
+    });
+  }, [filtered, pagination.hashHandled]);
 
   return (
     <>

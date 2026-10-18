@@ -15,8 +15,10 @@ export default function GalleryLightbox({
   const dialogRef = useRef(null);
   const thumbStripRef = useRef(null);
   const touchStart = useRef(null);
-  const [loaded, setLoaded] = useState(false);
   const current = images[index];
+  // Track which src has been loaded - derive loaded from comparison
+  const [loadedSrc, setLoadedSrc] = useState(null);
+  const loaded = loadedSrc === current?.src;
   const prefersReducedMotion =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -30,10 +32,6 @@ export default function GalleryLightbox({
     if (!images.length) return;
     onNavigate((index + 1) % images.length);
   }, [images.length, index, onNavigate]);
-
-  useEffect(() => {
-    setLoaded(false);
-  }, [current?.src]);
 
   useEffect(() => {
     if (!current) return;
@@ -190,7 +188,7 @@ export default function GalleryLightbox({
               loaded ? "opacity-100" : "opacity-0"
             }`}
             style={{ width: "auto", height: "auto" }}
-            onLoad={() => setLoaded(true)}
+            onLoad={() => setLoadedSrc(current?.src)}
           />
         </div>
 

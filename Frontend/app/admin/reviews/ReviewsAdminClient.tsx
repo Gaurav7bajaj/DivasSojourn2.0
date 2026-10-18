@@ -39,24 +39,39 @@ export default function ReviewsAdminClient() {
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/admin/reviews", { cache: "no-store" });
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok) throw new Error(data.error || "Failed to load");
+        setReviews(data.reviews || []);
+        setPlatforms(data.platforms || []);
+        setError("");
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load reviews");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const load = useCallback(async () => {
-    setError("");
     try {
       const response = await fetch("/api/admin/reviews", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to load");
       setReviews(data.reviews || []);
       setPlatforms(data.platforms || []);
+      setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load reviews");
-    } finally {
-      setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function savePlatform(platform: Platform) {
     setSaving(true);

@@ -47,7 +47,8 @@ export default function FaqsClient({ items = [] }) {
   const topics = useMemo(() => buildTopics(items), [items]);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState(ALL_TOPIC);
-  const [openId, setOpenId] = useState(() => (items[0] ? faqKey(items[0]) : null));
+  const [userOpenId, setUserOpenId] = useState(null); // User's explicit selection
+  const [hashOpenId, setHashOpenId] = useState(null); // ID from URL hash
   const [hashHandled, setHashHandled] = useState(false);
   const itemRefs = useRef({});
   const debouncedQuery = useDebouncedValue(query, 150);
@@ -70,38 +71,55 @@ export default function FaqsClient({ items = [] }) {
     return list;
   }, [items, isSearching, trimmedQuery, topic]);
 
-  useEffect(() => {
-    if (!filteredItems.length) {
-      setOpenId(null);
-      return;
+  // Derive openId: user selection takes precedence, then hash, then first filtered item
+  const openId = useMemo(() => {
+    // If user explicitly selected something that's in the current list, use it
+    if (userOpenId && filteredItems.some((item) => faqKey(item) === userOpenId)) {
+      return userOpenId;
     }
-    setOpenId((current) =>
-      filteredItems.some((item) => faqKey(item) === current)
-        ? current
-        : faqKey(filteredItems[0]),
-    );
-  }, [filteredItems]);
+    // If hash pointed to something in the list, use it
+    if (hashOpenId && filteredItems.some((item) => faqKey(item) === hashOpenId)) {
+      return hashOpenId;
+    }
+    // Default to first item
+    return filteredItems[0] ? faqKey(filteredItems[0]) : null;
+  }, [filteredItems, userOpenId, hashOpenId]);
 
+  const setOpenId = (idOrUpdater) => {
+    const nextId = typeof idOrUpdater === "function" 
+      ? idOrUpdater(openId) 
+      : idOrUpdater;
+    setUserOpenId(nextId);
+  };
+
+  // Handle hash on mount only
   useEffect(() => {
     if (hashHandled || typeof window === "undefined") return;
+    
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) {
-      setHashHandled(true);
+      // Use rAF to avoid sync setState in effect
+      window.requestAnimationFrame(() => {
+        setHashHandled(true);
+      });
       return;
     }
+    
     const match = items.find(
       (item) => faqKey(item) === hash || item.id === hash,
     );
-    if (match) {
-      const key = faqKey(match);
-      setTopic(ALL_TOPIC);
-      setQuery("");
-      setOpenId(key);
-      window.requestAnimationFrame(() => {
+    // Use rAF to batch state updates after render
+    window.requestAnimationFrame(() => {
+      if (match) {
+        const key = faqKey(match);
+        setHashOpenId(key);
+        setHashHandled(true);
+        // Scroll to the item
         itemRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
-      });
-    }
-    setHashHandled(true);
+      } else {
+        setHashHandled(true);
+      }
+    });
   }, [hashHandled, items]);
 
   const selectTopic = useCallback((nextTopic) => {

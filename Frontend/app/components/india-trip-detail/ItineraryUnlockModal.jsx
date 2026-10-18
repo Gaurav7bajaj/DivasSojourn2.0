@@ -31,17 +31,18 @@ export default function ItineraryUnlockModal({
     };
   }, [open]);
 
-  useEffect(() => {
-    if (!open) {
-      setStep(1);
-      setFullName("");
-      setPhone("");
-      setOtp("");
-      setError("");
-      setStatus("");
-      setCooldown(0);
-    }
-  }, [open]);
+  // Reset form state when modal closes - handled via close handler instead of effect
+  const handleClose = () => {
+    onClose();
+    // Reset form state after close
+    setStep(1);
+    setFullName("");
+    setPhone("");
+    setOtp("");
+    setError("");
+    setStatus("");
+    setCooldown(0);
+  };
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -138,7 +139,7 @@ export default function ItineraryUnlockModal({
       <div className="relative w-full max-w-md rounded-[24px] border border-white/10 bg-[#141417] p-6 shadow-2xl md:p-8">
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full text-[#C9C3B6] transition hover:bg-white/5 hover:text-[#FBF8F1]"
           aria-label="Close"
         >

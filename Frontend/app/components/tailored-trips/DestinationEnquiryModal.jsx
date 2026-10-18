@@ -27,13 +27,53 @@ export default function DestinationEnquiryModal({ destination, onClose }) {
   const titleId = useId();
   const panelRef = useRef(null);
   const closeRef = useRef(null);
-  const [values, setValues] = useState(initialValues);
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Track form state with destination slug to reset when destination changes
+  const [formState, setFormState] = useState({
+    destSlug: destination?.slug,
+    values: initialValues,
+    errors: {},
+    isSubmitting: false,
+    isSuccess: false,
+  });
 
   const isCustom = Boolean(destination?.isCustom);
   const displayName = isCustom ? "dream" : destination?.name || "trip";
+
+  // Reset form when destination changes
+  if (formState.destSlug !== destination?.slug) {
+    setFormState({
+      destSlug: destination?.slug,
+      values: initialValues,
+      errors: {},
+      isSubmitting: false,
+      isSuccess: false,
+    });
+  }
+  
+  const values = formState.values;
+  const errors = formState.errors;
+  const isSubmitting = formState.isSubmitting;
+  const isSuccess = formState.isSuccess;
+  
+  const setValues = (updater) => {
+    setFormState((prev) => ({
+      ...prev,
+      values: typeof updater === "function" ? updater(prev.values) : updater,
+    }));
+  };
+  const setErrors = (updater) => {
+    setFormState((prev) => ({
+      ...prev,
+      errors: typeof updater === "function" ? updater(prev.errors) : updater,
+    }));
+  };
+  const setIsSubmitting = (value) => {
+    setFormState((prev) => ({ ...prev, isSubmitting: value }));
+  };
+  const setIsSuccess = (value) => {
+    setFormState((prev) => ({ ...prev, isSuccess: value }));
+  };
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -65,13 +105,6 @@ export default function DestinationEnquiryModal({ destination, onClose }) {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [onClose]);
-
-  useEffect(() => {
-    setValues(initialValues);
-    setErrors({});
-    setIsSubmitting(false);
-    setIsSuccess(false);
-  }, [destination?.slug]);
 
   if (!destination) return null;
 

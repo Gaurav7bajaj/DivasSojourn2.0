@@ -180,12 +180,38 @@ export default function BlogsListingClient({ blogs }) {
   const destParam = searchParams.get("destination") || "";
   const topicParam = searchParams.get("topic") || "";
 
-  const [searchInput, setSearchInput] = useState(qParam);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Track filter key and search input together to handle syncing
+  const filterKey = `${destParam}-${topicParam}-${qParam}`;
+  const [inputState, setInputState] = useState({ 
+    syncedFromQ: qParam, 
+    value: qParam 
+  });
+  const [pagination, setPagination] = useState({ filterKey, count: PAGE_SIZE });
 
-  useEffect(() => {
-    setSearchInput(qParam);
-  }, [qParam]);
+  // Derive searchInput: use synced value when URL changes, otherwise use user's typed value
+  const searchInput = inputState.syncedFromQ === qParam ? inputState.value : qParam;
+  
+  // Update input state when syncing from URL
+  if (inputState.syncedFromQ !== qParam) {
+    setInputState({ syncedFromQ: qParam, value: qParam });
+  }
+
+  // Reset pagination when filters change
+  if (pagination.filterKey !== filterKey) {
+    setPagination({ filterKey, count: PAGE_SIZE });
+  }
+
+  const setSearchInput = (value) => {
+    setInputState((prev) => ({ ...prev, value }));
+  };
+
+  const visibleCount = pagination.count;
+  const setVisibleCount = (updater) => {
+    setPagination((prev) => ({
+      ...prev,
+      count: typeof updater === "function" ? updater(prev.count) : updater,
+    }));
+  };
 
   const destinations = useMemo(() => {
     const set = new Set();
@@ -232,7 +258,7 @@ export default function BlogsListingClient({ blogs }) {
       });
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-      setVisibleCount(PAGE_SIZE);
+      // Pagination reset handled by filterKey comparison during render
     },
     [pathname, router, searchParams],
   );
@@ -270,10 +296,6 @@ export default function BlogsListingClient({ blogs }) {
     });
   }, [blogs, qParam, selectedDestination, selectedTopic]);
 
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [selectedDestination, selectedTopic, qParam]);
-
   const visibleBlogs = filteredBlogs.slice(0, visibleCount);
   const canLoadMore = visibleCount < filteredBlogs.length;
   const featuredBadges = featuredPost ? badgePair(featuredPost) : null;
@@ -281,7 +303,7 @@ export default function BlogsListingClient({ blogs }) {
   const clearFilters = () => {
     setSearchInput("");
     router.replace(pathname, { scroll: false });
-    setVisibleCount(PAGE_SIZE);
+    // Pagination reset handled by filterKey comparison during render
   };
 
   return (
