@@ -21,8 +21,9 @@ function createPrismaClient() {
 function getPrismaClient(): PrismaClient {
   let client = globalForPrisma.prisma ?? createPrismaClient();
 
-  // Faq was added after some long-lived would-be clients were created.
-  if (!(client as { faq?: unknown }).faq) {
+  // Models added after a long-lived HMR client was created (e.g. faq, traveler).
+  const delegates = client as { faq?: unknown; traveler?: unknown };
+  if (!delegates.faq || !delegates.traveler) {
     void client.$disconnect().catch(() => undefined);
     client = createPrismaClient();
   }

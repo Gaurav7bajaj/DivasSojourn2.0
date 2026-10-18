@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import PayNowButton from "./PayNowButton";
 
@@ -11,6 +12,16 @@ type TripOption = {
   shortName?: string;
   price: number;
   earlyBirdPrice?: number | null;
+  destination?: string;
+};
+
+type InstallmentPreview = {
+  id: string;
+  stage: string;
+  label: string;
+  amountDue: string;
+  dueDate: string | null;
+  status: string;
 };
 
 type Props = {
@@ -26,7 +37,10 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [bookingId, setBookingId] = useState("");
-  const [amountLabel, setAmountLabel] = useState("");
+  const [payNowAmount, setPayNowAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState("");
+  const [installments, setInstallments] = useState<InstallmentPreview[]>([]);
+  const [nextInstallmentId, setNextInstallmentId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,7 +49,7 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
     [trips, tripSlug],
   );
 
-  const displayAmount = selected
+  const displayTotal = selected
     ? selected.earlyBirdPrice ?? selected.price
     : null;
 
@@ -43,6 +57,7 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
     event.preventDefault();
     setError("");
     setBookingId("");
+    setInstallments([]);
     setLoading(true);
     try {
       const response = await fetch("/api/payments/bookings", {
@@ -55,7 +70,13 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
         throw new Error(data.error || "Unable to create booking");
       }
       setBookingId(data.bookingId);
-      setAmountLabel(data.amount);
+      setPayNowAmount(data.payNowAmount || data.amount);
+      setTotalAmount(data.amount);
+      const rows: InstallmentPreview[] = data.installments || [];
+      setInstallments(rows);
+      const nextDue =
+        rows.find((row) => row.status === "DUE") || rows[0] || null;
+      setNextInstallmentId(nextDue?.id || "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -86,8 +107,12 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
           </em>
         </h2>
         <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[15px] leading-relaxed text-[#C9C3B6]">
-          Secure hosted checkout via Easebuzz. Amount is taken from the trip price in our
-          system — not edited on this form.
+          Secure Easebuzz checkout. You pay the due installment for your schedule
+          (advance first, then later stages).{" "}
+          <Link href="/account" className="text-[#D6AE3C] underline-offset-2 hover:underline">
+            Sign in to your account
+          </Link>{" "}
+          to track bookings and pending payments.
         </p>
 
         <form
@@ -102,6 +127,7 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
               onChange={(e) => {
                 setTripSlug(e.target.value);
                 setBookingId("");
+                setInstallments([]);
               }}
               className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
             >
@@ -152,11 +178,11 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
             />
           </label>
 
-          {displayAmount != null ? (
+          {displayTotal != null ? (
             <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#FBF8F1]">
-              Amount due:{" "}
+              Trip total:{" "}
               <span className="font-bold text-[#D6AE3C]">
-                ₹{Number(displayAmount).toLocaleString("en-IN")}
+                ₹{Number(displayTotal).toLocaleString("en-IN")}
               </span>
             </p>
           ) : null}
@@ -173,16 +199,46 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
                   Creating booking…
                 </>
               ) : (
-                "Continue to Pay Now"
+                "Create booking & see schedule"
               )}
             </button>
           ) : (
-            <div className="space-y-3 border-t border-white/10 pt-4">
+            <div className="space-y-4 border-t border-white/10 pt-4">
+              {installments.length ? (
+                <ul className="space-y-2">
+                  {installments.map((row) => (
+                    <li
+                      key={row.id}
+                      className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 font-[family-name:var(--font-dm-sans)] text-sm"
+                    >
+                      <span className="text-[#C9C3B6]">
+                        {row.label}
+                        <span className="mt-1 block text-[12px] uppercase tracking-wide text-[#8F897D]">
+                          {row.status}
+                          {row.dueDate
+                            ? ` · due ${new Date(row.dueDate).toLocaleDateString("en-IN")}`
+                            : ""}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-semibold text-[#FBF8F1]">
+                        ₹{Number(row.amountDue).toLocaleString("en-IN")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
               <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
-                Booking ready{amountLabel ? ` · ₹${amountLabel}` : ""}. Click Pay Now to open
-                Easebuzz secure checkout.
+                Trip total ₹{Number(totalAmount || 0).toLocaleString("en-IN")}. Pay now:{" "}
+                <span className="font-bold text-[#D6AE3C]">
+                  ₹{Number(payNowAmount || 0).toLocaleString("en-IN")}
+                </span>
               </p>
-              <PayNowButton bookingId={bookingId} />
+              <PayNowButton
+                bookingId={bookingId}
+                installmentId={nextInstallmentId || undefined}
+                label={`Pay ₹${Number(payNowAmount || 0).toLocaleString("en-IN")} now`}
+              />
             </div>
           )}
 

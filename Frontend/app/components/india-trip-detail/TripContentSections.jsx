@@ -96,11 +96,11 @@ export function TripItinerarySection({ trip, locked = false, onRequestUnlock }) 
                 <Lock className="h-5 w-5" aria-hidden="true" />
               </span>
               <h3 className="mt-4 font-[family-name:var(--font-playfair)] text-[1.6rem] font-semibold text-[#FBF8F1]">
-                Verify to view itinerary
+                Sign in to view itinerary
               </h3>
               <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
-                Share your name and mobile number — we&apos;ll send a one-time code to unlock the
-                full day-by-day itinerary for this trip.
+                Enter your full name and mobile number — we&apos;ll send a one-time code to sign
+                you in and unlock the full day-by-day itinerary.
               </p>
               <button
                 type="button"

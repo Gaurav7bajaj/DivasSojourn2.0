@@ -52,149 +52,92 @@ export const paymentNotes = [
   "A payment gateway charge 3% will be levied on using above given payment link.",
 ];
 
-export const shortHaulDestinations = [
-  "Domestic Trips",
-  "Bhutan",
-  "Nepal",
-  "Sri Lanka",
-  "Thailand",
-  "Singapore",
-  "Bali",
-  "Dubai",
-  "Kazakhstan",
-  "Azerbaijan",
-  "Vietnam",
-  "Malaysia",
-  "Maldives",
-  "Mauritius",
+/** Advance deposits charged at booking (₹). */
+export const ADVANCE_INDIA_INR = 5100;
+export const ADVANCE_INTERNATIONAL_INR = 11000;
+
+export const indiaTripExamples = [
+  "Domestic India trips",
+  "Himalayan escapes",
+  "Spiritual circuits",
+  "North East trails",
+  "Beach & backwaters",
+  "Desert & heritage",
 ];
 
-export const longHaulDestinations = [
+export const internationalTripExamples = [
+  "Asia",
   "Europe",
-  "UK",
-  "Scotland",
-  "Ireland",
-  "USA",
-  "Canada",
-  "Japan",
-  "South Korea",
-  "Turkey",
-  "Egypt",
-  "Australia",
-  "New Zealand",
-  "South Africa",
-  "Kenya",
-  "South America",
-  "Jordan",
-  "Israel",
+  "UK & Ireland",
+  "Middle East",
+  "Africa",
+  "Americas",
+  "Australia & NZ",
+  "Island getaways",
 ];
 
-/** Raw policy rows (kept for reference / exact wording). */
-export const shortHaulPolicy = [
-  {
-    timing: "At the time of booking",
-    amount:
-      "25% of the full tour cost or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "Within 45 Days from Departure Date",
-    amount:
-      "50% of the Full Tour Cost or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "Within 30 Days from Date of Departure",
-    amount:
-      "75% of the Full Tour Cost or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "20 Days from Date of Departure",
-    amount: "100% of the Full Tour Cost",
-  },
-];
-
-export const longHaulPolicy = [
-  {
-    timing: "At the time of booking",
-    amount:
-      "INR 40,000 Per Person or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "Within 60 Days from Departure Date",
-    amount:
-      "50% of the Full Tour Cost or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "Within 45 Days from Departure Date",
-    amount:
-      "75% of the Full Tour Cost or cancellation charges whichever is higher (non-refundable and non-transferable)",
-  },
-  {
-    timing: "30 Days from Departure Date",
-    amount: "100% of the Full Tour cost",
-  },
-];
-
+/**
+ * Public schedule UI + checkout rules.
+ * Percentage stages are cumulative targets of the amount remaining after the advance.
+ */
 export const scheduleConfig = {
-  short: {
-    id: "short",
-    label: "Short haul",
-    destinationsLabel: "Short haul destinations",
-    destinations: shortHaulDestinations,
+  india: {
+    id: "india",
+    label: "India Trips",
+    destinationsLabel: "India trips",
+    destinations: indiaTripExamples,
+    advanceInr: ADVANCE_INDIA_INR,
     steps: [
       {
         when: "At booking",
-        amount: "25%",
-        detail: "of the tour cost or cancellation charges, whichever is higher*",
+        amount: "₹5,100",
+        detail: "Advance payment to confirm your seat",
       },
       {
         when: "45 days before",
-        amount: "50%",
-        detail: "of the tour cost or cancellation charges, whichever is higher*",
+        amount: "25%",
+        detail: "of the remaining trip amount",
       },
       {
         when: "30 days before",
-        amount: "75%",
-        detail: "of the tour cost or cancellation charges, whichever is higher*",
+        amount: "50%",
+        detail: "of the remaining trip amount",
       },
       {
-        when: "20 days before",
+        when: "15 days before",
         amount: "100%",
-        detail: "of the full tour cost",
+        detail: "of the remaining trip amount must be paid",
       },
     ],
   },
-  long: {
-    id: "long",
-    label: "Long haul",
-    destinationsLabel: "Long haul destinations",
-    destinations: longHaulDestinations,
+  international: {
+    id: "international",
+    label: "International Trips",
+    destinationsLabel: "International trips",
+    destinations: internationalTripExamples,
+    advanceInr: ADVANCE_INTERNATIONAL_INR,
     steps: [
       {
         when: "At booking",
-        amount: "₹40,000",
-        detail: "per person or cancellation charges, whichever is higher*",
-      },
-      {
-        when: "60 days before",
-        amount: "50%",
-        detail: "of the tour cost or cancellation charges, whichever is higher*",
+        amount: "₹11,000",
+        detail: "Advance payment to confirm your seat",
       },
       {
         when: "45 days before",
-        amount: "75%",
-        detail: "of the tour cost or cancellation charges, whichever is higher*",
+        amount: "50%",
+        detail: "of the remaining trip amount",
       },
       {
         when: "30 days before",
         amount: "100%",
-        detail: "of the full tour cost",
+        detail: "of the remaining trip amount must be paid",
       },
     ],
   },
 };
 
 export const scheduleFootnote =
-  "* Paid instalments are non-refundable and non-transferable. Where cancellation charges are higher than the percentage shown, the higher amount applies.";
+  "All payments must be made within the specified timelines to confirm and retain your booking. Paid instalments are non-refundable and non-transferable unless stated otherwise in your booking terms.";
 
 export const policyNotes = [
   "For issuance of flight tickets, we require full payment of airfare.",

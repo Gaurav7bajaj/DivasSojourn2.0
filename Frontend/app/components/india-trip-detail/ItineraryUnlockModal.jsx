@@ -154,12 +154,12 @@ export default function ItineraryUnlockModal({
           id="itinerary-unlock-title"
           className="mt-5 font-[family-name:var(--font-playfair)] text-[1.75rem] font-semibold text-[#FBF8F1]"
         >
-          Verify to view itinerary
+          Sign in to view itinerary
         </h2>
         <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
           {tripName
-            ? `Enter your name and mobile number to unlock the day-by-day plan for ${tripName}.`
-            : "Enter your name and mobile number to unlock the full day-by-day itinerary."}
+            ? `Enter your full name and mobile number to sign in and unlock the day-by-day plan for ${tripName}.`
+            : "Enter your full name and mobile number to sign in and unlock the full day-by-day itinerary."}
         </p>
 
         {step === 1 ? (

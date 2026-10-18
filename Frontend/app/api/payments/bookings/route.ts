@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { InstallmentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/app/lib/data/prisma";
 import {
   formatAmount,
@@ -7,14 +7,17 @@ import {
   sanitizePhone,
   sanitizeProductInfo,
 } from "@/app/lib/easebuzz";
+import { buildInstallmentPlan, roundMoney } from "@/app/lib/paymentSchedule";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { getTravelerSession } from "@/app/lib/travelerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * Create a booking from trip slug + traveller details.
- * Amount always comes from the Trip row (earlyBirdPrice ?? price), never the client.
+ * Amount = full trip price; installments are created from the payment schedule.
+ * Checkout charges the next due installment (usually the advance first).
  */
 export async function POST(request: Request) {
   try {
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const tripSlug = String(body.tripSlug || "").trim();
-    const firstname = sanitizeName(String(body.firstname || ""));
+    const firstname = sanitizeName(String(body.firstname || body.fullName || ""));
     const email = String(body.email || "").trim().toLowerCase();
     const phone = sanitizePhone(String(body.phone || ""));
 
@@ -50,29 +53,81 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Trip has no payable amount." }, { status: 400 });
     }
 
-    const amount = formatAmount(amountInr);
+    const total = roundMoney(Number(amountInr));
     const productinfo = sanitizeProductInfo(
       `${trip.shortName || trip.title} booking`,
     );
 
-    const booking = await prisma.booking.create({
-      data: {
-        tripId: trip.id,
-        tripSlug: trip.slug,
-        tripTitle: trip.title,
-        firstname,
-        email,
-        phone,
-        productinfo,
-        amount: new Prisma.Decimal(amount),
-      },
+    const plan = buildInstallmentPlan({
+      destination: trip.destination,
+      totalAmount: total,
+      startDateIso: trip.startDate,
+    });
+
+    const session = await getTravelerSession();
+    let travelerId = session?.travelerId ?? null;
+    if (travelerId) {
+      const exists = await prisma.traveler.findUnique({ where: { id: travelerId } });
+      if (!exists) travelerId = null;
+    }
+    if (!travelerId) {
+      const existing = await prisma.traveler.findUnique({ where: { phone } });
+      if (existing) travelerId = existing.id;
+    }
+
+    const nextDue = plan.find((row) => row.dueNow) || plan[0];
+    const payNowAmount = nextDue ? formatAmount(nextDue.amountDue) : formatAmount(total);
+
+    const booking = await prisma.$transaction(async (tx) => {
+      const created = await tx.booking.create({
+        data: {
+          travelerId,
+          tripId: trip.id,
+          tripSlug: trip.slug,
+          tripTitle: trip.title,
+          firstname,
+          email,
+          phone,
+          productinfo,
+          amount: new Prisma.Decimal(formatAmount(total)),
+          amountPaid: new Prisma.Decimal(0),
+        },
+      });
+
+      await tx.bookingInstallment.createMany({
+        data: plan.map((row) => ({
+          bookingId: created.id,
+          stage: row.stage,
+          label: row.label,
+          sortOrder: row.sortOrder,
+          dueDate: row.dueDate,
+          amountDue: new Prisma.Decimal(formatAmount(row.amountDue)),
+          status: row.dueNow ? InstallmentStatus.DUE : InstallmentStatus.UPCOMING,
+        })),
+      });
+
+      return created;
+    });
+
+    const installments = await prisma.bookingInstallment.findMany({
+      where: { bookingId: booking.id },
+      orderBy: { sortOrder: "asc" },
     });
 
     return NextResponse.json({
       bookingId: booking.id,
-      amount,
+      amount: formatAmount(total),
+      payNowAmount,
       productinfo: booking.productinfo,
       tripTitle: booking.tripTitle,
+      installments: installments.map((row) => ({
+        id: row.id,
+        stage: row.stage,
+        label: row.label,
+        amountDue: formatAmount(Number(row.amountDue)),
+        dueDate: row.dueDate?.toISOString() ?? null,
+        status: row.status,
+      })),
     });
   } catch (error) {
     console.error("POST /api/payments/bookings failed", error);

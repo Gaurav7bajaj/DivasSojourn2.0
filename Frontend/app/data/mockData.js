@@ -97,6 +97,7 @@ export const navLinks = [
   { label: "Payments", href: "/payments" },
   { label: "Gallery", href: "/gallery" },
   { label: "Travel Saving Plan", href: "/travel-saving-plan" },
+  { label: "My Account", href: "/account" },
 ];
 
 export const tripMenus = [
