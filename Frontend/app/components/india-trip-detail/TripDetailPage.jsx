@@ -64,11 +64,12 @@ export default function TripDetailPage({
   }, [enrichedTrip, hasItinerary]);
 
   const firstDeparture = getDepartures(enrichedTrip).find((d) => !d.soldOut);
-  const bookHref = `/payments?trip=${encodeURIComponent(enrichedTrip.slug)}${
+  const paymentsPath = `/payments?trip=${encodeURIComponent(enrichedTrip.slug)}${
     firstDeparture?.startDate
       ? `&date=${encodeURIComponent(firstDeparture.startDate)}`
       : ""
   }`;
+  const bookHref = `/account?next=${encodeURIComponent(paymentsPath)}`;
 
   const similar = useMemo(
     () =>

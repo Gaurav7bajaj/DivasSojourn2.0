@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
@@ -24,6 +24,13 @@ type InstallmentPreview = {
   status: string;
 };
 
+type Traveler = {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string;
+};
+
 type Props = {
   trips: TripOption[];
 };
@@ -31,7 +38,12 @@ type Props = {
 export default function EasebuzzCheckoutForm({ trips }: Props) {
   const searchParams = useSearchParams();
   const tripFromQuery = searchParams.get("trip") || "";
+  const qs = searchParams.toString();
+  const returnTo = `/payments${qs ? `?${qs}` : ""}#pay-online`;
+  const loginHref = `/account?next=${encodeURIComponent(returnTo)}`;
 
+  const [authLoading, setAuthLoading] = useState(true);
+  const [traveler, setTraveler] = useState<Traveler | null>(null);
   const [tripSlug, setTripSlug] = useState(tripFromQuery);
   const [firstname, setFirstname] = useState("");
   const [email, setEmail] = useState("");
@@ -44,6 +56,33 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/account/me");
+        if (!res.ok) {
+          if (!cancelled) setTraveler(null);
+          return;
+        }
+        const data = await res.json();
+        if (cancelled) return;
+        const t = data.traveler as Traveler;
+        setTraveler(t);
+        setFirstname(t.fullName || "");
+        setEmail(t.email || "");
+        setPhone(t.phone || "");
+      } catch {
+        if (!cancelled) setTraveler(null);
+      } finally {
+        if (!cancelled) setAuthLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const selected = useMemo(
     () => trips.find((t) => t.slug === tripSlug) || null,
     [trips, tripSlug],
@@ -55,6 +94,10 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
 
   async function onCreateBooking(event: FormEvent) {
     event.preventDefault();
+    if (!traveler) {
+      setError("Please sign in to book a trip.");
+      return;
+    }
     setError("");
     setBookingId("");
     setInstallments([]);
@@ -66,6 +109,9 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
         body: JSON.stringify({ tripSlug, firstname, email, phone }),
       });
       const data = await response.json();
+      if (response.status === 401) {
+        throw new Error("Please sign in to book a trip.");
+      }
       if (!response.ok || !data.bookingId) {
         throw new Error(data.error || "Unable to create booking");
       }
@@ -107,147 +153,168 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
           </em>
         </h2>
         <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[15px] leading-relaxed text-[#C9C3B6]">
-          Secure Easebuzz checkout. You pay the due installment for your schedule
-          (advance first, then later stages).{" "}
-          <Link href="/account" className="text-[#D6AE3C] underline-offset-2 hover:underline">
-            Sign in to your account
-          </Link>{" "}
-          to track bookings and pending payments.
+          Sign in first, then pay the due installment for your schedule (advance
+          first, then later stages).
         </p>
 
-        <form
-          onSubmit={onCreateBooking}
-          className="mt-8 space-y-4 rounded-[24px] border border-white/[0.08] bg-[#141417] p-6 md:p-8"
-        >
-          <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-            Trip
-            <select
-              required
-              value={tripSlug}
-              onChange={(e) => {
-                setTripSlug(e.target.value);
-                setBookingId("");
-                setInstallments([]);
-              }}
-              className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
-            >
-              <option value="">Select a trip</option>
-              {trips.map((trip) => (
-                <option key={trip.slug} value={trip.slug}>
-                  {trip.shortName || trip.title} — ₹
-                  {(trip.earlyBirdPrice ?? trip.price).toLocaleString("en-IN")}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-            Full name
-            <input
-              required
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
-              autoComplete="name"
-            />
-          </label>
-
-          <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-            Email
-            <input
-              required
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
-              autoComplete="email"
-            />
-          </label>
-
-          <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-            Phone (10 digits)
-            <input
-              required
-              inputMode="numeric"
-              pattern="[0-9]{10}"
-              maxLength={10}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-              className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
-              autoComplete="tel"
-            />
-          </label>
-
-          {displayTotal != null ? (
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#FBF8F1]">
-              Trip total:{" "}
-              <span className="font-bold text-[#D6AE3C]">
-                ₹{Number(displayTotal).toLocaleString("en-IN")}
-              </span>
+        {authLoading ? (
+          <div className="mt-8 flex items-center justify-center rounded-[24px] border border-white/[0.08] bg-[#141417] py-16">
+            <Loader2 className="h-7 w-7 animate-spin text-[#D6AE3C]" aria-hidden="true" />
+            <span className="sr-only">Checking sign-in</span>
+          </div>
+        ) : !traveler ? (
+          <div className="mt-8 space-y-5 rounded-[24px] border border-white/[0.08] bg-[#141417] p-6 md:p-8">
+            <p className="font-[family-name:var(--font-dm-sans)] text-[15px] leading-relaxed text-[#C9C3B6]">
+              You need to sign in with your full name and phone number before you
+              can book or pay for a trip.
             </p>
-          ) : null}
-
-          {!bookingId ? (
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex h-[54px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-[#D6AE3C] transition hover:bg-[rgba(214,174,60,0.12)] disabled:opacity-60"
+            <Link
+              href={loginHref}
+              className="inline-flex h-[54px] w-full items-center justify-center rounded-full bg-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  Creating booking…
-                </>
-              ) : (
-                "Create booking & see schedule"
-              )}
-            </button>
-          ) : (
-            <div className="space-y-4 border-t border-white/10 pt-4">
-              {installments.length ? (
-                <ul className="space-y-2">
-                  {installments.map((row) => (
-                    <li
-                      key={row.id}
-                      className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 font-[family-name:var(--font-dm-sans)] text-sm"
-                    >
-                      <span className="text-[#C9C3B6]">
-                        {row.label}
-                        <span className="mt-1 block text-[12px] uppercase tracking-wide text-[#8F897D]">
-                          {row.status}
-                          {row.dueDate
-                            ? ` · due ${new Date(row.dueDate).toLocaleDateString("en-IN")}`
-                            : ""}
-                        </span>
-                      </span>
-                      <span className="shrink-0 font-semibold text-[#FBF8F1]">
-                        ₹{Number(row.amountDue).toLocaleString("en-IN")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              Sign in to book
+            </Link>
+          </div>
+        ) : (
+          <form
+            onSubmit={onCreateBooking}
+            className="mt-8 space-y-4 rounded-[24px] border border-white/[0.08] bg-[#141417] p-6 md:p-8"
+          >
+            <p className="font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-[#FBF8F1]">
+              Enter the traveler&apos;s details
+            </p>
+            <p className="!mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[#8F897D]">
+              Booking as{" "}
+              <span className="font-semibold text-[#C9C3B6]">{traveler.fullName}</span>
+              {" · "}
+              {traveler.phone}
+            </p>
 
-              <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
-                Trip total ₹{Number(totalAmount || 0).toLocaleString("en-IN")}. Pay now:{" "}
+            <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+              Trip
+              <select
+                required
+                value={tripSlug}
+                onChange={(e) => {
+                  setTripSlug(e.target.value);
+                  setBookingId("");
+                  setInstallments([]);
+                }}
+                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
+              >
+                <option value="">Select a trip</option>
+                {trips.map((trip) => (
+                  <option key={trip.slug} value={trip.slug}>
+                    {trip.shortName || trip.title} — ₹
+                    {(trip.earlyBirdPrice ?? trip.price).toLocaleString("en-IN")}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+              Full name
+              <input
+                required
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
+                autoComplete="name"
+              />
+            </label>
+
+            <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+              Email
+              <input
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
+                autoComplete="email"
+              />
+            </label>
+
+            <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+              Phone
+              <input
+                disabled
+                value={phone}
+                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#8F897D]"
+              />
+            </label>
+
+            {displayTotal != null ? (
+              <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#FBF8F1]">
+                Trip total:{" "}
                 <span className="font-bold text-[#D6AE3C]">
-                  ₹{Number(payNowAmount || 0).toLocaleString("en-IN")}
+                  ₹{Number(displayTotal).toLocaleString("en-IN")}
                 </span>
               </p>
-              <PayNowButton
-                bookingId={bookingId}
-                installmentId={nextInstallmentId || undefined}
-                label={`Pay ₹${Number(payNowAmount || 0).toLocaleString("en-IN")} now`}
-              />
-            </div>
-          )}
+            ) : null}
 
-          {error ? (
-            <p className="font-[family-name:var(--font-dm-sans)] text-sm text-red-400" role="alert">
-              {error}
-            </p>
-          ) : null}
-        </form>
+            {!bookingId ? (
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex h-[54px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D6AE3C] px-7 font-[family-name:var(--font-dm-sans)] text-[15px] font-semibold text-[#D6AE3C] transition hover:bg-[rgba(214,174,60,0.12)] disabled:opacity-60"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    Creating booking…
+                  </>
+                ) : (
+                  "Create booking & see schedule"
+                )}
+              </button>
+            ) : (
+              <div className="space-y-4 border-t border-white/10 pt-4">
+                {installments.length ? (
+                  <ul className="space-y-2">
+                    {installments.map((row) => (
+                      <li
+                        key={row.id}
+                        className="flex items-start justify-between gap-3 rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 font-[family-name:var(--font-dm-sans)] text-sm"
+                      >
+                        <span className="text-[#C9C3B6]">
+                          {row.label}
+                          <span className="mt-1 block text-[12px] uppercase tracking-wide text-[#8F897D]">
+                            {row.status}
+                            {row.dueDate
+                              ? ` · due ${new Date(row.dueDate).toLocaleDateString("en-IN")}`
+                              : ""}
+                          </span>
+                        </span>
+                        <span className="shrink-0 font-semibold text-[#FBF8F1]">
+                          ₹{Number(row.amountDue).toLocaleString("en-IN")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
+                  Trip total ₹{Number(totalAmount || 0).toLocaleString("en-IN")}. Pay now:{" "}
+                  <span className="font-bold text-[#D6AE3C]">
+                    ₹{Number(payNowAmount || 0).toLocaleString("en-IN")}
+                  </span>
+                </p>
+                <PayNowButton
+                  bookingId={bookingId}
+                  installmentId={nextInstallmentId || undefined}
+                  label={`Pay ₹${Number(payNowAmount || 0).toLocaleString("en-IN")} now`}
+                />
+              </div>
+            )}
+
+            {error ? (
+              <p className="font-[family-name:var(--font-dm-sans)] text-sm text-red-400" role="alert">
+                {error}
+              </p>
+            ) : null}
+          </form>
+        )}
       </div>
     </section>
   );

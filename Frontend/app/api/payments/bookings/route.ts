@@ -27,20 +27,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429 });
     }
 
+    const session = await getTravelerSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Please sign in to book a trip.", code: "LOGIN_REQUIRED" },
+        { status: 401 },
+      );
+    }
+
+    const traveler = await prisma.traveler.findUnique({
+      where: { id: session.travelerId },
+    });
+    if (!traveler) {
+      return NextResponse.json(
+        { error: "Please sign in to book a trip.", code: "LOGIN_REQUIRED" },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     const tripSlug = String(body.tripSlug || "").trim();
-    const firstname = sanitizeName(String(body.firstname || body.fullName || ""));
-    const email = String(body.email || "").trim().toLowerCase();
-    const phone = sanitizePhone(String(body.phone || ""));
+    const firstname = sanitizeName(
+      String(body.firstname || body.fullName || traveler.fullName || ""),
+    );
+    const email = String(body.email || traveler.email || "")
+      .trim()
+      .toLowerCase();
+    const phone = sanitizePhone(traveler.phone);
 
     if (!tripSlug || !firstname || !email || phone.length !== 10) {
       return NextResponse.json(
-        { error: "tripSlug, firstname, email, and a 10-digit phone are required." },
+        {
+          error:
+            "tripSlug, full name, and email are required. Update your account details if needed.",
+        },
         { status: 400 },
       );
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Add a valid email in your account before booking." },
+        { status: 400 },
+      );
     }
 
     const trip = await prisma.trip.findUnique({ where: { slug: tripSlug } });
@@ -64,16 +92,7 @@ export async function POST(request: Request) {
       startDateIso: trip.startDate,
     });
 
-    const session = await getTravelerSession();
-    let travelerId = session?.travelerId ?? null;
-    if (travelerId) {
-      const exists = await prisma.traveler.findUnique({ where: { id: travelerId } });
-      if (!exists) travelerId = null;
-    }
-    if (!travelerId) {
-      const existing = await prisma.traveler.findUnique({ where: { phone } });
-      if (existing) travelerId = existing.id;
-    }
+    const travelerId = traveler.id;
 
     const nextDue = plan.find((row) => row.dueNow) || plan[0];
     const payNowAmount = nextDue ? formatAmount(nextDue.amountDue) : formatAmount(total);

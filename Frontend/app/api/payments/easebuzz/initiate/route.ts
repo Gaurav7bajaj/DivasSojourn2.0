@@ -15,12 +15,21 @@ import {
 } from "@/app/lib/easebuzz";
 import { pickNextPayable } from "@/app/lib/paymentSchedule";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { getTravelerSession } from "@/app/lib/travelerSession";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
+    const session = await getTravelerSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Please sign in to continue payment.", code: "LOGIN_REQUIRED" },
+        { status: 401 },
+      );
+    }
+
     const ip = getClientIp(request);
     const limit = await checkRateLimit(`pay-initiate:${ip}`, 8, 15 * 60 * 1000);
     if (!limit.allowed) {
@@ -41,6 +50,17 @@ export async function POST(request: Request) {
     if (!booking) {
       return NextResponse.json({ error: "Booking not found." }, { status: 404 });
     }
+
+    const ownsBooking =
+      booking.travelerId === session.travelerId ||
+      booking.phone === session.phone;
+    if (!ownsBooking) {
+      return NextResponse.json(
+        { error: "You can only pay for your own bookings." },
+        { status: 403 },
+      );
+    }
+
     if (booking.paid) {
       return NextResponse.json({ error: "This booking is already fully paid." }, { status: 400 });
     }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import AccountClient from "./AccountClient";
 
 export const dynamic = "force-dynamic";
@@ -13,5 +14,15 @@ export const metadata = {
 };
 
 export default function AccountPage() {
-  return <AccountClient />;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[40vh] items-center justify-center bg-[#0B0B0C] text-[#D6AE3C]">
+          Loading…
+        </div>
+      }
+    >
+      <AccountClient />
+    </Suspense>
+  );
 }

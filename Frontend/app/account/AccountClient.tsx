@@ -2,8 +2,10 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, LogOut, UserRound } from "lucide-react";
 import PayNowButton from "../components/payments/PayNowButton";
+import { safeNextPath } from "../lib/safeNextPath";
 
 type Traveler = {
   id: string;
@@ -43,6 +45,10 @@ type BookingRow = {
 type TabId = "upcoming" | "previous" | "pending" | "profile";
 
 export default function AccountClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"), "");
+
   const [traveler, setTraveler] = useState<Traveler | null>(null);
   const [previous, setPrevious] = useState<BookingRow[]>([]);
   const [upcoming, setUpcoming] = useState<BookingRow[]>([]);
@@ -100,6 +106,12 @@ export default function AccountClient() {
     void loadAccount();
   }, [loadAccount]);
 
+  useEffect(() => {
+    if (!loading && traveler && nextPath) {
+      router.replace(nextPath);
+    }
+  }, [loading, traveler, nextPath, router]);
+
   async function onSendOtp(event: FormEvent) {
     event.preventDefault();
     setAuthError("");
@@ -141,6 +153,10 @@ export default function AccountClient() {
       }
       setOtp("");
       setOtpSent(false);
+      if (nextPath) {
+        router.replace(nextPath);
+        return;
+      }
       await loadAccount();
       setTab("upcoming");
     } catch (err) {
@@ -210,8 +226,9 @@ export default function AccountClient() {
             </em>
           </h1>
           <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[15px] leading-relaxed text-[#C9C3B6]">
-            Enter your full name and verify your number. We create a private ID so
-            only you see your trips, bookings, and pending payments.
+            {nextPath
+              ? "Sign in with your full name and phone to continue booking. We will take you back to checkout after verification."
+              : "Enter your full name and verify your number so only you see your trips, bookings, and pending payments."}
           </p>
 
           <form

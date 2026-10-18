@@ -18,9 +18,10 @@ export default function TripBookingCard({ trip }) {
 
   const selected = departures.find((d) => d.id === selectedId) || firstAvailable;
   const price = getDisplayPrice(trip);
-  const bookHref = `/payments?trip=${encodeURIComponent(trip.slug)}${
+  const paymentsPath = `/payments?trip=${encodeURIComponent(trip.slug)}${
     selected?.startDate ? `&date=${encodeURIComponent(selected.startDate)}` : ""
   }`;
+  const bookHref = `/account?next=${encodeURIComponent(paymentsPath)}`;
   const whatsappHref = `https://wa.me/919990022835?text=${encodeURIComponent(
     `Hi Divas Sojourn, I have a question about ${trip.title}${
       selected?.label ? ` (${selected.label})` : ""
