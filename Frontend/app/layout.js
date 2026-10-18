@@ -1,4 +1,5 @@
 import "./globals.css";
+import { unstable_cache } from "next/cache";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import AppShell from "./components/AppShell";
 import { getTripNavItems } from "./lib/data/trips";
@@ -18,7 +19,11 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-export const dynamic = "force-dynamic";
+const getCachedTripNav = unstable_cache(
+  async (destination) => getTripNavItems(destination),
+  ["trip-nav-items"],
+  { revalidate: 300 },
+);
 
 export const metadata = {
   metadataBase: new URL("https://divassojourn.com"),
@@ -75,8 +80,8 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const [indiaTrips, internationalTrips] = await Promise.all([
-    getTripNavItems("India"),
-    getTripNavItems("International"),
+    getCachedTripNav("India"),
+    getCachedTripNav("International"),
   ]);
 
   return (

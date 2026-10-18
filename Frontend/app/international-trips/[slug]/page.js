@@ -8,7 +8,7 @@ import {
 import { isWithinPublicListingWindow } from "../../lib/data/tripMappers";
 import { formatDualPrice } from "../../utils/formatPrice";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageBaseUrl = "https://divassojourn.com/international-trips";
 

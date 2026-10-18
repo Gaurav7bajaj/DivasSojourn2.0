@@ -311,6 +311,20 @@ _(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --a
 - Admin cookie `path=/` required so `/api/admin` receives it; no `domain=` (would break Vercel previews).
 - CSP still allows `'unsafe-inline'` / `'unsafe-eval'` for Next.js; tighten with nonces later if needed.
 
+### Phase 5 — Performance, SEO, a11y (2026-10-18)
+
+**Applied:**
+- `app/robots.ts` + `app/sitemap.ts` (static routes + published trips/blogs)
+- Removed root `force-dynamic`; nav via `unstable_cache` (5 min)
+- Listing/detail content pages: `revalidate = 3600` instead of `force-dynamic` (admin/payment routes unchanged)
+- Removed `unoptimized` from home + category hero LCP images
+- About page canonical; blogs OG image moved into `generateMetadata`
+- `loading.tsx` for root + upcoming / india / international / blogs / gallery / calendar
+
+**Already strong:** next/font with display swap, metadata + JSON-LD on key pages, focus-visible / aria patterns, next/image with sizes/priority.
+
+**Deferred:** deeper dynamic-import splitting for heavy clients; admin raw `<img>` previews.
+
 ### Phase 4 — Code quality & scalability (2026-10-18)
 
 **Applied:**

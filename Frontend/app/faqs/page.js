@@ -1,7 +1,7 @@
 import FaqsClient from "../components/faqs/FaqsClient";
 import { getPublishedFaqs } from "../lib/data/faqs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata = {
   title: "FAQs | Divas Sojourn",

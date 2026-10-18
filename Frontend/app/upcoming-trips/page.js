@@ -5,7 +5,7 @@ import GoogleReviews from "../components/shared/GoogleReviews";
 import { buildMonthsFromTrips } from "../lib/data/tripMappers";
 import { getUpcomingTrips } from "../lib/data/trips";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 const pageUrl = "https://divassojourn.com/upcoming-trips";
 const heroImage = "https://divassojourn.com/heroes/home/upcomingCommunityTrips-v2.jpg";

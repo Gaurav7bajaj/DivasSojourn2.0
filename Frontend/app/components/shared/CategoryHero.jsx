@@ -181,7 +181,6 @@ export default function CategoryHero({
                 src={slide.image}
                 alt=""
                 fill
-                unoptimized
                 sizes="100vw"
                 aria-hidden="true"
                 className="scale-110 object-cover object-center blur-[40px] brightness-50"
@@ -193,7 +192,6 @@ export default function CategoryHero({
               src={slide.image}
               alt={slide.alt}
               fill
-              unoptimized
               sizes="100vw"
               priority={index === 0}
               fetchPriority={index === 0 ? "high" : "auto"}

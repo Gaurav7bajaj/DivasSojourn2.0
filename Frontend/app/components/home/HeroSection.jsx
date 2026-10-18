@@ -149,7 +149,6 @@ export default function HeroSection() {
               src={slide.image}
               alt={slide.alt}
               fill
-              unoptimized
               sizes="100vw"
               priority={index === 0}
               fetchPriority={index === 0 ? "high" : "auto"}
