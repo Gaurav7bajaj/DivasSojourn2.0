@@ -6,7 +6,7 @@ import {
   generateRequestHash,
   generateTxnid,
   getEasebuzzCredentials,
-  getSiteUrl,
+  resolveAppOrigin,
   initiateEasebuzzPayment,
   sanitizeName,
   sanitizePhone,
@@ -133,7 +133,8 @@ export async function POST(request: Request) {
     const phone = sanitizePhone(booking.phone);
     const email = booking.email.trim().toLowerCase();
     const txnid = generateTxnid("DS");
-    const siteUrl = getSiteUrl();
+    // Same host as the logged-in browser session (www vs apex / preview).
+    const siteUrl = resolveAppOrigin(request);
     const callbackUrl = `${siteUrl}/api/payments/easebuzz/callback`;
     const udf1 = sanitizeUdf(booking.id);
 

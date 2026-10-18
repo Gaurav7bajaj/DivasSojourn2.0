@@ -62,16 +62,16 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Link
-            href="/upcoming-trips"
+            href="/account"
             className="inline-flex h-[52px] items-center justify-center rounded-full bg-[#D6AE3C] px-6 font-[family-name:var(--font-dm-sans)] text-sm font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
           >
-            Browse trips
+            View my bookings
           </Link>
           <Link
-            href="/payments"
+            href="/upcoming-trips"
             className="inline-flex h-[52px] items-center justify-center rounded-full border-[1.5px] border-[#D6AE3C] px-6 font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-[#D6AE3C]"
           >
-            Payment info
+            Browse trips
           </Link>
         </div>
       </div>

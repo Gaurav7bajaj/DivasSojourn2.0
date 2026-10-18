@@ -86,10 +86,15 @@ export async function isItineraryUnlocked(): Promise<boolean> {
 }
 
 export function itineraryUnlockCookieOptions(maxAge = SESSION_MAX_AGE_SECONDS) {
+  const secure =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL === "1" ||
+    process.env.VERCEL_ENV === "production" ||
+    process.env.VERCEL_ENV === "preview";
   return {
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     maxAge,
   };

@@ -49,6 +49,44 @@ export function getSiteUrl(): string {
   return url;
 }
 
+function normalizeHost(hostname: string): string {
+  return hostname.replace(/^www\./i, "").toLowerCase();
+}
+
+/**
+ * Prefer the request's public origin (www vs apex, preview URL) so payment
+ * return URLs stay on the same host that set the login cookie.
+ */
+export function resolveAppOrigin(request: Request): string {
+  const configured = getSiteUrl();
+  const protoHeader = request.headers.get("x-forwarded-proto") || "https";
+  const hostHeader =
+    request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
+  const proto = protoHeader.split(",")[0]?.trim() || "https";
+  const host = hostHeader.split(",")[0]?.trim();
+  if (!host) return configured;
+
+  const requestOrigin = `${proto}://${host}`.replace(/\/$/, "");
+  try {
+    const configuredHost = normalizeHost(new URL(configured).hostname);
+    const requestHost = normalizeHost(new URL(requestOrigin).hostname);
+    if (configuredHost === requestHost) {
+      return requestOrigin;
+    }
+    // Vercel preview / deployment host — keep user on the same host as login.
+    if (
+      requestHost.endsWith(".vercel.app") ||
+      requestHost === "localhost" ||
+      requestHost.startsWith("127.0.0.1")
+    ) {
+      return requestOrigin;
+    }
+  } catch {
+    // fall through
+  }
+  return configured;
+}
+
 export function getBaseUrl(env: EasebuzzEnv = getEasebuzzCredentials().env): string {
   return env === "prod" ? "https://pay.easebuzz.in" : "https://testpay.easebuzz.in";
 }

@@ -77,11 +77,31 @@ export async function getTravelerSession(): Promise<TravelerSession | null> {
 }
 
 export function travelerCookieOptions(maxAge = TRAVELER_SESSION_MAX_AGE_SECONDS) {
+  const secure =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL === "1" ||
+    process.env.VERCEL_ENV === "production" ||
+    process.env.VERCEL_ENV === "preview";
   return {
     httpOnly: true,
+    // Lax still sent on top-level GET after Easebuzz redirect; we also re-set
+    // the cookie on the payment callback response so login survives checkout.
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     path: "/",
     maxAge,
   };
+}
+
+/** Build a fresh session cookie value for an existing traveler row. */
+export function createTravelerTokenFromRecord(traveler: {
+  id: string;
+  phone: string;
+  fullName: string;
+}): string {
+  return createTravelerToken({
+    travelerId: traveler.id,
+    phone: traveler.phone,
+    fullName: traveler.fullName,
+  });
 }
