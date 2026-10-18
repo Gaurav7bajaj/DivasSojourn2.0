@@ -292,6 +292,24 @@ _(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --a
 
 **Note:** Runtime seeding for production is `prisma/seed.ts` + `prisma/seedTrips.ts` (not under `scripts/`) — those stay put.
 
+### Phase 2 — Security (2026-10-18)
+
+**Findings fixed in code:**
+- Timing-safe admin password/email compare (`safeCompare` + `timingSafeEqual`)
+- Generic login error messages (no config disclosure)
+- Admin session token now enforces `iat` expiry; lifetime **7d → 24h**
+- Itinerary unlock cookie lifetime **30d → 7d** (already had `iat` check)
+- CSRF defense: middleware rejects mutating `/api/admin/*` without same-origin `Origin`/`Referer`
+- Rate limiter wrapped in Prisma `$transaction`
+- Content-Security-Policy header added in `next.config.mjs`
+
+**Already OK (verified, no change):** Easebuzz response hash uses `timingSafeEqual`; amount checked vs DB; admin routes gated; cron uses `CRON_SECRET`; Prisma parameterized; uploads type/size limited; `.env*` gitignored.
+
+**Deferred / accepted:**
+- Admin password remains env plaintext (not bcrypt hash) — rotate via env; bcrypt would need a hashed env workflow.
+- Admin cookie `path=/` required so `/api/admin` receives it; no `domain=` (would break Vercel previews).
+- CSP still allows `'unsafe-inline'` / `'unsafe-eval'` for Next.js; tighten with nonces later if needed.
+
 ### Phase 3 note (payments)
 
 Easebuzz must be verified **end-to-end in test mode**, not page-load only: initiate checkout → server hash verification → success **and** failure callbacks (and webhook if configured).
