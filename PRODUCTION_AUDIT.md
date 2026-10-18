@@ -128,13 +128,111 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 
 ### Phase 0
 - Mapped stack, routes, APIs, env vars, integrations.
-- **Waiting for approval to start Phase 1.**
+- Approved to continue.
+
+### Phase 1 — Dead code audit (awaiting deletion approval)
+- Ran `knip` + manual import verification (Next.js false positives filtered).
+- No `console.log` / `debugger` in `app/` (only `console.error` for server logging — leave for Phase 4 logger).
+- TODOs found are content notes (hero images, newsletter) — not blocking; leave for now.
+- **Unused npm deps:** `dotenv` appears unused by app/scripts imports (candidate remove in Phase 1 after approval).
+- **Do not delete yet** — full proposed deletion list below pending your OK.
+
+#### Proposed deletions (need your approval)
+
+**A. Unused React components (verified: no imports from live pages)**
+
+| Path | Reason |
+|---|---|
+| `Frontend/app/components/india-trip-detail/TripTabs.jsx` | Replaced by `TripContentSections` / `TripDetailPage` |
+| `Frontend/app/components/india-trip-detail/TripHero.jsx` | Replaced by `TripDetailHero` |
+| `Frontend/app/components/india-trip-detail/JourneyFrames.jsx` | Replaced by `TripMomentsGallery` |
+| `Frontend/app/components/india-trip-detail/EnquiryCard.jsx` | Unused; enquiry uses `ShortContactForm` |
+| `Frontend/app/components/india-trip-detail/useCarouselScroll.js` | Only used by unused `JourneyFrames` |
+| `Frontend/app/components/blogs/BlogFilters.jsx` | Superseded by `BlogsListingClient` |
+| `Frontend/app/components/blogs/BlogGrid.jsx` | Superseded by `BlogsListingClient` |
+| `Frontend/app/components/blogs/BlogListingCard.jsx` | Superseded by `BlogsListingClient` |
+| `Frontend/app/components/blogs/BlogPageHeader.jsx` | Superseded by `BlogsListingClient` |
+| `Frontend/app/components/blogs/FeaturedBlog.jsx` | Superseded by `BlogsListingClient` |
+| `Frontend/app/components/home/TripCard.jsx` | Not used by current home sections |
+| `Frontend/app/components/home/TripSection.jsx` | Not used by current home sections |
+| `Frontend/app/components/india/IndiaHeroSection.jsx` | Page uses `IndiaTripsHeader` |
+| `Frontend/app/components/india/IndiaTripsCard.jsx` | Only used by unused grid |
+| `Frontend/app/components/india/IndiaTripsGrid.jsx` | Page uses `IndiaTripsClient` |
+| `Frontend/app/components/india/index.js` | Barrel only re-exports unused india components |
+| `Frontend/app/components/international/InternationalTripsHeader.jsx` | Not imported by live pages |
+| `Frontend/app/components/international/ContactForm.jsx` | Unused; `ShortContactForm` is used |
+| `Frontend/app/components/international/DestinationsGrid.jsx` | Unused |
+| `Frontend/app/components/international/InternationalHeroCarousel.jsx` | Unused |
+| `Frontend/app/components/HeroImageCarousel.jsx` | Only used by unused `InternationalTripsHeader` |
+| `Frontend/app/components/shared/VideoTestimonials.jsx` | Unused |
+| `Frontend/app/components/upcoming/FilterSidebar.jsx` | Superseded by `TripListingClient` / `TripFilters` |
+| `Frontend/app/components/upcoming/UpcomingFilterSidebar.jsx` | Superseded |
+| `Frontend/app/components/upcoming/MonthFilterButtons.jsx` | Superseded |
+| `Frontend/app/components/upcoming/UpcomingTripsGrid.jsx` | Superseded |
+| `Frontend/app/components/faqs/index.js` | Barrel unused (pages import `FaqsClient` directly) |
+| `Frontend/app/components/gallery/index.js` | Barrel unused |
+| `Frontend/app/components/shared/index.js` | Barrel unused |
+| `Frontend/app/components/travel-saving-plan/index.js` | Barrel unused |
+| `Frontend/app/components/payments/index.js` | Barrel unused (direct imports) |
+
+**B. Dead data / legacy store**
+
+| Path | Reason |
+|---|---|
+| `Frontend/app/lib/data/store.ts` | Old JSON file store; nothing imports it (Prisma replaced it) |
+| `Frontend/app/data/blogs.js` | Deprecated empty stub; blogs come from Prisma |
+| `Frontend/app/data/upcomingTrips.js` | Not imported; listings use Prisma `getUpcomingTrips` |
+| `Frontend/data/store/.gitkeep` | Leftover store dir marker |
+
+**C. One-off scripts & seed artifacts tracked in git (not used at runtime)**
+
+| Path | Reason |
+|---|---|
+| `Frontend/scripts/fix-*.mjs` (all cover fix scripts) | One-off maintenance, not runtime |
+| `Frontend/scripts/check-*.mjs` | One-off diagnostics |
+| `Frontend/scripts/list-*.mjs` | One-off listings |
+| `Frontend/scripts/build-rich-trips.mjs` | One-off trip builder |
+| `Frontend/scripts/generate-trips.js` | One-off |
+| `Frontend/scripts/extract-pdfs.mjs` | One-off |
+| `Frontend/scripts/parse_all_trips.py` | One-off |
+| `Frontend/scripts/update-2026-prices.mjs` | One-off |
+| `Frontend/scripts/upsert-new-trips.mjs` | One-off |
+| `Frontend/scripts/ping-db.mjs` | Dev utility, not needed in prod repo |
+| `Frontend/scripts/probe-easebuzz.mjs` | Debug probe |
+| `Frontend/scripts/probe-hash-variants.mjs` | Untracked debug probe |
+| `Frontend/scripts/probe-validation.mjs` | Untracked debug probe |
+| `Frontend/scripts/new-trips-parsed.json` | Historical import data (~tracked) |
+| `Frontend/scripts/new-trips-rich.json` | Historical import data (~148KB) |
+| `Frontend/scripts/pdf-text/` (15 `.txt` files) | Extracted PDF text for one-off import |
+
+**D. Disk-only trash (gitignored — delete from disk only)**
+
+| Path | Reason |
+|---|---|
+| `Frontend/_DELETE_ME_old_modules/` | Explicit trash; already gitignored |
+| `Frontend/node_modules_old_trash/` (if present) | Explicit trash |
+
+**E. Optional / ask first**
+
+| Path | Reason |
+|---|---|
+| `Frontend/AGENTS.md`, `Frontend/CLAUDE.md` | Cursor agent helpers; not needed for production (currently untracked) |
+| `Frontend/jsconfig.json` | Redundant if `tsconfig.json` paths cover `@/*` (verify before delete) |
+| npm `dotenv` | Unused dependency candidate |
+
+#### Keep (do not delete)
+
+- `Frontend/app/data/faqs.js` — seed source for FAQ DB
+- `Frontend/app/data/googleReviews.ts`, trip detail data files — still seed / fallback / content
+- `Frontend/app/data/mockData.js` — still used by Navbar/Footer/reviews fallback
+- Active payment, trip detail, home, admin components
+- Prisma migrations / seed
 
 ---
 
 ## Open items needing your action
 _(filled as audit progresses)_
 
-1. Confirm Phase 0 summary is accurate, then approve Phase 1.
+1. **Approve or edit the Phase 1 deletion list** (A–E above), then I will delete, re-verify build, and commit.
 2. Confirm Easebuzz Test vs Live keys for public launch.
 3. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
