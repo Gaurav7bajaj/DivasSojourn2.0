@@ -4,7 +4,7 @@ import {
   formDataToRecord,
   processEasebuzzNotification,
 } from "@/app/lib/data/payments";
-import { resolveAppOrigin } from "@/app/lib/easebuzz";
+import { getSiteUrl } from "@/app/lib/easebuzz";
 import {
   TRAVELER_COOKIE_NAME,
   createTravelerTokenFromRecord,
@@ -15,9 +15,35 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Easebuzz returns via cross-site POST. Re-attach the traveler session on the
- * redirect response so the user stays signed in after payment (avoids www/apex
- * or cookie drops across the gateway hop).
+ * Easebuzz often expects an HTML page after the return POST (browser form POST).
+ * A bare 303 can fail silently in some gateways/browsers — use meta + JS redirect.
+ */
+function htmlRedirectResponse(absoluteUrl: string) {
+  const safe = absoluteUrl.replace(/"/g, "&quot;");
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content="0;url=${safe}" />
+  <title>Redirecting…</title>
+  <script>window.location.replace(${JSON.stringify(absoluteUrl)});</script>
+</head>
+<body style="font-family:system-ui,sans-serif;background:#0B0B0C;color:#FBF8F1;display:flex;min-height:100vh;align-items:center;justify-content:center;">
+  <p>Payment received. <a href="${safe}" style="color:#D6AE3C">Continue</a> if you are not redirected.</p>
+</body>
+</html>`;
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+/**
+ * Re-attach traveler session on the return response so login survives checkout.
+ * Prefer booking.travelerId (account owner), not passenger phone.
  */
 async function attachTravelerSessionFromTxnid(
   response: NextResponse,
@@ -37,16 +63,10 @@ async function attachTravelerSessionFromTxnid(
     if (!booking) return;
 
     let traveler = booking.traveler;
-    if (!traveler && booking.phone) {
+    if (!traveler && booking.travelerId) {
       traveler = await prisma.traveler.findUnique({
-        where: { phone: booking.phone.slice(-10) },
+        where: { id: booking.travelerId },
       });
-      if (traveler && !booking.travelerId) {
-        await prisma.booking.update({
-          where: { id: booking.id },
-          data: { travelerId: traveler.id },
-        });
-      }
     }
     if (!traveler) return;
 
@@ -60,36 +80,54 @@ async function attachTravelerSessionFromTxnid(
   }
 }
 
-async function handleCallback(request: Request) {
-  const siteUrl = resolveAppOrigin(request);
+async function finishRedirect(path: string, txnid: string) {
+  // Always use configured public site URL (must match Easebuzz surl/furl + Vercel env).
+  const siteUrl = getSiteUrl();
+  const target = txnid
+    ? `${siteUrl}${path}?txnid=${encodeURIComponent(txnid)}`
+    : `${siteUrl}${path}`;
+  const response = htmlRedirectResponse(target);
+  await attachTravelerSessionFromTxnid(response, txnid);
+  return response;
+}
 
+async function handleCallback(request: Request) {
   try {
-    const formData = await request.formData();
-    const body = formDataToRecord(formData);
+    const contentType = request.headers.get("content-type") || "";
+    let body: Record<string, string> = {};
+
+    if (contentType.includes("application/json")) {
+      const json = (await request.json()) as Record<string, unknown>;
+      for (const [key, value] of Object.entries(json)) {
+        if (value != null) body[key] = String(value);
+      }
+    } else {
+      const formData = await request.formData();
+      body = formDataToRecord(formData);
+    }
+
+    // Some Easebuzz flows also put txnid on the query string.
+    const url = new URL(request.url);
+    if (!body.txnid && url.searchParams.get("txnid")) {
+      body.txnid = url.searchParams.get("txnid") || "";
+    }
+
     const result = await processEasebuzzNotification(body);
     const txnid = String(body.txnid || (result.ok ? result.txnid : "") || "");
 
     if (!result.ok) {
-      console.error("Easebuzz callback rejected", result.error);
-      const response = NextResponse.redirect(
-        `${siteUrl}/payment/failed?txnid=${encodeURIComponent(txnid)}`,
-        303,
-      );
-      await attachTravelerSessionFromTxnid(response, txnid);
-      return response;
+      console.error("Easebuzz callback rejected", result.error, { txnid });
+      return finishRedirect("/payment/failed", txnid);
     }
 
     const success = result.status === "SUCCESS";
-    const path = success ? "/payment/success" : "/payment/failed";
-    const response = NextResponse.redirect(
-      `${siteUrl}${path}?txnid=${encodeURIComponent(result.txnid)}`,
-      303,
+    return finishRedirect(
+      success ? "/payment/success" : "/payment/failed",
+      result.txnid,
     );
-    await attachTravelerSessionFromTxnid(response, result.txnid);
-    return response;
   } catch (error) {
     console.error("Easebuzz callback error", error);
-    return NextResponse.redirect(`${siteUrl}/payment/failed`, 303);
+    return finishRedirect("/payment/failed", "");
   }
 }
 
@@ -97,8 +135,24 @@ export async function POST(request: Request) {
   return handleCallback(request);
 }
 
-/** Some gateways retry as GET — send traveller to a safe page. */
+/**
+ * Easebuzz may retry/return via GET. If txnid is present, send user to status page.
+ */
 export async function GET(request: Request) {
-  const siteUrl = resolveAppOrigin(request);
-  return NextResponse.redirect(`${siteUrl}/payments`, 303);
+  const url = new URL(request.url);
+  const txnid = url.searchParams.get("txnid") || "";
+  if (txnid) {
+    try {
+      const payment = await prisma.payment.findUnique({ where: { txnid } });
+      if (payment?.status === "SUCCESS") {
+        return finishRedirect("/payment/success", txnid);
+      }
+      if (payment) {
+        return finishRedirect("/payment/failed", txnid);
+      }
+    } catch (error) {
+      console.error("Easebuzz GET callback lookup failed", error);
+    }
+  }
+  return finishRedirect("/payments", "");
 }
