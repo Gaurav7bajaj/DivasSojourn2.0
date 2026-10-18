@@ -9,7 +9,18 @@ All commands below assume **cwd = `Frontend/`**.
 | Path | Role |
 |---|---|
 | `scripts/data/` | Archived trip content pipeline (PDF → text → JSON → Prisma upsert) |
+| `scripts/phase3-connectivity.mjs` | Phase 3 connectivity + Easebuzz callback hash checks (no secret logging) |
 | `scripts/README.md` | This file |
+
+### Phase 3 connectivity
+
+With the Next dev server running and `EASEBUZZ_ENV=test`:
+
+```bash
+node scripts/phase3-connectivity.mjs
+```
+
+Requires `DATABASE_URL`, `EASEBUZZ_KEY`, `EASEBUZZ_SALT`, `NEXT_PUBLIC_SITE_URL`. Never commit real keys.
 
 ## Trip content pipeline (`scripts/data/`)
 

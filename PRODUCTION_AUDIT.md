@@ -234,8 +234,9 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 _(filled as audit progresses)_
 
 1. ~~Approve Phase 1 group C keep/delete split~~ — **approved and applied 2026-10-18**.
-2. Confirm Easebuzz Test vs Live keys for public launch.
-3. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
+2. **Easebuzz test keys rejected by `testpay.easebuzz.in` (“Invalid merchant key”).** Paste a valid **Test** merchant key + salt from the Easebuzz dashboard into local `.env.local` and Vercel (`EASEBUZZ_ENV=test`), then re-run `node scripts/phase3-connectivity.mjs`. Hosted checkout E2E is blocked until this is fixed. Do not paste secret values into chat.
+3. Confirm Easebuzz Test vs Live keys for public launch (after #2 works in test).
+4. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
 
 ### Keys to rotate
 
@@ -310,6 +311,23 @@ _(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --a
 - Admin cookie `path=/` required so `/api/admin` receives it; no `domain=` (would break Vercel previews).
 - CSP still allows `'unsafe-inline'` / `'unsafe-eval'` for Next.js; tighten with nonces later if needed.
 
-### Phase 3 note (payments)
+### Phase 3 — Connectivity & integrations (2026-10-18)
 
-Easebuzz must be verified **end-to-end in test mode**, not page-load only: initiate checkout → server hash verification → success **and** failure callbacks (and webhook if configured).
+**Runner:** `Frontend/scripts/phase3-connectivity.mjs` (safe logs — lengths/status only, no secrets).
+
+| Check | Result |
+|---|---|
+| Env present (DB, Easebuzz, site URL, SMS, Google, cron, admin) | PASS |
+| Neon DB ping (`trip.count`) | PASS |
+| Easebuzz request/response hash shapes + tamper reject | PASS |
+| `initiateLink` against **test** gateway | **FAIL — Invalid merchant key** |
+| Same keys against **prod** gateway | Also not usable (`Request Invalid for the merchant`) |
+| Local `/api/payments/bookings` | PASS |
+| Local `/api/payments/easebuzz/initiate` | **FAIL** (same merchant key) |
+| Callback rejects bad hash → `/payment/failed` | PASS |
+| Callback valid **success** hash → `/payment/success` + `booking.paid` | PASS |
+| Callback valid **failure** hash → `/payment/failed` + `Payment.status=FAILED` | PASS |
+
+**Server-side hash verification and success/failure callback handling are verified** with synthetic signed payloads. **Hosted Easebuzz checkout E2E remains blocked** until Test key/salt are corrected (open item #2).
+
+**Webhook:** same `processEasebuzzNotification` path as callback (hash + amount + idempotency). Full webhook POST from Easebuzz still requires a live/test txn after keys work.
