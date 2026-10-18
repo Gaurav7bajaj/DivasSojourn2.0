@@ -1,5 +1,7 @@
 import FaqsClient from "../components/faqs/FaqsClient";
-import { faqItems } from "../data/faqs";
+import { getPublishedFaqs } from "../lib/data/faqs";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "FAQs | Divas Sojourn",
@@ -24,27 +26,29 @@ export const metadata = {
   },
 };
 
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqItems.map((item) => ({
-    "@type": "Question",
-    name: item.question,
-    acceptedAnswer: {
-      "@type": "Answer",
-      text: item.answer,
-    },
-  })),
-};
+export default async function FaqsPage() {
+  const faqItems = await getPublishedFaqs();
 
-export default function FaqsPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <main className="bg-[#0B0B0C]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <FaqsClient />
+      <FaqsClient items={faqItems} />
     </main>
   );
 }

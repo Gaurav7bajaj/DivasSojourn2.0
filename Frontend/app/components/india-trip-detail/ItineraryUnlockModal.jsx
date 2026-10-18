@@ -5,8 +5,15 @@ import { Lock, X } from "lucide-react";
 
 const RESEND_SECONDS = 30;
 
-export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripName }) {
+export default function ItineraryUnlockModal({
+  open,
+  onClose,
+  onUnlocked,
+  tripName,
+  tripSlug,
+}) {
   const [step, setStep] = useState(1);
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -27,6 +34,8 @@ export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripNa
   useEffect(() => {
     if (!open) {
       setStep(1);
+      setFullName("");
+      setPhone("");
       setOtp("");
       setError("");
       setStatus("");
@@ -47,6 +56,10 @@ export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripNa
   const sendCode = async () => {
     setError("");
     setStatus("");
+    if (fullName.trim().length < 2) {
+      setError("Enter your full name.");
+      return;
+    }
     if (phone.replace(/\D/g, "").length < 10) {
       setError("Enter a valid phone number (at least 10 digits).");
       return;
@@ -57,7 +70,12 @@ export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripNa
       const response = await fetch("/api/itinerary/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({
+          phone,
+          fullName: fullName.trim(),
+          tripName: tripName || "",
+          tripSlug: tripSlug || "",
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -89,7 +107,13 @@ export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripNa
       const response = await fetch("/api/itinerary/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code: otp }),
+        body: JSON.stringify({
+          phone,
+          code: otp,
+          fullName: fullName.trim(),
+          tripName: tripName || "",
+          tripSlug: tripSlug || "",
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -133,28 +157,47 @@ export default function ItineraryUnlockModal({ open, onClose, onUnlocked, tripNa
         </h2>
         <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
           {tripName
-            ? `Enter your mobile number to unlock the day-by-day plan for ${tripName}.`
-            : "Enter your mobile number to unlock the full day-by-day itinerary."}
+            ? `Enter your name and mobile number to unlock the day-by-day plan for ${tripName}.`
+            : "Enter your name and mobile number to unlock the full day-by-day itinerary."}
         </p>
 
         {step === 1 ? (
           <div className="mt-6 space-y-4">
-            <label
-              htmlFor="itinerary-phone"
-              className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
-            >
-              Mobile number
-            </label>
-            <input
-              id="itinerary-phone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="10-digit mobile number"
-              className="h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
-            />
+            <div>
+              <label
+                htmlFor="itinerary-full-name"
+                className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+              >
+                Full name
+              </label>
+              <input
+                id="itinerary-full-name"
+                type="text"
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                className="mt-2 h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="itinerary-phone"
+                className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+              >
+                Mobile number
+              </label>
+              <input
+                id="itinerary-phone"
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="10-digit mobile number"
+                className="mt-2 h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
+              />
+            </div>
             <button
               type="button"
               onClick={sendCode}

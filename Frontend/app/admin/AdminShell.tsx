@@ -29,6 +29,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <AdminNavLink href="/admin/gallery">Gallery</AdminNavLink>
               <AdminNavLink href="/admin/trips">Trips</AdminNavLink>
               <AdminNavLink href="/admin/reviews">Reviews</AdminNavLink>
+              <AdminNavLink href="/admin/faqs">FAQs</AdminNavLink>
               <Link href="/" className="text-white/70 hover:text-white">
                 View site
               </Link>

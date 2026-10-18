@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { Minus, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { faqItems } from "../../data/faqs";
 
 const WHATSAPP_URL = "https://wa.me/919990022835";
 const PHONE_DISPLAY = "+91-99900 22835";
 const PHONE_HREF = "tel:+919990022835";
 const POPULAR = ["Safety", "Room sharing", "Payments"];
 const ALL_TOPIC = "all";
+
+function faqKey(item) {
+  return item.slug || item.id;
+}
 
 function useDebouncedValue(value, delay = 150) {
   const [debounced, setDebounced] = useState(value);
@@ -39,12 +42,12 @@ function topicTagLabel(category) {
   return category.toUpperCase();
 }
 
-export default function FaqsClient() {
+export default function FaqsClient({ items = [] }) {
   const searchId = useId();
-  const topics = useMemo(() => buildTopics(faqItems), []);
+  const topics = useMemo(() => buildTopics(items), [items]);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState(ALL_TOPIC);
-  const [openId, setOpenId] = useState(faqItems[0]?.id ?? null);
+  const [openId, setOpenId] = useState(() => (items[0] ? faqKey(items[0]) : null));
   const [hashHandled, setHashHandled] = useState(false);
   const itemRefs = useRef({});
   const debouncedQuery = useDebouncedValue(query, 150);
@@ -52,7 +55,7 @@ export default function FaqsClient() {
   const isSearching = trimmedQuery.length > 0;
 
   const filteredItems = useMemo(() => {
-    let list = faqItems;
+    let list = items;
     if (isSearching) {
       const q = trimmedQuery.toLowerCase();
       list = list.filter(
@@ -65,7 +68,7 @@ export default function FaqsClient() {
       list = list.filter((item) => item.category === topic);
     }
     return list;
-  }, [isSearching, trimmedQuery, topic]);
+  }, [items, isSearching, trimmedQuery, topic]);
 
   useEffect(() => {
     if (!filteredItems.length) {
@@ -73,7 +76,9 @@ export default function FaqsClient() {
       return;
     }
     setOpenId((current) =>
-      filteredItems.some((item) => item.id === current) ? current : filteredItems[0].id,
+      filteredItems.some((item) => faqKey(item) === current)
+        ? current
+        : faqKey(filteredItems[0]),
     );
   }, [filteredItems]);
 
@@ -84,17 +89,20 @@ export default function FaqsClient() {
       setHashHandled(true);
       return;
     }
-    const match = faqItems.find((item) => item.id === hash);
+    const match = items.find(
+      (item) => faqKey(item) === hash || item.id === hash,
+    );
     if (match) {
+      const key = faqKey(match);
       setTopic(ALL_TOPIC);
       setQuery("");
-      setOpenId(match.id);
+      setOpenId(key);
       window.requestAnimationFrame(() => {
-        itemRefs.current[match.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        itemRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "center" });
       });
     }
     setHashHandled(true);
-  }, [hashHandled]);
+  }, [hashHandled, items]);
 
   const selectTopic = useCallback((nextTopic) => {
     setTopic(nextTopic);
@@ -267,16 +275,17 @@ export default function FaqsClient() {
             ) : (
               <div className="flex flex-col gap-3">
                 {filteredItems.map((item) => {
-                  const isOpen = openId === item.id;
-                  const panelId = `faq-panel-${item.id}`;
-                  const buttonId = `faq-button-${item.id}`;
+                  const key = faqKey(item);
+                  const isOpen = openId === key;
+                  const panelId = `faq-panel-${key}`;
+                  const buttonId = `faq-button-${key}`;
 
                   return (
                     <article
                       key={item.id}
-                      id={item.id}
+                      id={key}
                       ref={(node) => {
-                        itemRefs.current[item.id] = node;
+                        itemRefs.current[key] = node;
                       }}
                       className={`overflow-hidden rounded-[18px] border bg-[#141417] transition-colors duration-200 ${
                         isOpen
@@ -290,7 +299,7 @@ export default function FaqsClient() {
                           id={buttonId}
                           aria-expanded={isOpen}
                           aria-controls={panelId}
-                          onClick={() => toggle(item.id)}
+                          onClick={() => toggle(key)}
                           className="flex w-full min-h-[72px] items-start gap-3 px-5 py-[18px] text-left md:items-center md:gap-4 md:px-6 md:pr-[22px] md:pl-6"
                         >
                           <span className="hidden w-24 shrink-0 font-[family-name:var(--font-dm-sans)] text-[11px] font-bold uppercase tracking-[0.14em] text-[#D6AE3C] md:block">

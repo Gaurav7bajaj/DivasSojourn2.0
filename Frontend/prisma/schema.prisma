@@ -204,6 +204,22 @@ model PlatformStat {
   updatedAt   DateTime @updatedAt
 }
 
+/// Public FAQs shown on /faqs (admin-managed).
+model Faq {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  sortOrder Int
+  category  String
+  question  String
+  answer    String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([published, sortOrder])
+}
+
 /// Website contact / enquiry form submissions for the admin panel.
 model Enquiry {
   id            String   @id @default(uuid())

@@ -45,7 +45,12 @@ export async function POST(request: Request) {
         interestedIn,
         travelDate,
         travelers,
-        formType: formType === "contact" ? "contact" : "short",
+        formType:
+          formType === "contact"
+            ? "contact"
+            : formType === "itinerary"
+              ? "itinerary"
+              : "short",
       },
     });
 

@@ -276,7 +276,11 @@ export default function EnquiriesAdminClient() {
                   </div>
                   <p className="mt-1 text-xs text-[#888888]">
                     {new Date(enquiry.createdAt).toLocaleString()} ·{" "}
-                    {enquiry.formType === "contact" ? "Full contact form" : "Short form"}
+                    {enquiry.formType === "contact"
+                      ? "Full contact form"
+                      : enquiry.formType === "itinerary"
+                        ? "Itinerary unlock"
+                        : "Short form"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
