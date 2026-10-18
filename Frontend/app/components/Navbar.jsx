@@ -3,13 +3,49 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Menu, Phone, UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { navLinks, tripMenus } from "../data/mockData";
+
+function initialsFromName(fullName) {
+  const parts = String(fullName || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return "";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
+}
 
 export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
+  const [accountInitials, setAccountInitials] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/account/me", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        if (!res.ok) {
+          if (!cancelled) setAccountInitials("");
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) {
+          setAccountInitials(initialsFromName(data?.traveler?.fullName));
+        }
+      } catch {
+        if (!cancelled) setAccountInitials("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <header
@@ -53,10 +89,13 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           <Link
             href="/account"
             className="hidden items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-sm font-semibold text-white transition hover:border-[#D4AF37] hover:text-[#D4AF37] lg:flex"
-            aria-label="My Account"
+            aria-label={accountInitials ? `Account (${accountInitials})` : "Sign in to account"}
+            title={accountInitials ? "My account" : "Sign in"}
           >
             <UserRound className="h-4 w-4" aria-hidden="true" />
-            Account
+            <span className="min-w-[1.5rem] tracking-wide">
+              {accountInitials || "Sign in"}
+            </span>
           </Link>
           <Link
             href="tel:+919990022835"
@@ -259,6 +298,15 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
               ),
             )}
           </div>
+
+          <Link
+            href="/account"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center justify-center gap-2 rounded-full border border-white/15 px-4 py-3 text-sm font-semibold text-white"
+          >
+            <UserRound className="h-4 w-4" aria-hidden="true" />
+            {accountInitials || "Sign in"}
+          </Link>
 
           <Link
             href="tel:+919990022835"
