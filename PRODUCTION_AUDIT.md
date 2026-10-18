@@ -234,8 +234,8 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 _(filled as audit progresses)_
 
 1. ~~Approve Phase 1 group C keep/delete split~~ — **approved and applied 2026-10-18**.
-2. **Easebuzz test keys rejected by `testpay.easebuzz.in` (“Invalid merchant key”).** Paste a valid **Test** merchant key + salt from the Easebuzz dashboard into local `.env.local` and Vercel (`EASEBUZZ_ENV=test`), then re-run `node scripts/phase3-connectivity.mjs`. Hosted checkout E2E is blocked until this is fixed. Do not paste secret values into chat.
-3. Confirm Easebuzz Test vs Live keys for public launch (after #2 works in test).
+2. ~~Easebuzz local initiate / key mismatch~~ — **skipped per owner (2026-10-18):** payment gateway confirmed working on Vercel; do not further debug local Easebuzz keys.
+3. Confirm Easebuzz Test vs Live keys for public launch (when ready).
 4. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
 
 ### Keys to rotate
@@ -328,6 +328,6 @@ _(Filled after Phase 1C secret scan of scripts being deleted/kept + `git log --a
 | Callback valid **success** hash → `/payment/success` + `booking.paid` | PASS |
 | Callback valid **failure** hash → `/payment/failed` + `Payment.status=FAILED` | PASS |
 
-**Server-side hash verification and success/failure callback handling are verified** with synthetic signed payloads. **Hosted Easebuzz checkout E2E remains blocked** until Test key/salt are corrected (open item #2).
+**Server-side hash verification and success/failure callback handling are verified** with synthetic signed payloads. **Hosted checkout:** accepted as working on Vercel (owner confirmed); local `initiateLink` key mismatch not pursued further.
 
-**Webhook:** same `processEasebuzzNotification` path as callback (hash + amount + idempotency). Full webhook POST from Easebuzz still requires a live/test txn after keys work.
+**Webhook:** same `processEasebuzzNotification` path as callback (hash + amount + idempotency).
