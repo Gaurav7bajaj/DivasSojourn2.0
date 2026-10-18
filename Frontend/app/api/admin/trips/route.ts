@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminSession } from "@/app/lib/admin/session";
 import { parseTripPayload } from "@/app/lib/data/parseTripPayload";
 import { createTrip, getTrips } from "@/app/lib/data/trips";
+import { revalidateTripPages } from "@/app/lib/revalidateTrips";
 import { saveUploadedImage, saveUploadedPdf } from "@/app/lib/uploads";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
     }
 
     const trip = await createTrip(parsed);
+    revalidateTripPages(trip.slug);
     return NextResponse.json({ trip }, { status: 201 });
   } catch (error) {
     console.error(error);
