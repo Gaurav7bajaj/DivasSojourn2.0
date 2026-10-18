@@ -1,48 +1,43 @@
 # Divas Sojourn Frontend
 
+Next.js 16 App Router + Prisma + Neon Postgres. Deploy root on Vercel: **`Frontend/`**.
+
 ## Run locally
 
 ```bash
 cd Frontend
 cp .env.local.example .env.local
-# Prefer pulling DB URLs from Vercel after Neon is connected:
-#   npx vercel link
-#   npx vercel env pull .env.development.local
-# Then keep ADMIN_* and SMS Alert keys in .env.local
+# Fill secrets (or: npx vercel link && npx vercel env pull .env.development.local)
 npm install
-npx prisma db push
-npx prisma db seed
+npx prisma migrate deploy
+npx prisma db seed   # optional
 npm run dev
 ```
 
 Open http://localhost:3000
 
-## Deploy to Vercel (temporary client preview only)
+See **[DEPLOY.md](./DEPLOY.md)** for Vercel env vars, domain, Easebuzz callbacks, and the go-live smoke test.
 
-Vercel is **only** for showing the client a demo URL. Final production will use a **different host**.
+## Scripts
 
-See **[DEPLOY.md](./DEPLOY.md)** for the preview checklist (Neon, env vars, admin access).
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Local Next (webpack) |
+| `npm run build` | `prisma generate` + `next build` |
+| `npm run vercel-build` | `prisma generate` + `migrate deploy` + `next build` (Vercel) |
+| `npm run db:migrate` | `prisma migrate deploy` |
+| `npm run db:seed` | Seed content |
 
-Quick facts:
+Offline trip import tooling: [`scripts/README.md`](./scripts/README.md).
 
-- Set Vercel **Root Directory** to `Frontend`
-- Preview admin: `https://YOUR-APP.vercel.app/admin/login`
-- Secrets go in Vercel env vars (not GitHub)
-- App stays portable: Next.js + Prisma + Postgres — easy to move later
+## Admin
 
-## Admin panel
+- Local: http://localhost:3000/admin/login  
+- Deployed: `https://YOUR-DOMAIN/admin/login`  
+- Credentials: `ADMIN_EMAIL` / `ADMIN_PASSWORD` from env (never commit)
 
-1. Local: http://localhost:3000/admin/login  
-2. Vercel preview: `https://YOUR-APP.vercel.app/admin/login`  
-3. Sign in with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env.local` (local) or Vercel env vars (preview)  
-4. Manage **Blogs**, **Gallery**, and **Trips** from the dashboard  
+## Notes
 
-Full preview + admin steps: [DEPLOY.md](./DEPLOY.md).
-
-## Database (Prisma + Neon)
-
-- **Provider:** PostgreSQL (Neon) — usable on Vercel preview **and** later on another host
-- Set `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct) in local env and on Vercel
-- Preview/deploy build runs `prisma db push` via `npm run vercel-build`
-
-Uploaded images save under `public/uploads/` in local development. On Vercel, configure **Storage → Blob** so `BLOB_READ_WRITE_TOKEN` is set; admin blog/gallery/trip uploads then go to Vercel Blob automatically (`app/lib/uploads.ts`).
+- Uploads: local `public/uploads/`; on Vercel use **Blob** (`BLOB_READ_WRITE_TOKEN`).
+- Payments: Easebuzz (`EASEBUZZ_*` + `NEXT_PUBLIC_SITE_URL`).
+- Production readiness notes for this repo: [`../PRODUCTION_AUDIT.md`](../PRODUCTION_AUDIT.md).

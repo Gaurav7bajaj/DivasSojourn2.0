@@ -106,11 +106,8 @@ Documented in `Frontend/.env.example` (names only). `.env*` is gitignored except
 ### Notable early observations (not fixed yet — Phase 0 only)
 
 - App mixes `.js` / `.jsx` / `.ts` / `.tsx`; no formal test suite in `package.json`.
-- Security headers already partially set in `next.config.mjs` (HSTS, XFO, nosniff, Referrer-Policy, Permissions-Policy); **CSP not yet set**.
-- Admin password is env plaintext compare (not bcrypt) — flag for Phase 2.
-- Probe / maintenance scripts under `Frontend/scripts/` (incl. Easebuzz probes) — candidates for Phase 1 review.
-- Cursor agent files `Frontend/AGENTS.md`, `Frontend/CLAUDE.md` untracked — Phase 1.
-- Local `_DELETE_ME_old_modules` / trash paths referenced in webpack ignore — Phase 1.
+- Security headers + CSP now set (Phase 2). Admin password remains env plaintext (accepted Phase 2).
+- Dead-code / scripts cleanup done (Phase 1). `AGENTS.md` / `CLAUDE.md` left untracked by choice.
 
 ### Secrets check (initial)
 
@@ -236,7 +233,69 @@ _(filled as audit progresses)_
 1. ~~Approve Phase 1 group C keep/delete split~~ — **approved and applied 2026-10-18**.
 2. ~~Easebuzz local initiate / key mismatch~~ — **skipped per owner (2026-10-18):** payment gateway confirmed working on Vercel; do not further debug local Easebuzz keys.
 3. Confirm Easebuzz Test vs Live keys for public launch (when ready).
-4. Confirm production `NEXT_PUBLIC_SITE_URL` (Vercel preview vs `divassojourn.com`).
+4. Confirm production `NEXT_PUBLIC_SITE_URL` is the real public origin (`https://divassojourn.com` or final domain) and redeploy after change.
+5. Ensure Vercel **Blob** store is connected (`BLOB_READ_WRITE_TOKEN`) if admin uploads are needed in production.
+6. Optional: attach custom domain DNS + SSL; verify `/robots.txt` + `/sitemap.xml` on that host.
+
+---
+
+## Phase 6 — Deployment readiness (2026-10-18)
+
+### Verified in repo
+
+| Item | Status |
+|---|---|
+| Vercel root = `Frontend/` + `vercel.json` `buildCommand` = `npm run vercel-build` | OK |
+| `vercel-build` = `prisma generate && prisma migrate deploy && next build --webpack` | OK |
+| Prisma `directUrl` = `DATABASE_URL_UNPOOLED` for migrations | OK |
+| Migrations present through FAQ + booking/payment | OK (`prisma validate` passed) |
+| `.env.example` / `.env.local.example` cover required names; no real secrets | OK |
+| `.env*` gitignored | OK |
+| Security headers + CSP in `next.config.mjs` | OK |
+| Admin + cron fail-closed without secrets | OK |
+| `instrumentation` env assert in production | OK |
+| `robots.ts` / `sitemap.ts` | OK |
+| Local `tsc` + `next build` green on audit branch | OK |
+
+### Docs updated
+
+- `Frontend/DEPLOY.md` — production-oriented deploy + env table + smoke test (fixed outdated `db push` claim)
+- `Frontend/README.md` — aligned with `migrate deploy` and audit pointer
+
+### Go-live checklist (owner)
+
+**Before merge / promote Production**
+
+- [ ] Merge `chore/production-readiness` (or deploy this branch) after review
+- [ ] Vercel Root Directory = `Frontend`
+- [ ] All required env vars set for **Production** (see `DEPLOY.md` §2)
+- [ ] `MOCK_OTP` unset on Production
+- [ ] `NEXT_PUBLIC_SITE_URL` = final HTTPS origin (no trailing slash)
+- [ ] `EASEBUZZ_ENV` + keys match intended mode (test vs live)
+- [ ] Neon linked; migrate deploy succeeds on build logs
+- [ ] Blob token present if admin will upload images/PDFs
+
+**After deploy**
+
+- [ ] Smoke-test pages in `DEPLOY.md` §6
+- [ ] Admin login + one content edit
+- [ ] One payment on deployed URL (already known working on Vercel)
+- [ ] Confirm Easebuzz callback/webhook URLs use production origin
+- [ ] Optional: Search Console submit `https://…/sitemap.xml`
+
+### Audit complete summary
+
+| Phase | Outcome |
+|---|---|
+| 0 | Stack / routes / env mapped |
+| 1 | Dead code removed; pipeline archived under `scripts/data/` |
+| 2 | Auth/CSP/CSRF/session hardening |
+| 3 | Connectivity + callback hash paths verified; Easebuzz hosted accepted on Vercel |
+| 4 | Env assert, safer errors, enquiry limits, slug retry |
+| 5 | SEO robots/sitemap, ISR, hero optimization, loading UI |
+| 6 | Deploy docs + go-live checklist |
+
+**Branch:** `chore/production-readiness` — ready for PR / Production promote after owner checklist items above.
 
 ### Keys to rotate
 
