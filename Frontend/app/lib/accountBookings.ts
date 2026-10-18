@@ -2,11 +2,18 @@ import "server-only";
 
 import { InstallmentStatus } from "@prisma/client";
 import { prisma } from "@/app/lib/data/prisma";
-import { formatAmount } from "@/app/lib/easebuzz";
 import {
   isInstallmentCalendarDue,
   pickNextPayable,
+  roundMoney,
 } from "@/app/lib/paymentSchedule";
+
+/** Display money (allows 0). Do not use Easebuzz formatAmount here — it rejects 0. */
+function money(amount: number | string): string {
+  const n = typeof amount === "number" ? amount : Number(amount);
+  if (!Number.isFinite(n) || n < 0) return "0.00";
+  return roundMoney(n).toFixed(2);
+}
 
 export type AccountBookingDto = {
   id: string;
@@ -167,16 +174,16 @@ export async function getAccountBookingsForTraveler(account: {
       passengerPhone: booking.phone,
       startDate,
       endDate: booking.trip?.endDate || "",
-      totalAmount: formatAmount(Number(booking.amount)),
-      amountPaid: formatAmount(Number(booking.amountPaid)),
-      remainingBalance: formatAmount(remainingBalance),
+      totalAmount: money(Number(booking.amount)),
+      amountPaid: money(Number(booking.amountPaid)),
+      remainingBalance: money(remainingBalance),
       fullyPaid: booking.paid || remainingBalance <= 0.001,
       isPast,
       pendingPayment: next
         ? {
             installmentId: next.id,
             label: next.label,
-            amount: formatAmount(Number(next.amountDue)),
+            amount: money(Number(next.amountDue)),
             dueDate: next.dueDate ? new Date(next.dueDate).toISOString() : null,
             canPayEarly: nextIsEarly,
             isDue: !nextIsEarly,
@@ -186,7 +193,7 @@ export async function getAccountBookingsForTraveler(account: {
         id: row.id,
         stage: row.stage,
         label: row.label,
-        amountDue: formatAmount(Number(row.amountDue)),
+        amountDue: money(Number(row.amountDue)),
         dueDate: row.dueDate?.toISOString() ?? null,
         status: row.status,
         paidAt: row.paidAt?.toISOString() ?? null,
