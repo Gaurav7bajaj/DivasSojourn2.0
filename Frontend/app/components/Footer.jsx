@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { navLinks, tripMenus } from "../data/mockData";
+import FooterContactBar from "./FooterContactBar";
 
 export default function Footer() {
   return (
@@ -24,16 +25,13 @@ export default function Footer() {
           <p className="mt-4 max-w-md leading-7 text-white/80">
             A global community of women travelling safely, beautifully, and together
           </p>
-          <div className="mt-6 space-y-3 text-sm text-white/70">
-            <p className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-              <Link href="tel:+919990022835" className="hover:text-[#D4AF37] transition">
-                +91-99900 22835
-              </Link>
-            </p>
+
+          <FooterContactBar />
+
+          <div className="mt-5 space-y-3 text-sm text-white/70">
             <p className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-[#D4AF37]" aria-hidden="true" />
-              <Link href="mailto:contact@divassojourn.com" className="hover:text-[#D4AF37] transition">
+              <Link href="mailto:contact@divassojourn.com" className="transition hover:text-[#D4AF37]">
                 contact@divassojourn.com
               </Link>
             </p>
