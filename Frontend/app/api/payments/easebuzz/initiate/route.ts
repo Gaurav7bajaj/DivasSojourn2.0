@@ -100,14 +100,14 @@ export async function POST(request: Request) {
 
     if (!nextPayable) {
       return NextResponse.json(
-        { error: "No installment is due right now." },
+        { error: "No remaining payments on this booking." },
         { status: 400 },
       );
     }
 
     if (requestedInstallmentId && requestedInstallmentId !== nextPayable.id) {
       return NextResponse.json(
-        { error: "Pay the next due installment first." },
+        { error: "Pay installments in order (you can pay the next one early)." },
         { status: 400 },
       );
     }

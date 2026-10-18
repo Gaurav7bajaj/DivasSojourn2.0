@@ -7,6 +7,9 @@ import {
 
 export type TripKind = "india" | "international";
 
+/** Within this many days of departure, only full payment is offered. */
+export const FULL_PAYMENT_WITHIN_DAYS = 30;
+
 export type ScheduleStagePlan = {
   stage: string;
   label: string;
@@ -106,6 +109,13 @@ export function roundMoney(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/** Whole calendar days from today (UTC) until departure date. */
+export function daysUntilDeparture(startDateIso: string, now = new Date()): number {
+  const start = parseIsoDate(startDateIso);
+  const today = parseIsoDate(now.toISOString().slice(0, 10));
+  return Math.round((start.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+}
+
 export type BuiltInstallment = {
   stage: string;
   label: string;
@@ -120,6 +130,8 @@ export type BuiltInstallment = {
  * Build fixed installment rows for a booking.
  * Percentage stages use cumulative targets of (total - advance); each row's
  * amountDue is the delta from the previous cumulative target.
+ *
+ * If departure is within 30 days, only a single full-payment row is created.
  */
 export function buildInstallmentPlan(input: {
   destination: string;
@@ -133,13 +145,31 @@ export function buildInstallmentPlan(input: {
     throw new Error("Invalid trip amount");
   }
 
+  const now = input.now ?? new Date();
+  const daysLeft = daysUntilDeparture(input.startDateIso, now);
+
+  // Close-in departures: full amount only (no staged advance schedule).
+  if (daysLeft < FULL_PAYMENT_WITHIN_DAYS) {
+    return [
+      {
+        stage: "FULL",
+        label:
+          daysLeft < 0
+            ? "Full trip payment"
+            : `Full payment (departure in ${daysLeft} day${daysLeft === 1 ? "" : "s"})`,
+        sortOrder: 1,
+        dueDate: null,
+        amountDue: total,
+        dueNow: true,
+      },
+    ];
+  }
+
   const advanceRaw = advanceForKind(kind);
   const advance = roundMoney(Math.min(advanceRaw, total));
   const remaining = roundMoney(Math.max(0, total - advance));
   const start = parseIsoDate(input.startDateIso);
-  const today = input.now
-    ? parseIsoDate(input.now.toISOString().slice(0, 10))
-    : parseIsoDate(new Date().toISOString().slice(0, 10));
+  const today = parseIsoDate(now.toISOString().slice(0, 10));
 
   const stages = stagesForKind(kind);
   const rows: BuiltInstallment[] = [];
@@ -198,23 +228,28 @@ export type PayableInstallment = {
   sortOrder: number;
 };
 
-/** Refresh DUE vs UPCOMING from calendar, then return the next payable installment. */
+/**
+ * Next unpaid installment in order.
+ * Allows early payment: UPCOMING stages can be paid before their due date.
+ */
 export function pickNextPayable(
   installments: PayableInstallment[],
-  now = new Date(),
+  _now = new Date(),
 ): PayableInstallment | null {
-  const today = parseIsoDate(now.toISOString().slice(0, 10));
   const unpaid = installments
     .filter((row) => row.status !== "PAID" && row.status !== "WAIVED")
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  for (const row of unpaid) {
-    const isAdvance = row.stage === "ADVANCE";
-    const dateDue =
-      !row.dueDate || row.dueDate.getTime() <= today.getTime() || row.status === "DUE";
-    if (isAdvance || dateDue) {
-      return row;
-    }
-  }
-  return null;
+  return unpaid[0] || null;
+}
+
+/** True when the calendar due date has been reached (or advance/full). */
+export function isInstallmentCalendarDue(
+  row: Pick<PayableInstallment, "stage" | "dueDate" | "status">,
+  now = new Date(),
+): boolean {
+  if (row.stage === "ADVANCE" || row.stage === "FULL") return true;
+  if (!row.dueDate) return true;
+  const today = parseIsoDate(now.toISOString().slice(0, 10));
+  return row.dueDate.getTime() <= today.getTime() || row.status === "DUE";
 }

@@ -7,7 +7,12 @@ import {
   sanitizePhone,
   sanitizeProductInfo,
 } from "@/app/lib/easebuzz";
-import { buildInstallmentPlan, roundMoney } from "@/app/lib/paymentSchedule";
+import {
+  FULL_PAYMENT_WITHIN_DAYS,
+  buildInstallmentPlan,
+  daysUntilDeparture,
+  roundMoney,
+} from "@/app/lib/paymentSchedule";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import { getTravelerSession } from "@/app/lib/travelerSession";
 
@@ -15,9 +20,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Create a booking from trip slug + traveller details.
- * Amount = full trip price; installments are created from the payment schedule.
- * Checkout charges the next due installment (usually the advance first).
+ * Create a booking from trip slug + traveller (passenger) details.
+ * Signed-in account owns the booking (travelerId); passenger phone may differ
+ * (e.g. booking for a sister). Amount/installments follow the payment schedule.
  */
 export async function POST(request: Request) {
   try {
@@ -35,10 +40,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const traveler = await prisma.traveler.findUnique({
+    const account = await prisma.traveler.findUnique({
       where: { id: session.travelerId },
     });
-    if (!traveler) {
+    if (!account) {
       return NextResponse.json(
         { error: "Please sign in to book a trip.", code: "LOGIN_REQUIRED" },
         { status: 401 },
@@ -48,37 +53,49 @@ export async function POST(request: Request) {
     const body = await request.json();
     const tripSlug = String(body.tripSlug || "").trim();
     const firstname = sanitizeName(
-      String(body.firstname || body.fullName || traveler.fullName || ""),
+      String(body.firstname || body.fullName || account.fullName || ""),
     );
-    const email = String(body.email || traveler.email || "")
+    const email = String(body.email || account.email || "")
       .trim()
       .toLowerCase();
-    const phone = sanitizePhone(traveler.phone);
+    // Passenger phone — may differ from the signed-in account phone.
+    const phone = sanitizePhone(String(body.phone || account.phone || ""));
 
     if (!tripSlug || !firstname || !email || phone.length !== 10) {
       return NextResponse.json(
         {
           error:
-            "tripSlug, full name, and email are required. Update your account details if needed.",
+            "Trip, traveler full name, email, and a 10-digit phone are required.",
         },
         { status: 400 },
       );
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json(
-        { error: "Add a valid email in your account before booking." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
     }
 
     const trip = await prisma.trip.findUnique({ where: { slug: tripSlug } });
     if (!trip || !trip.published) {
       return NextResponse.json({ error: "Trip not found." }, { status: 404 });
     }
+    if (trip.soldOut) {
+      return NextResponse.json(
+        { error: "This trip is sold out. No seats left." },
+        { status: 400 },
+      );
+    }
 
     const amountInr = trip.earlyBirdPrice ?? trip.price;
     if (!amountInr || amountInr <= 0) {
       return NextResponse.json({ error: "Trip has no payable amount." }, { status: 400 });
+    }
+
+    const daysLeft = daysUntilDeparture(trip.startDate);
+    if (daysLeft < 0) {
+      return NextResponse.json(
+        { error: "This departure date has already passed." },
+        { status: 400 },
+      );
     }
 
     const total = roundMoney(Number(amountInr));
@@ -92,15 +109,14 @@ export async function POST(request: Request) {
       startDateIso: trip.startDate,
     });
 
-    const travelerId = traveler.id;
-
     const nextDue = plan.find((row) => row.dueNow) || plan[0];
     const payNowAmount = nextDue ? formatAmount(nextDue.amountDue) : formatAmount(total);
+    const requiresFullPayment = daysLeft < FULL_PAYMENT_WITHIN_DAYS;
 
     const booking = await prisma.$transaction(async (tx) => {
       const created = await tx.booking.create({
         data: {
-          travelerId,
+          travelerId: account.id,
           tripId: trip.id,
           tripSlug: trip.slug,
           tripTitle: trip.title,
@@ -137,6 +153,8 @@ export async function POST(request: Request) {
       bookingId: booking.id,
       amount: formatAmount(total),
       payNowAmount,
+      requiresFullPayment,
+      daysUntilDeparture: daysLeft,
       productinfo: booking.productinfo,
       tripTitle: booking.tripTitle,
       installments: installments.map((row) => ({

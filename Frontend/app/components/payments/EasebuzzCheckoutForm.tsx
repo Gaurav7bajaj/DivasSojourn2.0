@@ -51,6 +51,7 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
   const [bookingId, setBookingId] = useState("");
   const [payNowAmount, setPayNowAmount] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
+  const [requiresFullPayment, setRequiresFullPayment] = useState(false);
   const [installments, setInstallments] = useState<InstallmentPreview[]>([]);
   const [nextInstallmentId, setNextInstallmentId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -118,6 +119,7 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
       setBookingId(data.bookingId);
       setPayNowAmount(data.payNowAmount || data.amount);
       setTotalAmount(data.amount);
+      setRequiresFullPayment(Boolean(data.requiresFullPayment));
       const rows: InstallmentPreview[] = data.installments || [];
       setInstallments(rows);
       const nextDue =
@@ -184,10 +186,11 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
               Enter the traveler&apos;s details
             </p>
             <p className="!mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[#8F897D]">
-              Booking as{" "}
+              Signed in as{" "}
               <span className="font-semibold text-[#C9C3B6]">{traveler.fullName}</span>
               {" · "}
-              {traveler.phone}
+              {traveler.phone}. You can change the traveler name and phone below if
+              you are booking for someone else.
             </p>
 
             <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
@@ -236,11 +239,18 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
             </label>
 
             <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-              Phone
+              Traveler phone (10 digits)
               <input
-                disabled
+                required
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
                 value={phone}
-                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#8F897D]"
+                onChange={(e) =>
+                  setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                }
+                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1]"
+                autoComplete="tel"
               />
             </label>
 
@@ -294,12 +304,17 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
                   </ul>
                 ) : null}
 
-                <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
-                  Trip total ₹{Number(totalAmount || 0).toLocaleString("en-IN")}. Pay now:{" "}
-                  <span className="font-bold text-[#D6AE3C]">
-                    ₹{Number(payNowAmount || 0).toLocaleString("en-IN")}
-                  </span>
+              {requiresFullPayment ? (
+                <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#D6AE3C]">
+                  Departure is within 30 days — full trip payment is required.
                 </p>
+              ) : null}
+              <p className="font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
+                Trip total ₹{Number(totalAmount || 0).toLocaleString("en-IN")}. Pay now:{" "}
+                <span className="font-bold text-[#D6AE3C]">
+                  ₹{Number(payNowAmount || 0).toLocaleString("en-IN")}
+                </span>
+              </p>
                 <PayNowButton
                   bookingId={bookingId}
                   installmentId={nextInstallmentId || undefined}

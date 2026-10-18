@@ -20,16 +20,22 @@ type BookingRow = {
   tripTitle: string;
   tripImage: string;
   destination: string;
+  passengerName?: string;
+  passengerPhone?: string;
   startDate: string;
   endDate: string;
   totalAmount: string;
   amountPaid: string;
+  remainingBalance?: string;
   fullyPaid: boolean;
   isPast: boolean;
   pendingPayment: {
     installmentId: string;
     label: string;
     amount: string;
+    dueDate?: string | null;
+    canPayEarly?: boolean;
+    isDue?: boolean;
   } | null;
   installments: {
     id: string;
@@ -39,6 +45,7 @@ type BookingRow = {
     dueDate: string | null;
     status: string;
     paidAt: string | null;
+    canPayEarly?: boolean;
   }[];
 };
 
@@ -513,10 +520,20 @@ export default function AccountClient() {
                           })}`
                         : ""}
                     </p>
+                    {booking.passengerName ? (
+                      <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-sm text-[#8F897D]">
+                        Traveler: {booking.passengerName}
+                        {booking.passengerPhone ? ` · ${booking.passengerPhone}` : ""}
+                      </p>
+                    ) : null}
                     <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-sm text-[#C9C3B6]">
                       Paid ₹{Number(booking.amountPaid).toLocaleString("en-IN")} of ₹
                       {Number(booking.totalAmount).toLocaleString("en-IN")}
-                      {booking.fullyPaid ? " · Fully paid" : ""}
+                      {booking.fullyPaid
+                        ? " · Fully paid"
+                        : booking.remainingBalance
+                          ? ` · ₹${Number(booking.remainingBalance).toLocaleString("en-IN")} left`
+                          : ""}
                     </p>
 
                     <ul className="mt-4 space-y-2">
@@ -530,6 +547,16 @@ export default function AccountClient() {
                             <span className="ml-2 uppercase tracking-wide text-[11px]">
                               {row.status}
                             </span>
+                            {row.dueDate && row.status !== "PAID" ? (
+                              <span className="mt-0.5 block text-[12px] normal-case tracking-normal text-[#8F897D]">
+                                Due by{" "}
+                                {new Date(row.dueDate).toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </span>
+                            ) : null}
                           </span>
                           <span className="shrink-0 text-[#C9C3B6]">
                             ₹{Number(row.amountDue).toLocaleString("en-IN")}
@@ -541,13 +568,28 @@ export default function AccountClient() {
                     {booking.pendingPayment ? (
                       <div className="mt-5">
                         <p className="mb-3 font-[family-name:var(--font-dm-sans)] text-sm text-[#D6AE3C]">
-                          Due now: {booking.pendingPayment.label} — ₹
+                          {booking.pendingPayment.canPayEarly
+                            ? "Pay early"
+                            : "Due now"}
+                          : {booking.pendingPayment.label} — ₹
                           {Number(booking.pendingPayment.amount).toLocaleString("en-IN")}
+                          {booking.pendingPayment.dueDate &&
+                          booking.pendingPayment.canPayEarly
+                            ? ` (scheduled by ${new Date(
+                                booking.pendingPayment.dueDate,
+                              ).toLocaleDateString("en-IN", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })})`
+                            : ""}
                         </p>
                         <PayNowButton
                           bookingId={booking.id}
                           installmentId={booking.pendingPayment.installmentId}
-                          label={`Pay ₹${Number(booking.pendingPayment.amount).toLocaleString("en-IN")}`}
+                          label={`${
+                            booking.pendingPayment.canPayEarly ? "Pay early" : "Pay"
+                          } ₹${Number(booking.pendingPayment.amount).toLocaleString("en-IN")}`}
                         />
                       </div>
                     ) : null}
