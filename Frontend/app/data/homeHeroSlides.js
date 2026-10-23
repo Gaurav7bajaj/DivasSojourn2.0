@@ -6,7 +6,7 @@
 import { homeHeroImages } from "./heroImages";
 
 export const HOME_HERO_STATS = [
-  { value: "10000+", label: "women travelled with us" },
+  { value: "14000+", label: "women travelled with us" },
   { value: "1300+", label: "destinations" },
   { value: "2015", label: "travelling since" },
 ];

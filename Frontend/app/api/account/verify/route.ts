@@ -3,6 +3,7 @@ import { prisma } from "@/app/lib/data/prisma";
 import { isValidPhone, normalizePhone } from "@/app/lib/phone";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
 import { validateOtp } from "@/app/lib/smsalert";
+import { sendLoginNotificationEmail } from "@/app/lib/sendEnquiryEmail";
 import {
   TRAVELER_COOKIE_NAME,
   createTravelerToken,
@@ -94,6 +95,13 @@ export async function POST(request: Request) {
       travelerId: traveler.id,
       phone: traveler.phone,
       fullName: traveler.fullName,
+    });
+
+    void sendLoginNotificationEmail({
+      fullName: traveler.fullName,
+      phone: traveler.phone,
+      email: traveler.email || email || "",
+      source: "Account login",
     });
 
     const response = NextResponse.json({

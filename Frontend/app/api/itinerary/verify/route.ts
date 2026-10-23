@@ -12,6 +12,7 @@ import {
   createTravelerToken,
   travelerCookieOptions,
 } from "@/app/lib/travelerSession";
+import { sendEnquiryNotificationEmail } from "@/app/lib/sendEnquiryEmail";
 import { validateOtp } from "@/app/lib/smsalert";
 
 export const dynamic = "force-dynamic";
@@ -99,18 +100,29 @@ export async function POST(request: Request) {
     // Save verified lead so the team can call knowing the person's name.
     try {
       const pageLabel = tripName || tripSlug || "Itinerary unlock";
-      await prisma.enquiry.create({
+      const message = tripSlug
+        ? `Unlocked itinerary for trip: ${tripSlug}`
+        : "Unlocked trip itinerary via phone OTP";
+      const enquiry = await prisma.enquiry.create({
         data: {
           name: fullName,
           email: `itinerary.${digits}@leads.divassojourn.local`,
           phone: phone10,
-          message: tripSlug
-            ? `Unlocked itinerary for trip: ${tripSlug}`
-            : "Unlocked trip itinerary via phone OTP",
+          message,
           page: pageLabel,
           interestedIn: tripName || tripSlug || "",
           formType: "itinerary",
         },
+      });
+      void sendEnquiryNotificationEmail({
+        id: enquiry.id,
+        name: fullName,
+        email: "",
+        phone: phone10,
+        message,
+        page: pageLabel,
+        interestedIn: tripName || tripSlug || "",
+        formType: "itinerary",
       });
     } catch (leadError) {
       console.error("Failed to save itinerary unlock lead", leadError);

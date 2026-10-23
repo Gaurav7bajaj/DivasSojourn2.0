@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/data/prisma";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { sendEnquiryNotificationEmail } from "@/app/lib/sendEnquiryEmail";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,20 @@ export async function POST(request: Request) {
               ? "itinerary"
               : "short",
       },
+    });
+
+    // Best-effort team email — never block the user if mail fails.
+    void sendEnquiryNotificationEmail({
+      id: enquiry.id,
+      name: enquiry.name,
+      email: enquiry.email,
+      phone: enquiry.phone,
+      message: enquiry.message,
+      page: enquiry.page || "",
+      interestedIn: enquiry.interestedIn || "",
+      travelDate: enquiry.travelDate || "",
+      travelers: enquiry.travelers || "",
+      formType: enquiry.formType,
     });
 
     return NextResponse.json({ enquiry: { id: enquiry.id } }, { status: 201 });

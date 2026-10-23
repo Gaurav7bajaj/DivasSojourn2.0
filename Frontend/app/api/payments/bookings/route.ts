@@ -14,6 +14,7 @@ import {
   roundMoney,
 } from "@/app/lib/paymentSchedule";
 import { checkRateLimit, getClientIp } from "@/app/lib/rateLimit";
+import { sendEnquiryNotificationEmail } from "@/app/lib/sendEnquiryEmail";
 import { getTravelerSession } from "@/app/lib/travelerSession";
 
 export const runtime = "nodejs";
@@ -147,6 +148,28 @@ export async function POST(request: Request) {
     const installments = await prisma.bookingInstallment.findMany({
       where: { bookingId: booking.id },
       orderBy: { sortOrder: "asc" },
+    });
+
+    void sendEnquiryNotificationEmail({
+      id: booking.id,
+      name: firstname,
+      email,
+      phone,
+      page: `Booking — ${trip.title}`,
+      interestedIn: trip.slug,
+      travelDate: trip.startDate,
+      formType: "booking",
+      message: [
+        `New booking started (payment may still be pending).`,
+        `Trip: ${trip.title}`,
+        `Slug: ${trip.slug}`,
+        `Total: ₹${formatAmount(total)}`,
+        `Pay now: ₹${payNowAmount}`,
+        `Passenger: ${firstname}`,
+        `Phone: ${phone}`,
+        `Email: ${email}`,
+        `Account phone: ${account.phone}`,
+      ].join("\n"),
     });
 
     return NextResponse.json({

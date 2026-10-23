@@ -41,6 +41,9 @@ If a secret was ever committed or pasted into chat, **rotate it** in the provide
 | `GOOGLE_PLACES_API_KEY` / `GOOGLE_PLACE_ID` | Optional | Reviews cache (currently static path OK) |
 | `CRON_SECRET` | Optional | `/api/cron/google-reviews` auth |
 | `MOCK_OTP` | **Never** on prod | Dev-only |
+| `RESEND_API_KEY` | Yes for enquiry emails | Resend — emails team on form submit |
+| `ENQUIRY_NOTIFY_EMAIL` | Optional | Defaults to `pooja.divassojourn@gmail.com` |
+| `ENQUIRY_FROM_EMAIL` | Optional | Verified Resend from address |
 
 Templates: `.env.example` / `.env.local.example` (names only).
 

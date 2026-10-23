@@ -1,11 +1,12 @@
 ---
-description: Always commit and push directly to main; never create feature branches for pushes
+description: Commit/push only when asked; when pushing, use main only (no feature branches)
 alwaysApply: true
 ---
 
-# Git: push main only
+# Git: commit only when asked; push main only
 
-- Do **not** create new branches for routine work or pushes.
-- Commit on `main` and `git push origin main` only.
+- Do **not** create commits or push unless the user explicitly asks (e.g. "commit", "push", "push to github").
+- Making code changes does **not** imply a commit — leave changes uncommitted until asked.
+- When the user does ask to commit/push: use `main` only; do **not** create feature branches for routine work.
 - Do not open PRs from side branches unless the user explicitly asks.
-- If currently on another branch, switch to `main`, merge or cherry-pick the needed commits onto `main`, then push `main`.
+- If currently on another branch when asked to push, switch to `main`, bring the needed changes onto `main`, then push `main`.

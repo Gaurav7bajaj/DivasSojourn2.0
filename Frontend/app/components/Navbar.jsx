@@ -2,25 +2,28 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, Menu, Phone, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, Phone, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navLinks, tripMenus } from "../data/mockData";
+import { initialsFromTraveler } from "../lib/travelerInitials";
 
-function initialsFromName(fullName) {
-  const parts = String(fullName || "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  if (!parts.length) return "";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
-}
+const signInPillClass =
+  "inline-flex items-center justify-center gap-[7px] rounded-full border border-[#D4AF37] bg-transparent px-4 py-2 text-[14px] font-medium text-white transition-colors duration-150 hover:bg-[#D4AF37] hover:text-[#0F0F0F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37]";
+
+const avatarClass =
+  "hidden h-10 w-10 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37] lg:flex";
 
 export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
+  const pathname = usePathname() || "/";
   const [isOpen, setIsOpen] = useState(false);
   const [isInternationalOpen, setIsInternationalOpen] = useState(false);
   const [isIndiaOpen, setIsIndiaOpen] = useState(false);
+  /** "loading" | "guest" | "signed-in" */
+  const [sessionStatus, setSessionStatus] = useState("loading");
   const [accountInitials, setAccountInitials] = useState("");
+
+  const signInHref = `/account?next=${encodeURIComponent(pathname)}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -31,15 +34,22 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           credentials: "same-origin",
         });
         if (!res.ok) {
-          if (!cancelled) setAccountInitials("");
+          if (!cancelled) {
+            setAccountInitials("");
+            setSessionStatus("guest");
+          }
           return;
         }
         const data = await res.json();
         if (!cancelled) {
-          setAccountInitials(initialsFromName(data?.traveler?.fullName));
+          setAccountInitials(initialsFromTraveler(data?.traveler));
+          setSessionStatus("signed-in");
         }
       } catch {
-        if (!cancelled) setAccountInitials("");
+        if (!cancelled) {
+          setAccountInitials("");
+          setSessionStatus("guest");
+        }
       }
     })();
     return () => {
@@ -93,14 +103,34 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             <Phone className="h-4 w-4" aria-hidden="true" />
             +91-99900 22835
           </Link>
-          <Link
-            href="/account"
-            className="hidden h-10 w-10 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)] lg:flex"
-            aria-label={accountInitials ? `Account (${accountInitials})` : "Sign in"}
-            title={accountInitials ? "My account" : "Sign in"}
-          >
-            {accountInitials || "SI"}
-          </Link>
+
+          {sessionStatus === "loading" ? (
+            <span
+              className="hidden h-10 w-[108px] shrink-0 lg:block"
+              aria-hidden="true"
+            />
+          ) : sessionStatus === "signed-in" ? (
+            <Link
+              href="/account"
+              className={avatarClass}
+              aria-label={
+                accountInitials ? `Account (${accountInitials})` : "My account"
+              }
+              title="My account"
+            >
+              {accountInitials || "·"}
+            </Link>
+          ) : (
+            <Link
+              href={signInHref}
+              className={`hidden lg:inline-flex ${signInPillClass}`}
+              aria-label="Sign in"
+            >
+              <User className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              Sign in
+            </Link>
+          )}
+
           <button
             type="button"
             onClick={() => setIsOpen((value) => !value)}
@@ -304,13 +334,30 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
             +91-99900 22835
           </Link>
 
-          <Link
-            href="/account"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D4AF37] px-4 py-3 text-sm font-bold text-[#D4AF37]"
-          >
-            {accountInitials || "Sign in"}
-          </Link>
+          {sessionStatus === "loading" ? (
+            <div className="h-12 w-full" aria-hidden="true" />
+          ) : sessionStatus === "signed-in" ? (
+            <Link
+              href="/account"
+              onClick={() => setIsOpen(false)}
+              className="flex w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D4AF37] px-4 py-3 text-sm font-bold text-[#D4AF37]"
+              aria-label={
+                accountInitials ? `Account (${accountInitials})` : "My account"
+              }
+            >
+              {accountInitials ? `${accountInitials} · My account` : "My account"}
+            </Link>
+          ) : (
+            <Link
+              href={signInHref}
+              onClick={() => setIsOpen(false)}
+              className={`w-full ${signInPillClass} py-3`}
+              aria-label="Sign in"
+            >
+              <User className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+              Sign in
+            </Link>
+          )}
         </div>
       )}
     </header>
