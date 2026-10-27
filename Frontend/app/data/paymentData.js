@@ -2,11 +2,12 @@ export const paymentMethods = [
   {
     id: "upi-payment",
     tag: "UPI",
-    title: "Google Pay · PhonePe · BHIM",
+    title: "Google Pay · PhonePe · Paytm",
     subtitle: "Pay instantly from any UPI app.",
     details: [
-      { key: "UPI ID", value: "DivasSojourn@icici", monospace: true },
-      { key: "Registered name", value: "Divas Sojourn Experiences Private Limited" },
+      { key: "UPI ID", value: "pooja243273-1@oksbi", monospace: true },
+      { key: "GPay / Paytm / PhonePe", value: "9990022835", monospace: true },
+      { key: "Registered name", value: "Divas Sojourn" },
     ],
   },
   {
@@ -15,10 +16,12 @@ export const paymentMethods = [
     title: "NEFT / RTGS / IMPS",
     subtitle: "Transfer directly to our current account.",
     details: [
-      { key: "Account number", value: "389005001548", monospace: true },
-      { key: "Account name", value: "Divas Sojourn Experiences Private Limited" },
-      { key: "IFSC code", value: "ICIC0003890", monospace: true },
-      { key: "Bank", value: "ICICI Bank" },
+      { key: "Account number", value: "034063200000551", monospace: true },
+      { key: "Account name", value: "Divas Sojourn" },
+      { key: "IFSC code", value: "YESB0000340", monospace: true },
+      { key: "Bank", value: "Yes Bank" },
+      { key: "Branch", value: "C-66, Kirti Nagar, 110015" },
+      { key: "Account type", value: "Current" },
     ],
   },
   {
