@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Phone, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { navLinks, tripMenus } from "../data/mockData";
+import {
+  TRAVELER_AUTH_EVENT,
+} from "../lib/travelerAuthEvents";
 import { initialsFromTraveler } from "../lib/travelerInitials";
 
 const signInPillClass =
@@ -27,7 +30,23 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    async function applySession(detail) {
+      if (detail?.signedOut) {
+        if (!cancelled) {
+          setAccountInitials("");
+          setSessionStatus("guest");
+        }
+        return;
+      }
+      if (detail?.traveler) {
+        if (!cancelled) {
+          setAccountInitials(initialsFromTraveler(detail.traveler));
+          setSessionStatus("signed-in");
+        }
+        return;
+      }
+
       try {
         const res = await fetch("/api/account/me", {
           cache: "no-store",
@@ -51,11 +70,19 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           setSessionStatus("guest");
         }
       }
-    })();
+    }
+
+    void applySession();
+
+    const onAuth = (event) => {
+      void applySession(event.detail || {});
+    };
+    window.addEventListener(TRAVELER_AUTH_EVENT, onAuth);
     return () => {
       cancelled = true;
+      window.removeEventListener(TRAVELER_AUTH_EVENT, onAuth);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <header

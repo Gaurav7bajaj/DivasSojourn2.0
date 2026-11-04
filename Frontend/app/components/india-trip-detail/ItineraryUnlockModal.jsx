@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Lock, X } from "lucide-react";
+import { notifyTravelerAuthChanged } from "../../lib/travelerAuthEvents";
 
 const RESEND_SECONDS = 30;
 
@@ -121,6 +122,7 @@ export default function ItineraryUnlockModal({
         setError(data.error || "Unable to verify OTP.");
         return;
       }
+      notifyTravelerAuthChanged({ traveler: data?.traveler });
       onUnlocked?.();
     } catch {
       setError("Unable to verify OTP. Please try again.");

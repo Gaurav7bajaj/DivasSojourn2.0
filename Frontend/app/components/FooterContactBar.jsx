@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  TRAVELER_AUTH_EVENT,
+} from "../lib/travelerAuthEvents";
 import { initialsFromTraveler } from "../lib/travelerInitials";
 
 const signInPillClass =
@@ -18,7 +21,23 @@ export default function FooterContactBar() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    async function applySession(detail) {
+      if (detail?.signedOut) {
+        if (!cancelled) {
+          setInitials("");
+          setSessionStatus("guest");
+        }
+        return;
+      }
+      if (detail?.traveler) {
+        if (!cancelled) {
+          setInitials(initialsFromTraveler(detail.traveler));
+          setSessionStatus("signed-in");
+        }
+        return;
+      }
+
       try {
         const res = await fetch("/api/account/me", {
           cache: "no-store",
@@ -42,11 +61,19 @@ export default function FooterContactBar() {
           setSessionStatus("guest");
         }
       }
-    })();
+    }
+
+    void applySession();
+
+    const onAuth = (event) => {
+      void applySession(event.detail || {});
+    };
+    window.addEventListener(TRAVELER_AUTH_EVENT, onAuth);
     return () => {
       cancelled = true;
+      window.removeEventListener(TRAVELER_AUTH_EVENT, onAuth);
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div className="mt-6 flex flex-wrap items-center gap-3">

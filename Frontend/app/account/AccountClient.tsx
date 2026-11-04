@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, LogOut, UserRound } from "lucide-react";
 import PayNowButton from "../components/payments/PayNowButton";
 import { safeNextPath } from "../lib/safeNextPath";
+import { notifyTravelerAuthChanged } from "../lib/travelerAuthEvents";
 
 type Traveler = {
   id: string;
@@ -202,6 +203,7 @@ export default function AccountClient({
       }
       setOtp("");
       setOtpSent(false);
+      notifyTravelerAuthChanged({ traveler: data?.traveler });
       router.refresh();
       if (nextPath) {
         router.replace(nextPath);
@@ -218,6 +220,7 @@ export default function AccountClient({
 
   async function onLogout() {
     await fetch("/api/account/logout", { method: "POST" });
+    notifyTravelerAuthChanged({ signedOut: true });
     setTraveler(null);
     setPrevious([]);
     setUpcoming([]);
@@ -242,6 +245,7 @@ export default function AccountClient({
         throw new Error(data.error || "Unable to update profile");
       }
       setTraveler(data.traveler);
+      notifyTravelerAuthChanged({ traveler: data.traveler });
       setProfileMessage("Details saved.");
     } catch (err) {
       setProfileError(err instanceof Error ? err.message : "Unable to update");
