@@ -4,6 +4,11 @@ import { refreshGooglePlaceIfStale } from "@/app/lib/data/googleReviews";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * Call with Authorization: Bearer $CRON_SECRET.
+ * After leaving Vercel, schedule this via Railway cron / external pinger —
+ * Vercel Cron will no longer hit this route.
+ */
 function isAuthorized(request: NextRequest) {
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) {

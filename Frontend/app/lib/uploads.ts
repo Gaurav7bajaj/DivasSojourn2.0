@@ -2,10 +2,11 @@
  * Admin image/PDF uploads (blogs, gallery, trips).
  *
  * Local: saves under public/uploads/
- * Vercel: requires BLOB_READ_WRITE_TOKEN (Vercel Storage → Blob)
+ * Production (Railway/Vercel/etc.): requires BLOB_READ_WRITE_TOKEN
+ * (Vercel Blob — works from any host when the token is set).
  *
- * Note: Vercel serverless request bodies are capped near ~4.5MB, so image
- * limits are kept under that so uploads work on the production admin URL.
+ * Note: image limits stay under ~4MB for compatibility with platform
+ * request body caps on the production admin URL.
  */
 
 import { del, put } from "@vercel/blob";
@@ -99,7 +100,7 @@ async function putToBlob(
   if (!token) {
     return {
       error:
-        "Cloud uploads are not configured. In Vercel → Settings → Environment Variables, ensure BLOB_READ_WRITE_TOKEN is set for Production, Preview, and Development, then Redeploy.",
+        "Cloud uploads are not configured. Set BLOB_READ_WRITE_TOKEN in your host environment variables (Railway/Vercel), then redeploy.",
     };
   }
 
@@ -113,10 +114,10 @@ async function putToBlob(
     });
     return { url: blob.url };
   } catch (error) {
-    console.error("Vercel Blob upload failed", error);
+    console.error("Blob upload failed", error);
     const message = error instanceof Error ? error.message : "unknown error";
     return {
-      error: `Upload to Vercel Blob failed (${message}). Check BLOB_READ_WRITE_TOKEN and redeploy.`,
+      error: `Cloud upload failed (${message}). Check BLOB_READ_WRITE_TOKEN and redeploy.`,
     };
   }
 }
@@ -147,7 +148,7 @@ export async function saveUploadedImage(
   const pathname = `${folder}/${filename}`;
   const body = await file.arrayBuffer();
 
-  // On Vercel always use Blob (never try local disk).
+  // Prefer Blob whenever a token is set (Railway/Vercel); never rely on ephemeral disk.
   if (isVercelRuntime() || blobToken()) {
     return putToBlob(pathname, body, contentType);
   }

@@ -73,9 +73,11 @@ export function resolveAppOrigin(request: Request): string {
     if (configuredHost === requestHost) {
       return requestOrigin;
     }
-    // Vercel preview / deployment host — keep user on the same host as login.
+    // Preview / platform hosts — keep user on the same host as login.
     if (
       requestHost.endsWith(".vercel.app") ||
+      requestHost.endsWith(".up.railway.app") ||
+      requestHost.endsWith(".railway.app") ||
       requestHost === "localhost" ||
       requestHost.startsWith("127.0.0.1")
     ) {

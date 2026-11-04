@@ -79,6 +79,7 @@ export async function getTravelerSession(): Promise<TravelerSession | null> {
 export function travelerCookieOptions(maxAge = TRAVELER_SESSION_MAX_AGE_SECONDS) {
   const secure =
     process.env.NODE_ENV === "production" ||
+    Boolean(process.env.RAILWAY_ENVIRONMENT) ||
     process.env.VERCEL === "1" ||
     process.env.VERCEL_ENV === "production" ||
     process.env.VERCEL_ENV === "preview";
