@@ -81,14 +81,24 @@ export default function PaymentMethodsSection() {
                 ))}
               </dl>
 
-              {method.href || method.details.some((d) => d.href) ? (
+              {method.ctaHref ||
+              method.href ||
+              method.details.some((d) => d.href) ? (
                 <a
-                  href={method.details.find((d) => d.href)?.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={
+                    method.ctaHref ||
+                    method.href ||
+                    method.details.find((d) => d.href)?.href
+                  }
+                  {...(method.ctaExternal === false
+                    ? {}
+                    : {
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                      })}
                   className="mt-5 inline-flex h-[52px] w-full items-center justify-center rounded-full bg-[#D6AE3C] font-[family-name:var(--font-dm-sans)] text-[15px] font-bold text-[#1A1405] transition hover:bg-[#E6BF4C]"
                 >
-                  Open payment link →
+                  {method.ctaLabel || "Open payment link →"}
                 </a>
               ) : null}
             </article>

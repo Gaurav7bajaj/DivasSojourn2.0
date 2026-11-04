@@ -25,26 +25,28 @@ export const paymentMethods = [
     ],
   },
   {
-    id: "razorpay-link",
+    id: "easebuzz-online",
     tag: "Card · Netbanking",
-    title: "Pay online via Razorpay",
-    subtitle: "Cards, netbanking and wallets through a secure payment link.",
+    title: "Pay online via Easebuzz",
+    subtitle:
+      "Cards, netbanking, UPI and wallets through our secure Easebuzz checkout — no external payment link needed.",
     badge: "+3% gateway fee",
     details: [
       {
-        key: "Payment link",
-        value: "https://razorpay.me/@payDivasSojourn",
-        href: "https://razorpay.me/@payDivasSojourn",
-        monospace: true,
+        key: "How to pay",
+        value: "Sign in → My account → Pay pending instalment",
       },
     ],
+    ctaHref: "/account",
+    ctaLabel: "Go to my account →",
+    ctaExternal: false,
   },
 ];
 
 /** Safety notice bullets (shortened from the original notes). */
 export const safetyNoticeBullets = [
   "Do not make payments to any other account. We are not responsible for losses from payments to unauthorised accounts.",
-  "A 3% payment gateway charge applies when you pay via the Razorpay link.",
+  "A 3% payment gateway charge applies when you pay online via Easebuzz.",
   "Unsure about anything? Call us on 99900 22835 before paying.",
 ];
 
@@ -52,7 +54,7 @@ export const paymentNotes = [
   "To ensure your payment is securely processed, please make payments only to the official bank details provided on our website.",
   "Do not make payments to any other account. We will not be responsible for any losses incurred if payments are made to unauthorized bank accounts.",
   "If you have any questions or concerns, please contact us on - 99900 22835.",
-  "A payment gateway charge 3% will be levied on using above given payment link.",
+  "A payment gateway charge of 3% is levied when paying online via Easebuzz.",
 ];
 
 /** Advance deposits charged at booking (₹). */
