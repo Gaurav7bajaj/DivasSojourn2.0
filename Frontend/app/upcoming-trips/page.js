@@ -8,7 +8,7 @@ import { getUpcomingTrips } from "../lib/data/trips";
 export const revalidate = 3600;
 
 const pageUrl = "https://divassojourn.com/upcoming-trips";
-const heroImage = "https://divassojourn.com/heroes/home/upcomingCommunityTrips-v2.jpg";
+const heroImage = "https://divassojourn.com/heroes/home/travelTogether.webp";
 
 export const metadata = {
   title: "Upcoming Women Travel Packages 2026",

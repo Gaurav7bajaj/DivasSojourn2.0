@@ -50,19 +50,24 @@ async function main() {
     });
   }
 
-  // Remove old Unsplash placeholder gallery seed rows if still present
+  // Remove legacy placeholder / replaced community-trip gallery assets
   await prisma.galleryImage.deleteMany({
     where: {
-      id: {
-        in: [
-          "gallery-seed-1",
-          "gallery-seed-2",
-          "gallery-seed-3",
-          "gallery-seed-4",
-          "gallery-seed-5",
-          "gallery-seed-6",
-        ],
-      },
+      OR: [
+        { imageUrl: { contains: "upcomingCommunityTrips" } },
+        {
+          id: {
+            in: [
+              "gallery-seed-1",
+              "gallery-seed-2",
+              "gallery-seed-3",
+              "gallery-seed-4",
+              "gallery-seed-5",
+              "gallery-seed-6",
+            ],
+          },
+        },
+      ],
     },
   });
 

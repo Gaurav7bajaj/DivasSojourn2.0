@@ -57,8 +57,8 @@ export const SEED_GALLERY: GalleryImage[] = [
   },
   {
     id: "gallery-home-upcoming",
-    imageUrl: "/heroes/home/upcomingCommunityTrips-v2.jpg",
-    caption: "Upcoming community trips",
+    imageUrl: "/heroes/home/travelTogether.webp",
+    caption: "Women travelers together on a Divas Sojourn trip",
     category: "Home",
     createdAt: "2026-09-27T10:07:00.000Z",
   },
