@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Lock, X } from "lucide-react";
 import { notifyTravelerAuthChanged } from "../../lib/travelerAuthEvents";
+import { joinFullName } from "../../lib/travelerInitials";
 
 const RESEND_SECONDS = 30;
 
@@ -14,7 +15,8 @@ export default function ItineraryUnlockModal({
   tripSlug,
 }) {
   const [step, setStep] = useState(1);
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -37,7 +39,8 @@ export default function ItineraryUnlockModal({
     onClose();
     // Reset form state after close
     setStep(1);
-    setFullName("");
+    setFirstName("");
+    setLastName("");
     setPhone("");
     setOtp("");
     setError("");
@@ -55,11 +58,13 @@ export default function ItineraryUnlockModal({
 
   if (!open) return null;
 
+  const resolvedFullName = joinFullName(firstName, lastName);
+
   const sendCode = async () => {
     setError("");
     setStatus("");
-    if (fullName.trim().length < 2) {
-      setError("Enter your full name.");
+    if (firstName.trim().length < 1 || lastName.trim().length < 1) {
+      setError("Enter your first and last name.");
       return;
     }
     if (phone.replace(/\D/g, "").length < 10) {
@@ -74,7 +79,7 @@ export default function ItineraryUnlockModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           phone,
-          fullName: fullName.trim(),
+          fullName: resolvedFullName,
           tripName: tripName || "",
           tripSlug: tripSlug || "",
         }),
@@ -112,7 +117,7 @@ export default function ItineraryUnlockModal({
         body: JSON.stringify({
           phone,
           code: otp,
-          fullName: fullName.trim(),
+          fullName: resolvedFullName,
           tripName: tripName || "",
           tripSlug: tripSlug || "",
         }),
@@ -160,28 +165,47 @@ export default function ItineraryUnlockModal({
         </h2>
         <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
           {tripName
-            ? `Enter your full name and mobile number to sign in and unlock the day-by-day plan for ${tripName}.`
-            : "Enter your full name and mobile number to sign in and unlock the full day-by-day itinerary."}
+            ? `Enter your first name, last name, and mobile number to sign in and unlock the day-by-day plan for ${tripName}.`
+            : "Enter your first name, last name, and mobile number to sign in and unlock the full day-by-day itinerary."}
         </p>
 
         {step === 1 ? (
           <div className="mt-6 space-y-4">
-            <div>
-              <label
-                htmlFor="itinerary-full-name"
-                className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
-              >
-                Full name
-              </label>
-              <input
-                id="itinerary-full-name"
-                type="text"
-                autoComplete="name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your full name"
-                className="mt-2 h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="itinerary-first-name"
+                  className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                >
+                  First name
+                </label>
+                <input
+                  id="itinerary-first-name"
+                  type="text"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First name"
+                  className="mt-2 h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="itinerary-last-name"
+                  className="block font-[family-name:var(--font-dm-sans)] text-[13px] font-bold text-[#C9C3B6]"
+                >
+                  Last name
+                </label>
+                <input
+                  id="itinerary-last-name"
+                  type="text"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Last name"
+                  className="mt-2 h-12 w-full rounded-full border border-white/10 bg-[#0F0F12] px-5 font-[family-name:var(--font-dm-sans)] text-[15px] text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
+                />
+              </div>
             </div>
             <div>
               <label

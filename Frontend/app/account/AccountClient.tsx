@@ -6,6 +6,7 @@ import { Loader2, LogOut, UserRound } from "lucide-react";
 import PayNowButton from "../components/payments/PayNowButton";
 import { safeNextPath } from "../lib/safeNextPath";
 import { notifyTravelerAuthChanged } from "../lib/travelerAuthEvents";
+import { joinFullName } from "../lib/travelerInitials";
 
 type Traveler = {
   id: string;
@@ -85,7 +86,8 @@ export default function AccountClient({
   const [bookingsError, setBookingsError] = useState("");
   const [tab, setTab] = useState<TabId>("upcoming");
 
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -166,12 +168,19 @@ export default function AccountClient({
     event.preventDefault();
     setAuthError("");
     setAuthMessage("");
+    if (!firstName.trim() || !lastName.trim()) {
+      setAuthError("Enter your first and last name.");
+      return;
+    }
     setAuthLoading(true);
     try {
       const response = await fetch("/api/account/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, phone }),
+        body: JSON.stringify({
+          fullName: joinFullName(firstName, lastName),
+          phone,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -195,7 +204,12 @@ export default function AccountClient({
       const response = await fetch("/api/account/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, phone, email, code: otp }),
+        body: JSON.stringify({
+          fullName: joinFullName(firstName, lastName),
+          phone,
+          email,
+          code: otp,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -281,25 +295,38 @@ export default function AccountClient({
           </h1>
           <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[15px] leading-relaxed text-[#C9C3B6]">
             {nextPath
-              ? "Sign in with your full name and phone to continue booking. We will take you back to checkout after verification."
-              : "Enter your full name and verify your number so only you see your trips, bookings, and pending payments."}
+              ? "Sign in with your first name, last name, and phone to continue booking. We will take you back to checkout after verification."
+              : "Enter your first and last name and verify your number so only you see your trips, bookings, and pending payments."}
           </p>
 
           <form
             onSubmit={otpSent ? onVerify : onSendOtp}
             className="mt-8 space-y-4 rounded-[24px] border border-white/[0.08] bg-[#141417] p-6 md:p-8"
           >
-            <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
-              Full name
-              <input
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                disabled={otpSent}
-                className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1] disabled:opacity-60"
-                autoComplete="name"
-              />
-            </label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+                First name
+                <input
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  disabled={otpSent}
+                  className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1] disabled:opacity-60"
+                  autoComplete="given-name"
+                />
+              </label>
+              <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
+                Last name
+                <input
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  disabled={otpSent}
+                  className="mt-1.5 w-full rounded-xl border border-white/10 bg-[#0B0B0C] px-4 py-3 text-sm text-[#FBF8F1] disabled:opacity-60"
+                  autoComplete="family-name"
+                />
+              </label>
+            </div>
 
             <label className="block font-[family-name:var(--font-dm-sans)] text-xs font-semibold text-[#8F897D]">
               Phone (10 digits)
