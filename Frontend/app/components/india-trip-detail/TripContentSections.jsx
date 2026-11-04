@@ -269,15 +269,15 @@ export function TripInclusionsSection({ trip }) {
           </ul>
         </article>
 
-        <article className="rounded-2xl border border-white/8 bg-[#141417] p-6">
-          <h3 className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.16em] text-[#8F897D]">
+        <article className="rounded-2xl border border-[rgba(239,104,104,0.3)] bg-[#141417] p-6">
+          <h3 className="font-[family-name:var(--font-dm-sans)] text-[13px] font-bold uppercase tracking-[0.16em] text-[#EF6868]">
             Not included
           </h3>
           <ul className="mt-4 space-y-3">
             {exclusions.map((item) => (
               <li key={item} className="flex items-start gap-3">
-                <X className="mt-0.5 h-4 w-4 shrink-0 text-[#8F897D]" aria-hidden="true" />
-                <span className="font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#C9C3B6]">
+                <X className="mt-0.5 h-4 w-4 shrink-0 text-[#EF6868]" aria-hidden="true" />
+                <span className="font-[family-name:var(--font-dm-sans)] text-[15px] leading-6 text-[#D9D3C6]">
                   {item}
                 </span>
               </li>
