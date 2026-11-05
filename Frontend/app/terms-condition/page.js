@@ -153,7 +153,7 @@ export default function TermsConditionPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Cancellation & Refund">
+      <LegalSection id="cancellation-refund" title="Cancellation & Refund">
         <p>
           Divas Sojourn would not be responsible, in any circumstances, for any
           loss, damages, etc. that may be incurred/suffered by you if the

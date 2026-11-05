@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, LogOut, UserRound } from "lucide-react";
+import CancelBookingButton from "../components/account/CancelBookingButton";
 import PayNowButton from "../components/payments/PayNowButton";
 import { safeNextPath } from "../lib/safeNextPath";
 import { notifyTravelerAuthChanged } from "../lib/travelerAuthEvents";
@@ -30,6 +31,8 @@ type BookingRow = {
   remainingBalance?: string;
   fullyPaid: boolean;
   isPast: boolean;
+  cancelled?: boolean;
+  cancelledAt?: string | null;
   pendingPayment: {
     installmentId: string;
     label: string;
@@ -651,7 +654,25 @@ export default function AccountClient({
                       ))}
                     </ul>
 
-                    {booking.pendingPayment ? (
+                    {booking.cancelled ? (
+                      <p className="mt-5 font-[family-name:var(--font-dm-sans)] text-sm font-semibold text-[#E8A598]">
+                        Cancelled
+                        {booking.cancelledAt
+                          ? ` on ${new Date(booking.cancelledAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}`
+                          : ""}
+                        . Future instalments stopped. Refunds (if any) follow our
+                        cancellation policy.
+                      </p>
+                    ) : null}
+
+                    {!booking.cancelled && booking.pendingPayment ? (
                       <div className="mt-5">
                         <p className="mb-3 font-[family-name:var(--font-dm-sans)] text-sm text-[#D6AE3C]">
                           {booking.pendingPayment.canPayEarly
@@ -676,6 +697,32 @@ export default function AccountClient({
                           label={`${
                             booking.pendingPayment.canPayEarly ? "Pay early" : "Pay"
                           } ₹${Number(booking.pendingPayment.amount).toLocaleString("en-IN")}`}
+                        />
+                        {tab === "upcoming" || tab === "pending" ? (
+                          <CancelBookingButton
+                            bookingId={booking.id}
+                            tripTitle={booking.tripTitle}
+                            onCancelled={() => {
+                              void loadAccount();
+                              setTab("previous");
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {!booking.cancelled &&
+                    !booking.pendingPayment &&
+                    !booking.isPast &&
+                    (tab === "upcoming" || tab === "pending") ? (
+                      <div className="mt-5">
+                        <CancelBookingButton
+                          bookingId={booking.id}
+                          tripTitle={booking.tripTitle}
+                          onCancelled={() => {
+                            void loadAccount();
+                            setTab("previous");
+                          }}
                         />
                       </div>
                     ) : null}

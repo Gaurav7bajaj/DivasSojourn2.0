@@ -25,20 +25,22 @@ export const paymentMethods = [
     ],
   },
   {
-    id: "easebuzz-online",
-    tag: "Card · Netbanking",
-    title: "Pay online via Easebuzz",
-    subtitle:
-      "Cards, netbanking, UPI and wallets through our secure Easebuzz checkout — no external payment link needed.",
-    badge: "+3% gateway fee",
+    id: "upi-qr-scan",
+    tag: "Scan · UPI",
+    title: "Scan UPI QR to pay",
+    subtitle: "Open Google Pay, PhonePe, Paytm or any UPI app and scan this code.",
+    qrImage: "/upi-qr-divas-sojourn.png",
+    qrAlt: "Divas Sojourn UPI QR code — scan to pay pooja243273-1@oksbi",
     details: [
       {
-        key: "How to pay",
-        value: "Sign in → My account → Pay pending instalment",
+        key: "UPI ID",
+        value: "pooja243273-1@oksbi",
+        monospace: true,
       },
+      { key: "Registered name", value: "Divas Sojourn" },
     ],
     ctaHref: "/account",
-    ctaLabel: "Go to my account →",
+    ctaLabel: "Card / netbanking via Easebuzz →",
     ctaExternal: false,
   },
 ];

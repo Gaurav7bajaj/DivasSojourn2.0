@@ -30,6 +30,8 @@ export type AccountBookingDto = {
   remainingBalance: string;
   fullyPaid: boolean;
   isPast: boolean;
+  cancelled: boolean;
+  cancelledAt: string | null;
   pendingPayment: {
     installmentId: string;
     label: string;
@@ -122,26 +124,32 @@ export async function getAccountBookingsForTraveler(account: {
       return { ...row, status };
     });
 
-    const next = pickNextPayable(
-      installments.map((row) => ({
-        id: row.id,
-        stage: row.stage,
-        label: row.label,
-        status: row.status,
-        amountDue: Number(row.amountDue),
-        dueDate: row.dueDate,
-        sortOrder: row.sortOrder,
-      })),
-      today,
-    );
+    const cancelled = Boolean(booking.cancelledAt);
 
-    const remainingBalance = installments
-      .filter(
-        (row) =>
-          row.status !== InstallmentStatus.PAID &&
-          row.status !== InstallmentStatus.WAIVED,
-      )
-      .reduce((acc, row) => acc + Number(row.amountDue), 0);
+    const next = cancelled
+      ? null
+      : pickNextPayable(
+          installments.map((row) => ({
+            id: row.id,
+            stage: row.stage,
+            label: row.label,
+            status: row.status,
+            amountDue: Number(row.amountDue),
+            dueDate: row.dueDate,
+            sortOrder: row.sortOrder,
+          })),
+          today,
+        );
+
+    const remainingBalance = cancelled
+      ? 0
+      : installments
+          .filter(
+            (row) =>
+              row.status !== InstallmentStatus.PAID &&
+              row.status !== InstallmentStatus.WAIVED,
+          )
+          .reduce((acc, row) => acc + Number(row.amountDue), 0);
 
     // Prefer trip dates; fall back so we never hide a paid booking.
     const startDate = booking.trip?.startDate || "";
@@ -179,6 +187,8 @@ export async function getAccountBookingsForTraveler(account: {
       remainingBalance: money(remainingBalance),
       fullyPaid: booking.paid || remainingBalance <= 0.001,
       isPast,
+      cancelled,
+      cancelledAt: booking.cancelledAt?.toISOString() ?? null,
       pendingPayment: next
         ? {
             installmentId: next.id,
@@ -198,6 +208,7 @@ export async function getAccountBookingsForTraveler(account: {
         status: row.status,
         paidAt: row.paidAt?.toISOString() ?? null,
         canPayEarly:
+          !cancelled &&
           row.status !== InstallmentStatus.PAID &&
           row.status !== InstallmentStatus.WAIVED &&
           next?.id === row.id &&
@@ -206,11 +217,14 @@ export async function getAccountBookingsForTraveler(account: {
     };
   });
 
+  const active = mapped.filter((b) => !b.cancelled);
+  const cancelledBookings = mapped.filter((b) => b.cancelled);
+
   return {
     bookings: mapped,
-    previous: mapped.filter((b) => b.isPast),
-    upcoming: mapped.filter((b) => !b.isPast),
-    pendingPayments: mapped.filter(
+    previous: [...active.filter((b) => b.isPast), ...cancelledBookings],
+    upcoming: active.filter((b) => !b.isPast),
+    pendingPayments: active.filter(
       (b) => !b.fullyPaid && Boolean(b.pendingPayment),
     ),
   };

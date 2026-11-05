@@ -16,9 +16,9 @@ export default function LegalPage({ title, children }) {
   );
 }
 
-export function LegalSection({ title, children, large = false }) {
+export function LegalSection({ title, children, large = false, id }) {
   return (
-    <section className="space-y-3">
+    <section id={id} className="scroll-mt-28 space-y-3">
       <h2
         className={
           large

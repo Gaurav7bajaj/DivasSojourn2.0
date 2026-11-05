@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { paymentMethods } from "../../data/paymentData";
 import CopyButton from "./CopyButton";
 
@@ -46,6 +47,21 @@ export default function PaymentMethodsSection() {
               <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[14px] leading-[1.5] text-[#C9C3B6]">
                 {method.subtitle}
               </p>
+
+              {method.qrImage ? (
+                <div className="mt-6 flex flex-col items-center rounded-[20px] border border-white/[0.08] bg-[#F4F6F8] p-4">
+                  <Image
+                    src={method.qrImage}
+                    alt={method.qrAlt || "UPI QR code"}
+                    width={220}
+                    height={220}
+                    className="h-auto w-full max-w-[220px] rounded-xl object-contain"
+                  />
+                  <p className="mt-3 text-center font-[family-name:var(--font-dm-sans)] text-[12px] font-semibold text-[#5C564C]">
+                    Scan to pay with any UPI app
+                  </p>
+                </div>
+              ) : null}
 
               <dl className="mt-6 flex flex-1 flex-col">
                 {method.details.map((detail) => (
