@@ -77,9 +77,45 @@ async function isValidAdminToken(token: string | undefined): Promise<boolean> {
   }
 }
 
+function normalizeHost(host: string | null | undefined): string {
+  return String(host || "")
+    .split(",")[0]
+    ?.trim()
+    .replace(/^\[|\]$/g, "")
+    .replace(/:\d+$/, "")
+    .toLowerCase();
+}
+
+/** Hosts this deploy is allowed to accept admin mutations from. */
+function allowedAdminHosts(request: NextRequest): Set<string> {
+  const hosts = new Set<string>();
+
+  const nextHost = normalizeHost(request.nextUrl.host);
+  if (nextHost) hosts.add(nextHost);
+
+  const forwarded = normalizeHost(request.headers.get("x-forwarded-host"));
+  if (forwarded) hosts.add(forwarded);
+
+  const headerHost = normalizeHost(request.headers.get("host"));
+  if (headerHost) hosts.add(headerHost);
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (siteUrl) {
+    try {
+      const siteHost = normalizeHost(new URL(siteUrl).host);
+      if (siteHost) hosts.add(siteHost);
+    } catch {
+      // ignore invalid env
+    }
+  }
+
+  return hosts;
+}
+
 /**
  * Reject cross-site state-changing admin API calls (CSRF defense-in-depth).
- * Same-origin browser fetches send Origin matching the request host.
+ * Same-origin browser fetches send Origin matching the public host.
+ * On Railway/proxies, compare against X-Forwarded-Host as well as nextUrl.host.
  */
 function isSameOriginMutation(request: NextRequest): boolean {
   const method = request.method.toUpperCase();
@@ -87,11 +123,12 @@ function isSameOriginMutation(request: NextRequest): boolean {
     return true;
   }
 
-  const requestHost = request.nextUrl.host;
+  const allowed = allowedAdminHosts(request);
+
   const origin = request.headers.get("origin");
   if (origin) {
     try {
-      return new URL(origin).host === requestHost;
+      return allowed.has(normalizeHost(new URL(origin).host));
     } catch {
       return false;
     }
@@ -100,7 +137,7 @@ function isSameOriginMutation(request: NextRequest): boolean {
   const referer = request.headers.get("referer");
   if (referer) {
     try {
-      return new URL(referer).host === requestHost;
+      return allowed.has(normalizeHost(new URL(referer).host));
     } catch {
       return false;
     }
