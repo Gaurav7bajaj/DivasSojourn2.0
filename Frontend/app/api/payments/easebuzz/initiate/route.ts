@@ -192,6 +192,17 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("POST /api/payments/easebuzz/initiate failed", error);
-    return NextResponse.json({ error: "Unable to start payment." }, { status: 500 });
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Unable to start payment.";
+    // Surface config/init errors (missing env, invalid amount) so ops can fix without logs only.
+    const safe =
+      message.startsWith("Missing required env:") ||
+      message === "Invalid payment amount" ||
+      message.includes("EASEBUZZ")
+        ? message
+        : "Unable to start payment. Check Railway logs for Easebuzz initiate response.";
+    return NextResponse.json({ error: safe }, { status: 500 });
   }
 }
