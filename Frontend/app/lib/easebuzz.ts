@@ -1,6 +1,9 @@
 import "server-only";
 
 import { createHash, timingSafeEqual } from "node:crypto";
+import { lookup } from "node:dns/promises";
+import https from "node:https";
+import { URL } from "node:url";
 
 export type EasebuzzEnv = "test" | "prod";
 
@@ -270,6 +273,49 @@ export async function fetchTransactionStatus(
   };
 }
 
+/** POST form body over IPv4 only (Easebuzz production whitelist is IPv4). */
+function postEasebuzzFormIpv4(
+  urlStr: string,
+  formBody: string,
+): Promise<{ status: number; text: string }> {
+  const url = new URL(urlStr);
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      {
+        protocol: url.protocol,
+        hostname: url.hostname,
+        port: url.port || 443,
+        path: `${url.pathname}${url.search}`,
+        method: "POST",
+        family: 4,
+        servername: url.hostname,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(formBody),
+          Accept: "application/json",
+        },
+        timeout: 20_000,
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk) => chunks.push(chunk));
+        res.on("end", () => {
+          resolve({
+            status: res.statusCode || 0,
+            text: Buffer.concat(chunks).toString("utf8"),
+          });
+        });
+      },
+    );
+    req.on("timeout", () => {
+      req.destroy(new Error("ETIMEDOUT connecting to Easebuzz over IPv4"));
+    });
+    req.on("error", reject);
+    req.write(formBody);
+    req.end();
+  });
+}
+
 export async function initiateEasebuzzPayment(fields: {
   key: string;
   txnid: string;
@@ -303,9 +349,19 @@ export async function initiateEasebuzzPayment(fields: {
     body.set("udf1", fields.udf1);
   }
 
+  const hostname = new URL(base).hostname;
+  let resolvedIpv4 = "";
+  try {
+    const lookedUp = await lookup(hostname, { family: 4 });
+    resolvedIpv4 = lookedUp.address;
+  } catch (lookupError) {
+    console.error("Easebuzz IPv4 DNS lookup failed", lookupError);
+  }
+
   console.error("Easebuzz initiate request (safe)", {
     env,
     base,
+    resolvedIpv4,
     txnid: fields.txnid,
     amount: fields.amount,
     productinfo: fields.productinfo,
@@ -318,16 +374,29 @@ export async function initiateEasebuzzPayment(fields: {
     keyLen: fields.key.length,
   });
 
-  const response = await fetch(`${base}/payment/initiateLink`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body,
-    cache: "no-store",
-  });
+  let httpStatus = 0;
+  let rawText = "";
+  try {
+    const posted = await postEasebuzzFormIpv4(
+      `${base}/payment/initiateLink`,
+      body.toString(),
+    );
+    httpStatus = posted.status;
+    rawText = posted.text;
+  } catch (networkError) {
+    console.error("Easebuzz initiate network error", {
+      message: networkError instanceof Error ? networkError.message : String(networkError),
+      resolvedIpv4,
+      base,
+    });
+    return {
+      ok: false,
+      error: `Cannot reach Easebuzz (${base}) from server${
+        resolvedIpv4 ? ` via ${resolvedIpv4}` : ""
+      }. Ask Easebuzz to confirm production whitelist for Railway static IPv4s.`,
+    };
+  }
 
-  const rawText = await response.text();
   type EasebuzzInitiatePayload = {
     status?: number | string;
     data?: string | Record<string, unknown>;
@@ -345,18 +414,18 @@ export async function initiateEasebuzzPayment(fields: {
 
   if (!payload) {
     console.error("Easebuzz initiate non-JSON response", {
-      httpStatus: response.status,
+      httpStatus,
       bodyPreview: rawText.slice(0, 300),
     });
     return {
       ok: false,
-      error: `Easebuzz initiate failed (HTTP ${response.status}). Check EASEBUZZ_ENV and keys.`,
+      error: `Easebuzz initiate failed (HTTP ${httpStatus}). Check EASEBUZZ_ENV and keys.`,
     };
   }
 
   // Never log salt/hash — only safe fields for debugging.
   console.error("Easebuzz initiate response", {
-    httpStatus: response.status,
+    httpStatus,
     status: payload.status,
     error: payload.error,
     error_desc: payload.error_desc,
