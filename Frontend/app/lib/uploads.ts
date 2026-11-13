@@ -1,12 +1,15 @@
 /**
  * Admin image/PDF uploads (blogs, gallery, trips).
  *
- * Local: saves under public/uploads/
- * Production (Railway/Vercel/etc.): requires BLOB_READ_WRITE_TOKEN
- * (Vercel Blob — works from any host when the token is set).
+ * Local (npm run dev): saves under public/uploads/
+ * Railway: attach a Volume mounted at /app/public/uploads
+ *   (Railway sets RAILWAY_VOLUME_MOUNT_PATH automatically).
+ * Optional: BLOB_READ_WRITE_TOKEN still works as a fallback.
  *
- * Note: image limits stay under ~4MB for compatibility with platform
- * request body caps on the production admin URL.
+ * Public URLs stay /uploads/<folder>/<file> and are served by
+ * app/uploads/[...path]/route.ts from the uploads root.
+ *
+ * Note: image limits stay under ~4MB for platform request body caps.
  */
 
 import { del, put } from "@vercel/blob";
@@ -20,20 +23,49 @@ const ALLOWED_TYPES = new Set([
   "image/png",
   "image/webp",
 ]);
-/** Stay under Vercel's ~4.5MB request body limit (includes form fields). */
+/** Stay under ~4.5MB request body limit (includes form fields). */
 const MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED_PDF = new Set(["application/pdf"]);
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
 
 export type UploadFolder = "blogs" | "gallery" | "trips";
 
-function isVercelRuntime(): boolean {
-  return process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
+const VOLUME_REQUIRED_MESSAGE =
+  "File storage is not configured. On Railway: add a Volume to this service, mount it at /app/public/uploads, then redeploy.";
+
+function isEphemeralHost(): boolean {
+  return Boolean(
+    process.env.RAILWAY_ENVIRONMENT ||
+      process.env.RAILWAY_SERVICE_ID ||
+      process.env.VERCEL === "1" ||
+      process.env.VERCEL_ENV,
+  );
 }
 
 function blobToken(): string | undefined {
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   return token || undefined;
+}
+
+/** True when a Railway volume (or explicit uploads dir) is available. */
+export function hasPersistentUploads(): boolean {
+  return Boolean(
+    process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim() ||
+      process.env.UPLOADS_DIR?.trim() ||
+      process.env.UPLOADS_USE_VOLUME === "1",
+  );
+}
+
+/**
+ * Absolute directory for uploaded files.
+ * On Railway with volume mount `/app/public/uploads`, RAILWAY_VOLUME_MOUNT_PATH is that path.
+ */
+export function getUploadsRoot(): string {
+  const mount = process.env.RAILWAY_VOLUME_MOUNT_PATH?.trim();
+  if (mount) return mount;
+  const custom = process.env.UPLOADS_DIR?.trim();
+  if (custom) return custom;
+  return path.join(process.cwd(), "public", "uploads");
 }
 
 function extensionFromName(name: string): string | null {
@@ -64,7 +96,7 @@ export function validateImageFile(file: File): string | null {
     return "Only JPG, PNG, and WebP images are allowed (HEIC/HEIF from iPhones is not supported — convert to JPG first).";
   }
   if (file.size > MAX_BYTES) {
-    return "Image must be 4MB or smaller for cloud uploads. Compress the photo and try again.";
+    return "Image must be 4MB or smaller. Compress the photo and try again.";
   }
   if (file.size <= 0) {
     return "The selected image file is empty.";
@@ -98,10 +130,7 @@ async function putToBlob(
 ): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
   const token = blobToken();
   if (!token) {
-    return {
-      error:
-        "Cloud uploads are not configured. Set BLOB_READ_WRITE_TOKEN in your host environment variables (Railway/Vercel), then redeploy.",
-    };
+    return { error: VOLUME_REQUIRED_MESSAGE };
   }
 
   try {
@@ -117,9 +146,34 @@ async function putToBlob(
     console.error("Blob upload failed", error);
     const message = error instanceof Error ? error.message : "unknown error";
     return {
-      error: `Cloud upload failed (${message}). Check BLOB_READ_WRITE_TOKEN and redeploy.`,
+      error: `Cloud upload failed (${message}). Check storage configuration and redeploy.`,
     };
   }
+}
+
+/** Railway volume first; Blob optional fallback; local disk only off ephemeral hosts. */
+async function persistUpload(
+  pathname: string,
+  folder: string,
+  filename: string,
+  body: ArrayBuffer,
+  contentType: string,
+): Promise<{ url: string; error?: undefined } | { url?: undefined; error: string }> {
+  if (hasPersistentUploads() || !isEphemeralHost()) {
+    try {
+      return await saveLocally(folder, filename, body);
+    } catch (error) {
+      console.error("Local/volume upload failed", error);
+      const message = error instanceof Error ? error.message : "unknown error";
+      return { error: `Upload failed (${message}). Check the Railway volume mount path.` };
+    }
+  }
+
+  if (blobToken()) {
+    return putToBlob(pathname, body, contentType);
+  }
+
+  return { error: VOLUME_REQUIRED_MESSAGE };
 }
 
 async function saveLocally(
@@ -127,7 +181,7 @@ async function saveLocally(
   filename: string,
   body: ArrayBuffer,
 ): Promise<{ url: string }> {
-  const uploadsDir = path.join(process.cwd(), "public", "uploads", folder);
+  const uploadsDir = path.join(getUploadsRoot(), folder);
   await fs.mkdir(uploadsDir, { recursive: true });
   const filePath = path.join(uploadsDir, filename);
   await fs.writeFile(filePath, Buffer.from(body));
@@ -148,12 +202,7 @@ export async function saveUploadedImage(
   const pathname = `${folder}/${filename}`;
   const body = await file.arrayBuffer();
 
-  // Prefer Blob whenever a token is set (Railway/Vercel); never rely on ephemeral disk.
-  if (isVercelRuntime() || blobToken()) {
-    return putToBlob(pathname, body, contentType);
-  }
-
-  return saveLocally(folder, filename, body);
+  return persistUpload(pathname, folder, filename, body, contentType);
 }
 
 export async function saveUploadedPdf(
@@ -170,14 +219,22 @@ export async function saveUploadedPdf(
   const pathname = `trips/${filename}`;
   const body = await file.arrayBuffer();
 
-  if (isVercelRuntime() || blobToken()) {
-    return putToBlob(pathname, body, "application/pdf");
-  }
-
-  return saveLocally("trips", filename, body);
+  return persistUpload(pathname, "trips", filename, body, "application/pdf");
 }
 
-/** Deletes a local /uploads file or a Vercel Blob URL. */
+/** Resolve a /uploads/... URL to an absolute path under the uploads root, or null if unsafe. */
+export function resolveUploadDiskPath(fileUrl: string): string | null {
+  if (!fileUrl.startsWith("/uploads/")) return null;
+  const relative = fileUrl.replace(/^\/uploads\//, "");
+  const parts = relative.split("/").filter(Boolean);
+  if (!parts.length || parts.some((p) => p === "." || p === "..")) return null;
+  const absolute = path.resolve(getUploadsRoot(), ...parts);
+  const root = path.resolve(getUploadsRoot());
+  if (absolute !== root && !absolute.startsWith(root + path.sep)) return null;
+  return absolute;
+}
+
+/** Deletes a local/volume /uploads file or a Vercel Blob URL. */
 export async function deleteUploadedFileIfLocal(fileUrl: string): Promise<void> {
   if (!fileUrl) return;
 
@@ -192,12 +249,15 @@ export async function deleteUploadedFileIfLocal(fileUrl: string): Promise<void> 
     return;
   }
 
-  if (!fileUrl.startsWith("/uploads/") || isVercelRuntime()) {
-    return;
-  }
+  if (!fileUrl.startsWith("/uploads/")) return;
+  // Skip delete on ephemeral disk with no volume (file is already gone after redeploy).
+  if (isEphemeralHost() && !hasPersistentUploads()) return;
+
+  const diskPath = resolveUploadDiskPath(fileUrl);
+  if (!diskPath) return;
 
   try {
-    await fs.unlink(path.join(process.cwd(), "public", fileUrl.replace(/^\//, "")));
+    await fs.unlink(diskPath);
   } catch {
     // ignore missing files
   }

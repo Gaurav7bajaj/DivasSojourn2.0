@@ -233,7 +233,7 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
           ) : null}
         </div>
         <p className="text-xs font-medium text-[#777777]">
-          JPG, PNG, or WebP · max 4MB (required for Vercel admin uploads)
+          JPG, PNG, or WebP · max 4MB
         </p>
       </div>
 

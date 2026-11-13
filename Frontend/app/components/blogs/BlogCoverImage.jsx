@@ -47,6 +47,9 @@ export default function BlogCoverImage({
           fill={fill}
           priority={priority}
           sizes={sizes}
+          // Local /uploads paths on Railway are often missing after redeploy;
+          // skip the optimizer so missing files don't spam "isn't a valid image".
+          unoptimized={src.trim().startsWith("/uploads/")}
           className={`object-cover ${imageClassName}`}
           onError={() => setFailed(true)}
         />

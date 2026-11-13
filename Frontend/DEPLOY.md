@@ -37,7 +37,8 @@ If a secret was ever committed or pasted into chat, **rotate it** in the provide
 | `EASEBUZZ_KEY` / `EASEBUZZ_SALT` | Yes | Payments |
 | `EASEBUZZ_ENV` | Yes | `test` or `prod` |
 | `SMSALERT_API_KEY` / `SMSALERT_SENDER` / `SMSALERT_OTP_TEMPLATE` | Yes for OTP | Template must include `[otp]` |
-| `BLOB_READ_WRITE_TOKEN` | Yes for admin uploads | Vercel Blob store |
+| Railway **Volume** | Yes for admin uploads on Railway | Mount at `/app/public/uploads` (Railway sets `RAILWAY_VOLUME_MOUNT_PATH`) |
+| `BLOB_READ_WRITE_TOKEN` | Optional fallback | Only if not using a Railway volume |
 | `GOOGLE_PLACES_API_KEY` / `GOOGLE_PLACE_ID` | Optional | Reviews cache (currently static path OK) |
 | `CRON_SECRET` | Optional | `/api/cron/google-reviews` auth |
 | `MOCK_OTP` | **Never** on prod | Dev-only |

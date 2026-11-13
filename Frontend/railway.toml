@@ -1,3 +1,7 @@
+# Admin uploads (blogs/gallery/trips) persist on a Railway Volume.
+# Dashboard: add Volume → mount path exactly: /app/public/uploads
+# Railway then sets RAILWAY_VOLUME_MOUNT_PATH automatically.
+
 [build]
 builder = "NIXPACKS"
 buildCommand = "npm run vercel-build"
