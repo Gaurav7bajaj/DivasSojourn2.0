@@ -38,7 +38,7 @@ export default function FeaturedJourneysCarousel({
   return (
     <section
       id={id}
-      className="bg-[#0B0B0C] px-5 py-16 md:px-12 md:py-24 xl:px-24"
+      className="overflow-x-hidden bg-[#0B0B0C] px-5 py-16 md:px-12 md:py-24 xl:px-24"
       aria-labelledby={headingId}
     >
       <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">

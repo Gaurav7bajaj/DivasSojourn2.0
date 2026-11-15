@@ -12,7 +12,7 @@ import {
 import { initialsFromTraveler } from "../lib/travelerInitials";
 
 const signInPillClass =
-  "inline-flex items-center justify-center gap-[7px] rounded-full border border-[#D4AF37] bg-transparent px-4 py-2 text-[14px] font-medium text-white transition-colors duration-150 hover:bg-[#D4AF37] hover:text-[#0F0F0F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37]";
+  "inline-flex items-center justify-center gap-[7px] rounded-full border border-[#D4AF37] bg-transparent px-3 py-2 text-[13px] font-medium text-white transition-colors duration-150 hover:bg-[#D4AF37] hover:text-[#0F0F0F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37] sm:px-4 sm:text-[14px]";
 
 const avatarClass =
   "hidden h-10 w-10 items-center justify-center rounded-full border-[1.5px] border-[#D4AF37] text-[13px] font-bold tracking-wide text-[#D4AF37] transition hover:bg-[rgba(212,175,55,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#D4AF37] lg:flex";
@@ -84,24 +84,53 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
     };
   }, [pathname]);
 
+  // Close drawer on navigation.
+  useEffect(() => {
+    setIsOpen(false);
+    setIsInternationalOpen(false);
+    setIsIndiaOpen(false);
+  }, [pathname]);
+
+  // Lock background scroll while the mobile menu is open.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
+    document.body.classList.add("nav-menu-open");
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.classList.remove("nav-menu-open");
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
+    };
+  }, [isOpen]);
+
+  const closeMenu = () => setIsOpen(false);
+
   return (
     <header
-      className="sticky top-0 z-50 border-b border-white/10 bg-[#000000] text-white shadow-xl"
+      className="sticky top-0 z-50 w-full max-w-[100vw] border-b border-white/10 bg-[#000000] text-white shadow-xl"
       style={{ backgroundColor: "#000000" }}
     >
       <nav
-        className="mx-auto flex max-w-7xl items-center gap-3 py-3 pl-4 pr-4 lg:pl-5 lg:pr-6"
+        className="mx-auto flex w-full max-w-7xl min-w-0 items-center gap-2 py-3 pl-3 pr-3 sm:gap-3 sm:pl-4 sm:pr-4 lg:pl-5 lg:pr-6"
         aria-label="Primary navigation"
         style={{ backgroundColor: "#000000" }}
       >
-        <Link href="/" className="flex shrink-0 items-center" aria-label="Divas Sojourn home">
+        <Link
+          href="/"
+          className="flex min-w-0 shrink items-center"
+          aria-label="Divas Sojourn home"
+          onClick={closeMenu}
+        >
           <Image
             src="/divas-sojourn-logo.png"
             alt="Divas Sojourn"
             width={220}
             height={54}
             priority
-            className="h-12 w-auto object-contain"
+            className="h-9 w-auto max-w-[min(58vw,180px)] object-contain sm:h-11 sm:max-w-[200px] lg:h-12 lg:max-w-none"
             style={{ width: "auto" }}
           />
         </Link>
@@ -122,7 +151,7 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           ))}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-3 xl:ml-0">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 xl:ml-0">
           <Link
             href="tel:+919990022835"
             className="hidden items-center gap-2 rounded-full bg-[#D4AF37] px-4 py-2 text-sm font-bold text-[#0F0F0F] transition-all duration-300 hover:bg-[#E8C547] hover:shadow-[0_8px_20px_rgba(212,175,55,0.3)] lg:flex"
@@ -161,9 +190,10 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
           <button
             type="button"
             onClick={() => setIsOpen((value) => !value)}
-            className="rounded-full border border-white/15 p-2 text-white xl:hidden"
+            className="inline-flex shrink-0 rounded-full border border-white/15 p-2 text-white xl:hidden"
             aria-expanded={isOpen}
-            aria-label="Toggle navigation menu"
+            aria-controls="mobile-nav-drawer"
+            aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -171,11 +201,11 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
       </nav>
 
       <nav
-        className="hidden border-t border-[#D4AF37]/20 bg-[#000000] px-4 py-3 md:block"
+        className="hidden overflow-x-hidden border-t border-[#D4AF37]/20 bg-[#000000] px-4 py-3 md:block"
         aria-label="Trip categories"
         style={{ backgroundColor: "#000000" }}
       >
-        <div className="mx-auto flex max-w-7xl justify-center gap-10" style={{ color: "#FFFFFF" }}>
+        <div className="mx-auto flex max-w-7xl justify-center gap-6 lg:gap-10" style={{ color: "#FFFFFF" }}>
           {tripMenus.map((item) =>
             item.href === "/international-trips" ? (
               <div key={item.href} className="group relative">
@@ -192,8 +222,8 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                   <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-32" />
                 </Link>
 
-                <div className="invisible absolute left-1/2 top-full w-[620px] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="invisible absolute left-1/2 top-full z-20 w-[min(620px,calc(100vw-2rem))] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {internationalTrips.map((destination) => (
                       <Link
                         key={destination.slug}
@@ -221,8 +251,8 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                   <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-24" />
                 </Link>
 
-                <div className="invisible absolute left-1/2 top-full w-[720px] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
-                  <div className="grid grid-cols-3 gap-2">
+                <div className="invisible absolute left-1/2 top-full z-20 w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {indiaTrips.map((trip) => (
                       <Link
                         key={trip.slug}
@@ -250,143 +280,177 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
         </div>
       </nav>
 
-      {isOpen && (
+      {isOpen ? (
         <div
-          className="space-y-5 border-t border-white/10 bg-[#000000] px-4 py-5 xl:hidden"
+          id="mobile-nav-drawer"
+          className="fixed inset-0 z-[60] flex flex-col bg-[#000000] xl:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
           style={{ backgroundColor: "#000000" }}
         >
-          <div className="grid gap-3 text-sm font-medium text-white">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="rounded-xl border border-white/10 px-4 py-3 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-3 sm:px-4">
+            <Link
+              href="/"
+              className="flex min-w-0 shrink items-center"
+              aria-label="Divas Sojourn home"
+              onClick={closeMenu}
+            >
+              <Image
+                src="/divas-sojourn-logo.png"
+                alt="Divas Sojourn"
+                width={220}
+                height={54}
+                className="h-9 w-auto max-w-[min(58vw,180px)] object-contain"
+                style={{ width: "auto" }}
+              />
+            </Link>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className="ml-auto inline-flex shrink-0 rounded-full border border-white/15 p-2 text-white"
+              aria-label="Close navigation menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
 
-            {tripMenus.map((link) =>
-              link.href === "/international-trips" ? (
-                <div key={link.href} className="rounded-xl border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setIsInternationalOpen((value) => !value)}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:text-[#D4AF37]"
-                    aria-expanded={isInternationalOpen}
-                  >
-                    <span>{link.label}</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition ${isInternationalOpen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {isInternationalOpen && (
-                    <div className="grid gap-2 border-t border-white/10 bg-black p-3 sm:grid-cols-2">
-                      <Link
-                        href={link.href}
-                        onClick={() => setIsOpen(false)}
-                        className="rounded-xl px-3 py-2 text-[#D4AF37]"
-                      >
-                        View all International Trips
-                      </Link>
-                      {internationalTrips.map((destination) => (
-                        <Link
-                          key={destination.slug}
-                          href={`/international-trips/${destination.slug}`}
-                          onClick={() => setIsOpen(false)}
-                          className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
-                        >
-                          {destination.name || destination.shortName}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : link.href === "/india-trips" ? (
-                <div key={link.href} className="rounded-xl border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setIsIndiaOpen((value) => !value)}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:text-[#D4AF37]"
-                    aria-expanded={isIndiaOpen}
-                  >
-                    <span>{link.label}</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition ${isIndiaOpen ? "rotate-180" : ""}`}
-                      aria-hidden="true"
-                    />
-                  </button>
-                  {isIndiaOpen && (
-                    <div className="grid gap-2 border-t border-white/10 bg-black p-3 sm:grid-cols-2">
-                      <Link
-                        href={link.href}
-                        onClick={() => setIsOpen(false)}
-                        className="rounded-xl px-3 py-2 text-[#D4AF37]"
-                      >
-                        View all India Trips
-                      </Link>
-                      {indiaTrips.map((trip) => (
-                        <Link
-                          key={trip.slug}
-                          href={`/india-trips/${trip.slug}`}
-                          onClick={() => setIsOpen(false)}
-                          className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
-                        >
-                          {trip.shortName}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 [-webkit-overflow-scrolling:touch]">
+            <div className="grid gap-3 text-sm font-medium text-white">
+              {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeMenu}
                   className="rounded-xl border border-white/10 px-4 py-3 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
                 >
                   {link.label}
                 </Link>
-              ),
-            )}
+              ))}
+
+              {tripMenus.map((link) =>
+                link.href === "/international-trips" ? (
+                  <div key={link.href} className="rounded-xl border border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setIsInternationalOpen((value) => !value)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:text-[#D4AF37]"
+                      aria-expanded={isInternationalOpen}
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition ${isInternationalOpen ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {isInternationalOpen && (
+                      <div className="grid gap-2 border-t border-white/10 bg-black p-3 sm:grid-cols-2">
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          className="rounded-xl px-3 py-2 text-[#D4AF37]"
+                        >
+                          View all International Trips
+                        </Link>
+                        {internationalTrips.map((destination) => (
+                          <Link
+                            key={destination.slug}
+                            href={`/international-trips/${destination.slug}`}
+                            onClick={closeMenu}
+                            className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
+                          >
+                            {destination.name || destination.shortName}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : link.href === "/india-trips" ? (
+                  <div key={link.href} className="rounded-xl border border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setIsIndiaOpen((value) => !value)}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:text-[#D4AF37]"
+                      aria-expanded={isIndiaOpen}
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown
+                        className={`h-4 w-4 transition ${isIndiaOpen ? "rotate-180" : ""}`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                    {isIndiaOpen && (
+                      <div className="grid gap-2 border-t border-white/10 bg-black p-3 sm:grid-cols-2">
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          className="rounded-xl px-3 py-2 text-[#D4AF37]"
+                        >
+                          View all India Trips
+                        </Link>
+                        {indiaTrips.map((trip) => (
+                          <Link
+                            key={trip.slug}
+                            href={`/india-trips/${trip.slug}`}
+                            onClick={closeMenu}
+                            className="rounded-xl px-3 py-2 transition hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
+                          >
+                            {trip.shortName}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMenu}
+                    className="rounded-xl border border-white/10 px-4 py-3 transition hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                  >
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </div>
+
+            <div className="mt-5 space-y-3 pb-8">
+              <Link
+                href="tel:+919990022835"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F]"
+              >
+                <Phone className="h-4 w-4" aria-hidden="true" />
+                +91-99900 22835
+              </Link>
+
+              {sessionStatus === "loading" ? (
+                <div className="h-12 w-full" aria-hidden="true" />
+              ) : sessionStatus === "signed-in" ? (
+                <Link
+                  href="/account"
+                  onClick={closeMenu}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D4AF37] px-4 py-3 text-sm font-bold text-[#D4AF37]"
+                  aria-label={
+                    accountInitials ? `Account (${accountInitials})` : "My account"
+                  }
+                >
+                  {accountInitials ? `${accountInitials} · My account` : "My account"}
+                </Link>
+              ) : (
+                <Link
+                  href={signInHref}
+                  onClick={closeMenu}
+                  className={`w-full ${signInPillClass} py-3`}
+                  aria-label="Sign in"
+                >
+                  <User className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                  Sign in
+                </Link>
+              )}
+            </div>
           </div>
-
-          <Link
-            href="tel:+919990022835"
-            className="flex items-center justify-center gap-2 rounded-full bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#0F0F0F]"
-          >
-            <Phone className="h-4 w-4" aria-hidden="true" />
-            +91-99900 22835
-          </Link>
-
-          {sessionStatus === "loading" ? (
-            <div className="h-12 w-full" aria-hidden="true" />
-          ) : sessionStatus === "signed-in" ? (
-            <Link
-              href="/account"
-              onClick={() => setIsOpen(false)}
-              className="flex w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-[#D4AF37] px-4 py-3 text-sm font-bold text-[#D4AF37]"
-              aria-label={
-                accountInitials ? `Account (${accountInitials})` : "My account"
-              }
-            >
-              {accountInitials ? `${accountInitials} · My account` : "My account"}
-            </Link>
-          ) : (
-            <Link
-              href={signInHref}
-              onClick={() => setIsOpen(false)}
-              className={`w-full ${signInPillClass} py-3`}
-              aria-label="Sign in"
-            >
-              <User className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-              Sign in
-            </Link>
-          )}
         </div>
-      )}
+      ) : null}
     </header>
   );
 }
