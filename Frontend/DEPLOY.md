@@ -45,6 +45,9 @@ If a secret was ever committed or pasted into chat, **rotate it** in the provide
 | `RESEND_API_KEY` | Yes for enquiry emails | Resend — emails team on form submit |
 | `ENQUIRY_NOTIFY_EMAIL` | Optional | Defaults to `pooja.divassojourn@gmail.com` |
 | `ENQUIRY_FROM_EMAIL` | Optional | Verified Resend from address |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Optional | GA4 Measurement ID (`G-XXXXXXXX`) |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Optional | Google Search Console HTML-tag content value |
+| `NEXT_PUBLIC_META_PIXEL_ID` | Optional | Meta (Facebook) Pixel ID |
 
 Templates: `.env.example` / `.env.local.example` (names only).
 

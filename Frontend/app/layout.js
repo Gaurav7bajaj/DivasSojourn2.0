@@ -2,6 +2,7 @@ import "./globals.css";
 import { unstable_cache } from "next/cache";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import AppShell from "./components/AppShell";
+import SiteAnalytics from "./components/analytics/SiteAnalytics";
 import { getTripNavItems } from "./lib/data/trips";
 
 const playfair = Playfair_Display({
@@ -82,6 +83,9 @@ export const metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default async function RootLayout({ children }) {
@@ -100,6 +104,7 @@ export default async function RootLayout({ children }) {
         <AppShell indiaTrips={indiaTrips} internationalTrips={internationalTrips}>
           {children}
         </AppShell>
+        <SiteAnalytics />
       </body>
     </html>
   );
