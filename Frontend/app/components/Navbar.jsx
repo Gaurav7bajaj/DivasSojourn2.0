@@ -110,7 +110,7 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full max-w-[100vw] border-b border-white/10 bg-[#000000] text-white shadow-xl"
+      className="sticky top-0 z-50 w-full overflow-visible border-b border-white/10 bg-[#000000] text-white shadow-xl"
       style={{ backgroundColor: "#000000" }}
     >
       <nav
@@ -201,17 +201,17 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
       </nav>
 
       <nav
-        className="hidden overflow-x-hidden border-t border-[#D4AF37]/20 bg-[#000000] px-4 py-3 md:block"
+        className="hidden overflow-visible border-t border-[#D4AF37]/20 bg-[#000000] px-4 py-3 md:block"
         aria-label="Trip categories"
         style={{ backgroundColor: "#000000" }}
       >
-        <div className="mx-auto flex max-w-7xl justify-center gap-6 lg:gap-10" style={{ color: "#FFFFFF" }}>
+        <div className="relative z-40 mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-2 lg:gap-x-10" style={{ color: "#FFFFFF" }}>
           {tripMenus.map((item) =>
             item.href === "/international-trips" ? (
               <div key={item.href} className="group relative">
                 <Link
                   href={item.href}
-                  className="relative flex items-center gap-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
+                  className="relative flex items-center gap-1 py-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
                   style={{ color: "#FFFFFF" }}
                 >
                   {item.label}
@@ -219,20 +219,23 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                     className="h-4 w-4 transition group-hover:rotate-180"
                     aria-hidden="true"
                   />
-                  <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-32" />
+                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-full" />
                 </Link>
 
-                <div className="invisible absolute left-1/2 top-full z-20 w-[min(620px,calc(100vw-2rem))] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {internationalTrips.map((destination) => (
-                      <Link
-                        key={destination.slug}
-                        href={`/international-trips/${destination.slug}`}
-                        className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
-                      >
-                        {destination.name || destination.shortName}
-                      </Link>
-                    ))}
+                {/* pt-3 keeps hover continuous into the panel (no dead gap). */}
+                <div className="invisible absolute left-1/2 top-full z-50 w-[min(620px,calc(100vw-2rem))] -translate-x-1/2 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100">
+                  <div className="rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] shadow-2xl">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {internationalTrips.map((destination) => (
+                        <Link
+                          key={destination.slug}
+                          href={`/international-trips/${destination.slug}`}
+                          className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
+                        >
+                          {destination.name || destination.shortName}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -240,7 +243,7 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
               <div key={item.href} className="group relative">
                 <Link
                   href={item.href}
-                  className="relative flex items-center gap-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
+                  className="relative flex items-center gap-1 py-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
                   style={{ color: "#FFFFFF" }}
                 >
                   {item.label}
@@ -248,20 +251,22 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
                     className="h-4 w-4 transition group-hover:rotate-180"
                     aria-hidden="true"
                   />
-                  <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-24" />
+                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-full" />
                 </Link>
 
-                <div className="invisible absolute left-1/2 top-full z-20 w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 translate-y-3 rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] opacity-0 shadow-2xl transition-all duration-300 group-hover:visible group-hover:translate-y-5 group-hover:opacity-100">
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {indiaTrips.map((trip) => (
-                      <Link
-                        key={trip.slug}
-                        href={`/india-trips/${trip.slug}`}
-                        className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
-                      >
-                        {trip.shortName}
-                      </Link>
-                    ))}
+                <div className="invisible absolute left-1/2 top-full z-50 w-[min(720px,calc(100vw-2rem))] -translate-x-1/2 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100">
+                  <div className="rounded-3xl border-l-4 border-t-4 border-[#D4AF37] bg-[#F9F9F9] p-4 text-[#333333] shadow-2xl">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      {indiaTrips.map((trip) => (
+                        <Link
+                          key={trip.slug}
+                          href={`/india-trips/${trip.slug}`}
+                          className="rounded-2xl px-4 py-3 text-sm font-semibold transition hover:bg-[#F5E6D3] hover:text-[#1A1A1A]"
+                        >
+                          {trip.shortName}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -269,11 +274,11 @@ export default function Navbar({ indiaTrips = [], internationalTrips = [] }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative flex items-center gap-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
+                className="group relative flex items-center gap-1 py-1 text-sm font-semibold text-white transition hover:text-[#D4AF37]"
                 style={{ color: "#FFFFFF" }}
               >
                 {item.label}
-                <span className="absolute mt-8 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-24" />
+                <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-[#D4AF37] transition-all group-hover:w-full" />
               </Link>
             ),
           )}
