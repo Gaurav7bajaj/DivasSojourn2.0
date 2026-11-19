@@ -4,7 +4,7 @@ import ShortContactForm from "../components/international/ShortContactForm";
 import IndiaTripsHeader from "../components/india/IndiaTripsHeader";
 import IndiaTripsClient from "../components/india/IndiaTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
-import GoogleReviews from "../components/shared/GoogleReviews";
+import GoogleReviewsWithYouTube from "../components/shared/GoogleReviewsWithYouTube";
 import { indiaReviews } from "../data/indiaTrips";
 import { buildIndiaHeroSlides } from "../data/indiaHeroSlides";
 import { getPublishedBlogs } from "../lib/data/blogs";
@@ -172,7 +172,7 @@ export default async function IndiaTripsPage() {
         <IndiaTripsClient trips={trips} months={months} />
       </Suspense>
 
-      <GoogleReviews title="Divas on" titleAccent="our India trips" suffix="" />
+      <GoogleReviewsWithYouTube title="Divas on" titleAccent="our India trips" suffix="" />
 
       {indiaReviews.length > 0 ? <TravelerReviews reviews={indiaReviews} /> : null}
       {blogCards.length > 0 ? (

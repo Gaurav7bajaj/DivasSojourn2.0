@@ -7,7 +7,7 @@ import {
   WhyDivasSection,
 } from "./components/home";
 import ShortContactForm from "./components/international/ShortContactForm";
-import GoogleReviews from "./components/shared/GoogleReviews";
+import GoogleReviewsWithYouTube from "./components/shared/GoogleReviewsWithYouTube";
 import { GOOGLE } from "./data/googleReviews";
 import { getPlatformStats } from "./lib/data/siteReviews";
 
@@ -50,7 +50,7 @@ export default async function Home() {
       <InternationalTripsSection />
       <UpcomingTripsSection />
       <WhyDivasSection />
-      <GoogleReviews title="Don't take" titleAccent="our word" suffix=" for it" />
+      <GoogleReviewsWithYouTube title="Don't take" titleAccent="our word" suffix=" for it" />
       <ShortContactForm pageLabel="Home" storageKey="divasHomeLeads" />
     </main>
   );

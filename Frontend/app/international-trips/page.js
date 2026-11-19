@@ -4,7 +4,7 @@ import ShortContactForm from "../components/international/ShortContactForm";
 import CategoryHero from "../components/shared/CategoryHero";
 import InternationalTripsClient from "../components/international/InternationalTripsClient";
 import WhyDivasSection from "../components/home/WhyDivasSection";
-import GoogleReviews from "../components/shared/GoogleReviews";
+import GoogleReviewsWithYouTube from "../components/shared/GoogleReviewsWithYouTube";
 import { buildInternationalHeroSlides } from "../data/internationalHeroSlides";
 import { getPublishedBlogs } from "../lib/data/blogs";
 import { toPublicBlogCard } from "../lib/data/mappers";
@@ -159,7 +159,7 @@ export default async function InternationalTripsPage() {
         <InternationalTripsClient trips={trips} months={months} />
       </Suspense>
 
-      <GoogleReviews title="Divas on" titleAccent="our journeys abroad" suffix="" />
+      <GoogleReviewsWithYouTube title="Divas on" titleAccent="our journeys abroad" suffix="" />
 
       <BlogsSection posts={blogCards} />
       <WhyDivasSection />

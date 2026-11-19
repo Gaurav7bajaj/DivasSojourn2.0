@@ -4,7 +4,7 @@ import {
   TailoredTripsHero,
   WhatsAppCommunityCTA,
 } from "../components/tailored-trips";
-import GoogleReviews from "../components/shared/GoogleReviews";
+import GoogleReviewsWithYouTube from "../components/shared/GoogleReviewsWithYouTube";
 
 export const metadata = {
   title: "Tailored Trips | Divas Sojourn",
@@ -35,7 +35,7 @@ export default function TailoredTripsPage() {
     <main className="bg-[#0B0B0C]">
       <TailoredTripsHero />
       <TailoredIntro />
-      <GoogleReviews title="Trips planned" titleAccent="with care" suffix="" />
+      <GoogleReviewsWithYouTube title="Trips planned" titleAccent="with care" suffix="" />
       <DestinationCards />
       <WhatsAppCommunityCTA />
     </main>

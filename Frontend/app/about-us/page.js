@@ -9,7 +9,7 @@ import {
   AboutCTA,
 } from "../components/about";
 import ShortContactForm from "../components/international/ShortContactForm";
-import GoogleReviews from "../components/shared/GoogleReviews";
+import GoogleReviewsWithYouTube from "../components/shared/GoogleReviewsWithYouTube";
 
 export const metadata = {
   title: "About Us",
@@ -32,7 +32,7 @@ export default function AboutUsPage() {
       <AboutHero />
       <OurStory />
       <FounderSection />
-      <GoogleReviews
+      <GoogleReviewsWithYouTube
         title="Trust, earned"
         titleAccent="one trip at a time"
         suffix=""
