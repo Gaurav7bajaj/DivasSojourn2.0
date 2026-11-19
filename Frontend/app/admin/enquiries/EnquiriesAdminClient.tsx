@@ -1,8 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Mail, Phone, Trash2 } from "lucide-react";
+import { Check, Download, Mail, Phone, Trash2 } from "lucide-react";
 import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
+import {
+  allEnquiriesCsvFilename,
+  downloadTextFile,
+  enquiriesToCsv,
+  enquiryCsvFilename,
+  formTypeLabel,
+} from "../../lib/enquiryExport";
 
 type Enquiry = {
   id: string;
@@ -151,6 +158,26 @@ export default function EnquiriesAdminClient() {
     }
   };
 
+  const downloadEnquiry = (enquiry: Enquiry) => {
+    setError("");
+    downloadTextFile(enquiryCsvFilename(enquiry), enquiriesToCsv([enquiry]));
+    setMessage(`Downloaded lead for ${enquiry.name}.`);
+  };
+
+  const downloadAllEnquiries = () => {
+    setError("");
+    if (!enquiries.length) {
+      setMessage("");
+      setError("No leads to download.");
+      return;
+    }
+    downloadTextFile(
+      allEnquiriesCsvFilename(enquiries.length),
+      enquiriesToCsv(enquiries),
+    );
+    setMessage(`Downloaded CSV with ${enquiries.length} leads.`);
+  };
+
   const visible = useMemo(() => {
     const byRead = filter === "unread" ? enquiries.filter((item) => !item.read) : enquiries;
     return byRead.filter((enquiry) =>
@@ -217,6 +244,16 @@ export default function EnquiriesAdminClient() {
               Mark all read
             </button>
           ) : null}
+          <button
+            type="button"
+            onClick={downloadAllEnquiries}
+            disabled={!enquiries.length || loading}
+            className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-semibold text-[#1A1A1A] hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-50"
+            title="Download all leads as CSV"
+          >
+            <Download className="h-4 w-4" />
+            Download all
+          </button>
         </div>
       </div>
 
@@ -276,11 +313,7 @@ export default function EnquiriesAdminClient() {
                   </div>
                   <p className="mt-1 text-xs text-[#888888]">
                     {new Date(enquiry.createdAt).toLocaleString()} ·{" "}
-                    {enquiry.formType === "contact"
-                      ? "Full contact form"
-                      : enquiry.formType === "itinerary"
-                        ? "Itinerary unlock"
-                        : "Short form"}
+                    {formTypeLabel(enquiry.formType)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -303,6 +336,15 @@ export default function EnquiriesAdminClient() {
                       Mark unread
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => downloadEnquiry(enquiry)}
+                    className="inline-flex items-center gap-1 rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold hover:bg-black/5"
+                    title="Download this lead as CSV"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(enquiry)}
