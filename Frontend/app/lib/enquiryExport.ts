@@ -13,10 +13,13 @@ export type EnquiryExportRow = {
   formType: string;
   read: boolean;
   createdAt: string;
+  /** Stable display number (oldest lead = 1). */
+  leadNumber?: number;
 };
 
 /** Column order puts the most useful contact fields first. */
 const CSV_HEADERS = [
+  "Lead #",
   "Name",
   "Phone",
   "Email",
@@ -30,6 +33,21 @@ const CSV_HEADERS = [
   "Message",
   "Record ID",
 ] as const;
+
+/**
+ * Assign stable lead numbers: oldest enquiry = #1, newest = highest.
+ * Expects `enquiries` newest-first (API order).
+ */
+export function assignLeadNumbers<T extends { id: string }>(
+  enquiries: T[],
+): Map<string, number> {
+  const map = new Map<string, number>();
+  const total = enquiries.length;
+  enquiries.forEach((enquiry, index) => {
+    map.set(enquiry.id, total - index);
+  });
+  return map;
+}
 
 const EMPTY = "—";
 
@@ -94,6 +112,7 @@ function escapeCsvCell(value: string): string {
 
 function rowValues(enquiry: EnquiryExportRow): string[] {
   return [
+    enquiry.leadNumber != null ? String(enquiry.leadNumber) : EMPTY,
     cell(enquiry.name),
     cell(enquiry.phone),
     displayEmail(enquiry.email),
@@ -132,7 +151,9 @@ export function enquiryCsvFilename(enquiry: EnquiryExportRow): string {
   const date = enquiry.createdAt
     ? new Date(enquiry.createdAt).toISOString().slice(0, 10)
     : "lead";
-  return `lead-${slugPart(enquiry.name, "enquiry")}-${date}.csv`;
+  const prefix =
+    enquiry.leadNumber != null ? `lead-${enquiry.leadNumber}` : "lead";
+  return `${prefix}-${slugPart(enquiry.name, "enquiry")}-${date}.csv`;
 }
 
 export function allEnquiriesCsvFilename(count: number): string {

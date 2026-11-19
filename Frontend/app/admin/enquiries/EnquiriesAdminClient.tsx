@@ -5,6 +5,7 @@ import { Check, Download, Mail, Phone, Trash2 } from "lucide-react";
 import AdminSearchBar, { matchesAdminQuery } from "../AdminSearchBar";
 import {
   allEnquiriesCsvFilename,
+  assignLeadNumbers,
   downloadTextFile,
   enquiriesToCsv,
   enquiryCsvFilename,
@@ -158,10 +159,20 @@ export default function EnquiriesAdminClient() {
     }
   };
 
+  const leadNumbers = useMemo(() => assignLeadNumbers(enquiries), [enquiries]);
+
+  const withLeadNumber = (enquiry: Enquiry) => ({
+    ...enquiry,
+    leadNumber: leadNumbers.get(enquiry.id),
+  });
+
   const downloadEnquiry = (enquiry: Enquiry) => {
     setError("");
-    downloadTextFile(enquiryCsvFilename(enquiry), enquiriesToCsv([enquiry]));
-    setMessage(`Downloaded lead for ${enquiry.name}. Open the CSV in Excel for a clean table.`);
+    const row = withLeadNumber(enquiry);
+    downloadTextFile(enquiryCsvFilename(row), enquiriesToCsv([row]));
+    setMessage(
+      `Downloaded lead #${row.leadNumber ?? "—"} (${enquiry.name}). Open the CSV in Excel for a clean table.`,
+    );
   };
 
   const downloadAllEnquiries = () => {
@@ -171,9 +182,10 @@ export default function EnquiriesAdminClient() {
       setError("No leads to download.");
       return;
     }
+    const rows = enquiries.map(withLeadNumber);
     downloadTextFile(
       allEnquiriesCsvFilename(enquiries.length),
-      enquiriesToCsv(enquiries),
+      enquiriesToCsv(rows),
     );
     setMessage(
       `Downloaded CSV with ${enquiries.length} leads. Open it in Excel (or Google Sheets) for a clean table.`,
@@ -182,8 +194,9 @@ export default function EnquiriesAdminClient() {
 
   const visible = useMemo(() => {
     const byRead = filter === "unread" ? enquiries.filter((item) => !item.read) : enquiries;
-    return byRead.filter((enquiry) =>
-      matchesAdminQuery(searchQuery, [
+    return byRead.filter((enquiry) => {
+      const leadNo = leadNumbers.get(enquiry.id);
+      return matchesAdminQuery(searchQuery, [
         enquiry.name,
         enquiry.email,
         enquiry.phone,
@@ -194,9 +207,11 @@ export default function EnquiriesAdminClient() {
         enquiry.travelers,
         enquiry.formType,
         enquiry.read ? "read" : "unread new",
-      ]),
-    );
-  }, [enquiries, filter, searchQuery]);
+        leadNo != null ? String(leadNo) : "",
+        leadNo != null ? `#${leadNo}` : "",
+      ]);
+    });
+  }, [enquiries, filter, searchQuery, leadNumbers]);
 
   return (
     <div>
@@ -274,7 +289,7 @@ export default function EnquiriesAdminClient() {
         value={searchQuery}
         onChange={setSearchQuery}
         label="Search enquiries"
-        placeholder="Search by name, email, phone, page, interest…"
+        placeholder="Search by lead #, name, email, phone, page…"
         resultCount={visible.length}
         totalCount={filter === "unread" ? unreadCount : enquiries.length}
       />
@@ -301,6 +316,12 @@ export default function EnquiriesAdminClient() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full bg-[#1A1A1A] px-2.5 py-0.5 text-xs font-black text-white"
+                      title="Lead number"
+                    >
+                      #{leadNumbers.get(enquiry.id)}
+                    </span>
                     <h2 className="text-lg font-black">{enquiry.name}</h2>
                     {!enquiry.read ? (
                       <span className="rounded-full bg-[#0F9B9B] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-white">
@@ -314,6 +335,7 @@ export default function EnquiriesAdminClient() {
                     ) : null}
                   </div>
                   <p className="mt-1 text-xs text-[#888888]">
+                    Lead #{leadNumbers.get(enquiry.id)} ·{" "}
                     {new Date(enquiry.createdAt).toLocaleString()} ·{" "}
                     {formTypeLabel(enquiry.formType)}
                   </p>
