@@ -161,7 +161,7 @@ export default function EnquiriesAdminClient() {
   const downloadEnquiry = (enquiry: Enquiry) => {
     setError("");
     downloadTextFile(enquiryCsvFilename(enquiry), enquiriesToCsv([enquiry]));
-    setMessage(`Downloaded lead for ${enquiry.name}.`);
+    setMessage(`Downloaded lead for ${enquiry.name}. Open the CSV in Excel for a clean table.`);
   };
 
   const downloadAllEnquiries = () => {
@@ -175,7 +175,9 @@ export default function EnquiriesAdminClient() {
       allEnquiriesCsvFilename(enquiries.length),
       enquiriesToCsv(enquiries),
     );
-    setMessage(`Downloaded CSV with ${enquiries.length} leads.`);
+    setMessage(
+      `Downloaded CSV with ${enquiries.length} leads. Open it in Excel (or Google Sheets) for a clean table.`,
+    );
   };
 
   const visible = useMemo(() => {

@@ -15,20 +15,23 @@ export type EnquiryExportRow = {
   createdAt: string;
 };
 
+/** Column order puts the most useful contact fields first. */
 const CSV_HEADERS = [
+  "Name",
+  "Phone",
+  "Email",
   "Created at",
   "Status",
   "Form type",
   "Page / source",
-  "Name",
-  "Email",
-  "Phone",
   "Interested in",
   "Travel date",
   "Travelers",
   "Message",
   "Record ID",
 ] as const;
+
+const EMPTY = "—";
 
 function isPlaceholderEmail(email: string | undefined): boolean {
   if (!email) return true;
@@ -46,35 +49,67 @@ export function formTypeLabel(formType: string): string {
 }
 
 function displayEmail(email: string): string {
-  return email && !isPlaceholderEmail(email) ? email : "";
+  return email && !isPlaceholderEmail(email) ? email : EMPTY;
+}
+
+/** Keep each lead on a single CSV row (no mid-cell line breaks). */
+function flattenText(value: string): string {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" | ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cell(value: string | undefined | null): string {
+  const flat = flattenText(value ?? "");
+  return flat || EMPTY;
+}
+
+function formatCreatedAt(value: string): string {
+  if (!value) return EMPTY;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return cell(value);
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
 }
 
 function escapeCsvCell(value: string): string {
-  const normalized = value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  if (/[",\n]/.test(normalized)) {
-    return `"${normalized.replace(/"/g, '""')}"`;
+  if (/[",\n]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
   }
-  return normalized;
+  return value;
 }
 
 function rowValues(enquiry: EnquiryExportRow): string[] {
   return [
-    enquiry.createdAt ? new Date(enquiry.createdAt).toISOString() : "",
+    cell(enquiry.name),
+    cell(enquiry.phone),
+    displayEmail(enquiry.email),
+    formatCreatedAt(enquiry.createdAt),
     enquiry.read ? "Read" : "Unread",
     formTypeLabel(enquiry.formType),
-    enquiry.page || "",
-    enquiry.name || "",
-    displayEmail(enquiry.email),
-    enquiry.phone || "",
-    enquiry.interestedIn || "",
-    enquiry.travelDate || "",
-    enquiry.travelers || "",
-    enquiry.message || "",
-    enquiry.id || "",
+    cell(enquiry.page),
+    cell(enquiry.interestedIn),
+    cell(enquiry.travelDate),
+    cell(enquiry.travelers),
+    cell(enquiry.message),
+    cell(enquiry.id),
   ];
 }
 
-/** UTF-8 CSV with BOM so Excel opens special characters correctly. */
+/** UTF-8 CSV with BOM so Excel opens ₹ and other characters correctly. */
 export function enquiriesToCsv(enquiries: EnquiryExportRow[]): string {
   const lines = [
     CSV_HEADERS.join(","),
@@ -105,7 +140,11 @@ export function allEnquiriesCsvFilename(count: number): string {
   return `divas-leads-${count}-${date}.csv`;
 }
 
-export function downloadTextFile(filename: string, content: string, mime = "text/csv;charset=utf-8"): void {
+export function downloadTextFile(
+  filename: string,
+  content: string,
+  mime = "text/csv;charset=utf-8",
+): void {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
