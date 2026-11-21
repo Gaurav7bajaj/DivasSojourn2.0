@@ -39,7 +39,6 @@ type Props = {
 };
 
 const GOLD = "#D6AE3C";
-const NOT_SURE = "__not_sure__";
 
 const WHY_CARDS = [
   {
@@ -168,10 +167,7 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
   }, []);
 
   const tripOptions = useMemo(
-    () => [
-      ...trips.map((trip) => ({ value: trip.slug, label: trip.selectLabel })),
-      { value: NOT_SURE, label: "Not sure yet – suggest a trip" },
-    ],
+    () => trips.map((trip) => ({ value: trip.slug, label: trip.selectLabel })),
     [trips],
   );
 
@@ -201,14 +197,8 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
     setFormError("");
     if (!validate()) return;
 
-    const selected =
-      tripSlug === NOT_SURE
-        ? null
-        : trips.find((trip) => trip.slug === tripSlug) || null;
-    const interestedIn =
-      tripSlug === NOT_SURE
-        ? "Not sure yet – suggest a trip"
-        : selected?.title || selected?.shortName || tripSlug;
+    const selected = trips.find((trip) => trip.slug === tripSlug) || null;
+    const interestedIn = selected?.title || selected?.shortName || tripSlug;
 
     const utmLines = Object.entries(utm)
       .map(([key, value]) => `${key}: ${value}`)
