@@ -115,11 +115,16 @@ function trimAtSentence(text: string, maxChars = 420): string {
 }
 
 export async function loadWomenTripsLandingData() {
-  const [trips, platforms, faqsFromDb] = await Promise.all([
+  const [tripsRaw, platforms, faqsFromDb] = await Promise.all([
     Promise.all(WOMEN_TRIP_SLUGS.map((slug) => resolveTrip(slug))),
     getPlatformStats().catch(() => []),
     getPublishedFaqs().catch(() => faqItems),
   ]);
+
+  // Ascending by departure date (cards + form dropdown stay in sync).
+  const trips = [...tripsRaw].sort((a, b) =>
+    String(a.startDate).localeCompare(String(b.startDate)),
+  );
 
   const google = platforms.find((p) => p.id === "google");
   const tripadvisor = platforms.find((p) => p.id === "tripadvisor");

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { GripVertical } from "lucide-react";
 import type { Trip, TripAccommodation, TripItineraryDay, TripWomanJoining } from "@/app/lib/data/types";
 import { slugify } from "@/app/lib/slugify";
 
@@ -65,6 +66,27 @@ function stripClientId<T extends { clientId: string }>({
   return rest;
 }
 
+/** Keep day numbers in sync with visual order after drag / remove. */
+function renumberDays(rows: DayRow[]): DayRow[] {
+  return rows.map((row, index) => ({ ...row, day: index + 1 }));
+}
+
+function reorderDays(rows: DayRow[], fromIndex: number, toIndex: number): DayRow[] {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= rows.length ||
+    toIndex >= rows.length
+  ) {
+    return rows;
+  }
+  const next = [...rows];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return renumberDays(next);
+}
+
 function linesToArray(text: string) {
   return text
     .split("\n")
@@ -122,6 +144,8 @@ export default function TripForm({ mode, initial }: TripFormProps) {
   const [itinerary, setItinerary] = useState<DayRow[]>(
     initial?.itinerary?.length ? withClientIds(initial.itinerary) : [emptyDay()],
   );
+  const [dragDayIndex, setDragDayIndex] = useState<number | null>(null);
+  const [dragOverDayIndex, setDragOverDayIndex] = useState<number | null>(null);
   const [accommodations, setAccommodations] = useState<StayRow[]>(
     initial?.accommodations?.length ? withClientIds(initial.accommodations) : [emptyStay()],
   );
@@ -478,28 +502,174 @@ export default function TripForm({ mode, initial }: TripFormProps) {
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-black">Itinerary</h2>
-          <button type="button" className="text-sm font-bold text-[#0F9B9B]" onClick={() => setItinerary((prev) => [...prev, { ...emptyDay(), day: prev.length + 1 }])}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-black">Itinerary</h2>
+            <p className="mt-0.5 text-xs text-black/50">
+              Drag the handle to reorder days. Day numbers update automatically.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="text-sm font-bold text-[#0F9B9B]"
+            onClick={() =>
+              setItinerary((prev) => [...prev, { ...emptyDay(), day: prev.length + 1 }])
+            }
+          >
             Add day
           </button>
         </div>
         {itinerary.map((day, index) => (
-          <div key={day.clientId} className="space-y-3 rounded-xl border border-black/10 p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-black">Day {day.day || index + 1}</p>
-              <button type="button" className="text-xs font-bold text-red-600" onClick={() => setItinerary((prev) => prev.filter((_, i) => i !== index))}>
-                Remove
-              </button>
+          <div
+            key={day.clientId}
+            draggable={false}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (dragDayIndex === null || dragDayIndex === index) return;
+              setDragOverDayIndex(index);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (dragDayIndex === null) return;
+              setItinerary((prev) => reorderDays(prev, dragDayIndex, index));
+              setDragDayIndex(null);
+              setDragOverDayIndex(null);
+            }}
+            className={`space-y-3 rounded-xl border p-4 transition ${
+              dragOverDayIndex === index && dragDayIndex !== index
+                ? "border-[#0F9B9B] bg-[#0F9B9B]/5 ring-2 ring-[#0F9B9B]/25"
+                : "border-black/10"
+            } ${dragDayIndex === index ? "opacity-60" : ""}`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  draggable
+                  aria-label={`Drag to reorder day ${index + 1}`}
+                  title="Drag to reorder"
+                  onDragStart={(e) => {
+                    setDragDayIndex(index);
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", String(index));
+                  }}
+                  onDragEnd={() => {
+                    setDragDayIndex(null);
+                    setDragOverDayIndex(null);
+                  }}
+                  className="inline-flex cursor-grab touch-none items-center justify-center rounded-lg border border-black/10 bg-white px-1.5 py-2 text-[#555555] hover:bg-black/5 active:cursor-grabbing"
+                >
+                  <GripVertical className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <p className="text-sm font-black">Day {index + 1}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  className="rounded-full border border-black/10 px-2.5 py-1 text-xs font-semibold disabled:opacity-40"
+                  onClick={() => setItinerary((prev) => reorderDays(prev, index, index - 1))}
+                >
+                  Move up
+                </button>
+                <button
+                  type="button"
+                  disabled={index === itinerary.length - 1}
+                  className="rounded-full border border-black/10 px-2.5 py-1 text-xs font-semibold disabled:opacity-40"
+                  onClick={() => setItinerary((prev) => reorderDays(prev, index, index + 1))}
+                >
+                  Move down
+                </button>
+                <button
+                  type="button"
+                  className="text-xs font-bold text-red-600"
+                  onClick={() =>
+                    setItinerary((prev) => renumberDays(prev.filter((_, i) => i !== index)))
+                  }
+                >
+                  Remove
+                </button>
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <input placeholder="Day number" type="number" value={day.day} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, day: Number(e.target.value) } : item)))} className={inputClass} />
-              <input placeholder="Date label" value={day.date} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, date: e.target.value } : item)))} className={inputClass} />
-              <input placeholder="Title" value={day.title} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, title: e.target.value } : item)))} className={`${inputClass} sm:col-span-2`} />
-              <input placeholder="Location" value={day.location || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, location: e.target.value } : item)))} className={inputClass} />
-              <input placeholder="Hotel" value={day.hotel || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, hotel: e.target.value } : item)))} className={inputClass} />
-              <input placeholder="Meals" value={day.meals || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, meals: e.target.value } : item)))} className={inputClass} />
-              <textarea placeholder="Description" rows={3} value={day.description || ""} onChange={(e) => setItinerary((prev) => prev.map((item, i) => (i === index ? { ...item, description: e.target.value } : item)))} className={`${inputClass} sm:col-span-2`} />
+              <input
+                placeholder="Day number"
+                type="number"
+                value={day.day}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, day: Number(e.target.value) } : item,
+                    ),
+                  )
+                }
+                className={inputClass}
+              />
+              <input
+                placeholder="Date label"
+                value={day.date}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) => (i === index ? { ...item, date: e.target.value } : item)),
+                  )
+                }
+                className={inputClass}
+              />
+              <input
+                placeholder="Title"
+                value={day.title}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) => (i === index ? { ...item, title: e.target.value } : item)),
+                  )
+                }
+                className={`${inputClass} sm:col-span-2`}
+              />
+              <input
+                placeholder="Location"
+                value={day.location || ""}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, location: e.target.value } : item,
+                    ),
+                  )
+                }
+                className={inputClass}
+              />
+              <input
+                placeholder="Hotel"
+                value={day.hotel || ""}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) => (i === index ? { ...item, hotel: e.target.value } : item)),
+                  )
+                }
+                className={inputClass}
+              />
+              <input
+                placeholder="Meals"
+                value={day.meals || ""}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) => (i === index ? { ...item, meals: e.target.value } : item)),
+                  )
+                }
+                className={inputClass}
+              />
+              <textarea
+                placeholder="Description"
+                rows={3}
+                value={day.description || ""}
+                onChange={(e) =>
+                  setItinerary((prev) =>
+                    prev.map((item, i) =>
+                      i === index ? { ...item, description: e.target.value } : item,
+                    ),
+                  )
+                }
+                className={`${inputClass} sm:col-span-2`}
+              />
             </div>
           </div>
         ))}

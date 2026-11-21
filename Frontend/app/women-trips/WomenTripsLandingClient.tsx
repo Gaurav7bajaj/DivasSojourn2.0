@@ -183,12 +183,15 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (name.trim().length < 2) next.name = "Please enter your full name (at least 2 characters).";
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+    if (!name.trim()) next.name = "Name is required.";
+    else if (name.trim().length < 2) next.name = "Please enter your full name (at least 2 characters).";
+    if (!phone.trim()) next.phone = "WhatsApp number is required.";
+    else if (!/^[6-9]\d{9}$/.test(phone)) {
       next.phone = "Enter a valid 10-digit Indian mobile number starting with 6–9.";
     }
-    if (city.trim().length < 2) next.city = "Please enter your city.";
-    if (!tripSlug) next.trip = "Please select a trip.";
+    if (!city.trim()) next.city = "City is required.";
+    else if (city.trim().length < 2) next.city = "Please enter your city.";
+    if (!tripSlug) next.trip = "Please select which trip interests you.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -361,14 +364,19 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
           <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
             <div>
               <label htmlFor="wt-name" className="mb-1.5 block text-sm font-semibold">
-                Your name
+                Your name <span className="text-[#D6AE3C]">*</span>
               </label>
               <input
                 id="wt-name"
                 name="name"
+                required
+                aria-required="true"
                 autoComplete="name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
+                }}
                 className="h-12 w-full rounded-full border border-white/15 bg-[#0B0B0C] px-4 text-base text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
                 placeholder="Full name"
               />
@@ -377,7 +385,7 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
 
             <div>
               <label htmlFor="wt-phone" className="mb-1.5 block text-sm font-semibold">
-                WhatsApp number
+                WhatsApp number <span className="text-[#D6AE3C]">*</span>
               </label>
               <div className="flex overflow-hidden rounded-full border border-white/15 bg-[#0B0B0C] focus-within:border-[#D6AE3C]">
                 <span className="inline-flex items-center border-r border-white/10 px-3 text-sm font-semibold text-[#C9C3B6]">
@@ -386,11 +394,16 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
                 <input
                   id="wt-phone"
                   name="phone"
+                  required
+                  aria-required="true"
                   inputMode="numeric"
                   autoComplete="tel-national"
                   maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 10));
+                    if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
+                  }}
                   className="h-12 w-full bg-transparent px-3 text-base text-[#FBF8F1] outline-none placeholder:text-[#8F897D]"
                   placeholder="10-digit mobile"
                 />
@@ -400,14 +413,19 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
 
             <div>
               <label htmlFor="wt-city" className="mb-1.5 block text-sm font-semibold">
-                Your city
+                Your city <span className="text-[#D6AE3C]">*</span>
               </label>
               <input
                 id="wt-city"
                 name="city"
+                required
+                aria-required="true"
                 autoComplete="address-level2"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => {
+                  setCity(e.target.value);
+                  if (errors.city) setErrors((prev) => ({ ...prev, city: "" }));
+                }}
                 className="h-12 w-full rounded-full border border-white/15 bg-[#0B0B0C] px-4 text-base text-[#FBF8F1] outline-none placeholder:text-[#8F897D] focus:border-[#D6AE3C]"
                 placeholder="City"
               />
@@ -416,13 +434,18 @@ export default function WomenTripsLandingClient({ trips, faqs, reviews, stats }:
 
             <div>
               <label htmlFor="wt-trip" className="mb-1.5 block text-sm font-semibold">
-                Which trip interests you?
+                Which trip interests you? <span className="text-[#D6AE3C]">*</span>
               </label>
               <select
                 id="wt-trip"
                 name="trip"
+                required
+                aria-required="true"
                 value={tripSlug}
-                onChange={(e) => setTripSlug(e.target.value)}
+                onChange={(e) => {
+                  setTripSlug(e.target.value);
+                  if (errors.trip) setErrors((prev) => ({ ...prev, trip: "" }));
+                }}
                 className="h-12 w-full appearance-none rounded-full border border-white/15 bg-[#0B0B0C] px-4 text-base text-[#FBF8F1] outline-none focus:border-[#D6AE3C]"
               >
                 <option value="">Select a trip</option>

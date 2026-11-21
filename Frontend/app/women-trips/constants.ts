@@ -16,11 +16,12 @@ export const WHATSAPP_LANDING_MESSAGE =
 export const WHATSAPP_THANK_YOU_MESSAGE =
   "Hi, I just sent an enquiry on your website";
 
+/** Chronological by start date: Japan (Dec 2026) → Sri Lanka → Taiwan → Russia. */
 export const WOMEN_TRIP_SLUGS = [
   "japan-christmas-new-year",
-  "russia-northern-lights-2027",
   "sri-lanka-soul-2027",
   "taiwan-cherry-blossom-2027",
+  "russia-northern-lights-2027",
 ] as const;
 
 export type WomenTripSlug = (typeof WOMEN_TRIP_SLUGS)[number];
