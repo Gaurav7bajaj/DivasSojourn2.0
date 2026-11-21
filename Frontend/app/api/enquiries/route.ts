@@ -42,8 +42,11 @@ export async function POST(request: Request) {
     if (!email && formType !== "short") {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
     }
-    if (phone.length !== 10) {
-      return NextResponse.json({ error: "Please enter a valid 10 digit phone number." }, { status: 400 });
+    if (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
+      return NextResponse.json(
+        { error: "Please enter a valid 10 digit Indian mobile number." },
+        { status: 400 },
+      );
     }
 
     const enquiry = await prisma.enquiry.create({

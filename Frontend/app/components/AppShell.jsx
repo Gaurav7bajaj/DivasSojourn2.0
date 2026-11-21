@@ -8,8 +8,12 @@ import WhatsAppButton from "./WhatsAppButton";
 export default function AppShell({ children, indiaTrips = [], internationalTrips = [] }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
+  // Google Ads landing pages use their own minimal chrome (no main nav/footer/WhatsApp bubble).
+  const isCampaignLanding =
+    pathname === "/women-trips" ||
+    pathname?.startsWith("/women-trips/");
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isCampaignLanding) {
     return <>{children}</>;
   }
 
