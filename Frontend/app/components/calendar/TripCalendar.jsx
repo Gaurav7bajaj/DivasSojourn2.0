@@ -93,52 +93,63 @@ function durationLabel(trip) {
 }
 
 function displayPrice(trip) {
-  return trip.earlyBirdPrice || trip.price || 0;
+  const slots = Math.max(0, Number(trip.earlyBirdSlots ?? 3) || 0);
+  const used = Math.max(0, Number(trip.earlyBirdSlotsUsed ?? 0) || 0);
+  const remaining = Math.max(0, slots - used);
+  if (
+    trip.earlyBirdPrice &&
+    trip.earlyBirdPrice > 0 &&
+    trip.earlyBirdPrice < (trip.price || 0) &&
+    remaining > 0
+  ) {
+    return trip.earlyBirdPrice;
+  }
+  return trip.price || 0;
 }
 
 function buildCalendarCells(year, month) {
-  const firstDay = new Date(year, month, 1).getDay();
-  const totalDays = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
   const prevMonthTotal = new Date(year, month, 0).getDate();
-  const cells = [];
+    const cells = [];
 
   for (let i = firstDay - 1; i >= 0; i -= 1) {
     const d = prevMonthTotal - i;
-    const pMonth = month === 0 ? 11 : month - 1;
-    const pYear = month === 0 ? year - 1 : year;
-    cells.push({
-      day: d,
-      month: pMonth,
-      year: pYear,
-      isCurrentMonth: false,
+      const pMonth = month === 0 ? 11 : month - 1;
+      const pYear = month === 0 ? year - 1 : year;
+      cells.push({
+        day: d,
+        month: pMonth,
+        year: pYear,
+        isCurrentMonth: false,
       dateString: `${pYear}-${pad2(pMonth + 1)}-${pad2(d)}`,
-    });
-  }
+      });
+    }
 
   for (let d = 1; d <= totalDays; d += 1) {
-    cells.push({
-      day: d,
+      cells.push({
+        day: d,
       month,
       year,
-      isCurrentMonth: true,
+        isCurrentMonth: true,
       dateString: `${year}-${pad2(month + 1)}-${pad2(d)}`,
-    });
-  }
+      });
+    }
 
-  const remaining = 42 - cells.length;
-  const nMonth = month === 11 ? 0 : month + 1;
-  const nYear = month === 11 ? year + 1 : year;
+    const remaining = 42 - cells.length;
+    const nMonth = month === 11 ? 0 : month + 1;
+    const nYear = month === 11 ? year + 1 : year;
   for (let d = 1; d <= remaining; d += 1) {
-    cells.push({
-      day: d,
-      month: nMonth,
-      year: nYear,
-      isCurrentMonth: false,
+      cells.push({
+        day: d,
+        month: nMonth,
+        year: nYear,
+        isCurrentMonth: false,
       dateString: `${nYear}-${pad2(nMonth + 1)}-${pad2(d)}`,
-    });
-  }
+      });
+    }
 
-  return cells;
+    return cells;
 }
 
 function rangesOverlap(aStart, aSpan, bStart, bSpan) {
@@ -536,7 +547,7 @@ export default function TripCalendar({ trips = [] }) {
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
-
+          
           <h2
             className="text-center font-[family-name:var(--font-playfair)] text-[28px] font-semibold text-[#FBF8F1] md:text-[36px]"
             style={{ minWidth: monthTitleWidth }}
@@ -574,7 +585,7 @@ export default function TripCalendar({ trips = [] }) {
           {FILTERS.map((option) => {
             const active = filterType === option.value;
             return (
-              <button
+            <button
                 key={option.value}
                 type="button"
                 role="tab"
@@ -587,7 +598,7 @@ export default function TripCalendar({ trips = [] }) {
                 }`}
               >
                 {option.label}
-              </button>
+            </button>
             );
           })}
         </div>
@@ -631,8 +642,8 @@ export default function TripCalendar({ trips = [] }) {
                     const cellIndex = weekIndex * 7 + colIndex;
                     const isToday = cell.dateString === todayStr;
                     const overflowTrips = layout.overflowByDay[cell.dateString] || [];
-                    return (
-                      <div
+                return (
+                  <div
                         key={cell.dateString}
                         role="gridcell"
                         tabIndex={focusCellIndex === cellIndex || (focusCellIndex == null && cellIndex === 0) ? 0 : -1}
@@ -651,8 +662,8 @@ export default function TripCalendar({ trips = [] }) {
                                 : "text-[#55524C]"
                           }`}
                         >
-                          {cell.day}
-                        </span>
+                      {cell.day}
+                    </span>
                         {overflowTrips.length > 0 ? (
                           <button
                             type="button"
@@ -670,9 +681,9 @@ export default function TripCalendar({ trips = [] }) {
                             +{overflowTrips.length} more
                           </button>
                         ) : null}
-                      </div>
-                    );
-                  })}
+                          </div>
+                        );
+                      })}
                 </div>
 
                 {/* Bars layer */}
@@ -728,8 +739,8 @@ export default function TripCalendar({ trips = [] }) {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+                        </div>
+                    </div>
 
         {/* Mobile compact month */}
         <div className="w-full md:hidden">
@@ -749,8 +760,8 @@ export default function TripCalendar({ trips = [] }) {
                 <div key={d} className="py-2">
                   {d.slice(0, 1)}
                 </div>
-              ))}
-            </div>
+                        ))}
+                      </div>
             <div className="grid grid-cols-7 gap-1">
               {calendarCells.map((cell) => {
                 const dayTrips = cell.isCurrentMonth ? tripsByDate[cell.dateString] || [] : [];
@@ -807,7 +818,7 @@ export default function TripCalendar({ trips = [] }) {
                 {mobileDay
                   ? `Departing ${shortDateFmt.format(new Date(`${mobileDay}T00:00:00`))}`
                   : `Departing in ${monthName}`}
-              </h3>
+                </h3>
               <p className="shrink-0 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
                 {mobileList.length} trip{mobileList.length === 1 ? "" : "s"}
               </p>
@@ -821,7 +832,7 @@ export default function TripCalendar({ trips = [] }) {
               >
                 Show all in {monthName}
               </button>
-            ) : null}
+          ) : null}
 
             {mobileList.length === 0 ? (
               <div className="py-10 text-center">

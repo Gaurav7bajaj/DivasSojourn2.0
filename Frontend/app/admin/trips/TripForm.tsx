@@ -125,6 +125,12 @@ export default function TripForm({ mode, initial }: TripFormProps) {
   const [earlyBirdPrice, setEarlyBirdPrice] = useState(
     initial?.earlyBirdPrice != null ? String(initial.earlyBirdPrice) : "",
   );
+  const [earlyBirdSlots, setEarlyBirdSlots] = useState(
+    String(initial?.earlyBirdSlots ?? 3),
+  );
+  const [earlyBirdSlotsUsed, setEarlyBirdSlotsUsed] = useState(
+    String(initial?.earlyBirdSlotsUsed ?? 0),
+  );
   const [singleSupplement, setSingleSupplement] = useState(
     initial?.singleSupplement != null ? String(initial.singleSupplement) : "",
   );
@@ -220,6 +226,9 @@ export default function TripForm({ mode, initial }: TripFormProps) {
         price: price === "" ? 0 : Number(price),
         currency,
         earlyBirdPrice: earlyBirdPrice === "" ? null : Number(earlyBirdPrice),
+        earlyBirdSlots: earlyBirdSlots === "" ? 3 : Math.max(0, Number(earlyBirdSlots) || 0),
+        earlyBirdSlotsUsed:
+          earlyBirdSlotsUsed === "" ? 0 : Math.max(0, Number(earlyBirdSlotsUsed) || 0),
         singleSupplement: singleSupplement === "" ? null : Number(singleSupplement),
         singleOccupancyPrice: singleOccupancyPrice === "" ? null : Number(singleOccupancyPrice),
         overview,
@@ -483,7 +492,33 @@ export default function TripForm({ mode, initial }: TripFormProps) {
         <h2 className="text-lg font-black">Pricing</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-bold">Price (INR)<input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className={inputClass} /></label>
-          <label className="block text-sm font-bold">Early bird<input type="number" value={earlyBirdPrice} onChange={(e) => setEarlyBirdPrice(e.target.value)} className={inputClass} /></label>
+          <label className="block text-sm font-bold">Early bird price (INR)<input type="number" value={earlyBirdPrice} onChange={(e) => setEarlyBirdPrice(e.target.value)} className={inputClass} placeholder="Leave blank for none" /></label>
+          <label className="block text-sm font-bold">
+            Early bird slots
+            <input
+              type="number"
+              min="0"
+              value={earlyBirdSlots}
+              onChange={(e) => setEarlyBirdSlots(e.target.value)}
+              className={inputClass}
+            />
+            <span className="mt-1 block text-xs font-normal text-black/50">
+              Default 3. First bookers get the early bird price until these are used.
+            </span>
+          </label>
+          <label className="block text-sm font-bold">
+            Early bird slots used
+            <input
+              type="number"
+              min="0"
+              value={earlyBirdSlotsUsed}
+              onChange={(e) => setEarlyBirdSlotsUsed(e.target.value)}
+              className={inputClass}
+            />
+            <span className="mt-1 block text-xs font-normal text-black/50">
+              Auto-updates on booking/cancel. Adjust manually only to correct.
+            </span>
+          </label>
           <label className="block text-sm font-bold">Single supplement<input type="number" value={singleSupplement} onChange={(e) => setSingleSupplement(e.target.value)} className={inputClass} /></label>
           <label className="block text-sm font-bold">Single occupancy<input type="number" value={singleOccupancyPrice} onChange={(e) => setSingleOccupancyPrice(e.target.value)} className={inputClass} /></label>
           <label className="block text-sm font-bold">Currency<input value={currency} onChange={(e) => setCurrency(e.target.value)} className={inputClass} /></label>

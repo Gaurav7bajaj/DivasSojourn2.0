@@ -1,0 +1,4 @@
+-- Early bird slot inventory + per-booking claim flag
+ALTER TABLE "Trip" ADD COLUMN IF NOT EXISTS "earlyBirdSlots" INTEGER NOT NULL DEFAULT 3;
+ALTER TABLE "Trip" ADD COLUMN IF NOT EXISTS "earlyBirdSlotsUsed" INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE "Booking" ADD COLUMN IF NOT EXISTS "usedEarlyBird" BOOLEAN NOT NULL DEFAULT false;

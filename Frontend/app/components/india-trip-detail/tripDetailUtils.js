@@ -66,9 +66,20 @@ export function getTripPlaceLabel(trip) {
   return trip.region || "India";
 }
 
+export { resolveEarlyBird as getEarlyBirdState } from "@/app/lib/earlyBird";
+
 export function getDisplayPrice(trip) {
-  if (trip?.earlyBirdPrice && trip.earlyBirdPrice > 0) return trip.earlyBirdPrice;
-  return trip?.price || 0;
+  const listPrice = Number(trip?.price) || 0;
+  const earlyBirdPrice =
+    trip?.earlyBirdPrice != null && Number(trip.earlyBirdPrice) > 0
+      ? Number(trip.earlyBirdPrice)
+      : null;
+  const totalSlots = Math.max(0, Number(trip?.earlyBirdSlots ?? 3) || 0);
+  const usedSlots = Math.max(0, Number(trip?.earlyBirdSlotsUsed ?? 0) || 0);
+  const remainingSlots = Math.max(0, totalSlots - usedSlots);
+  const isAvailable =
+    earlyBirdPrice != null && earlyBirdPrice < listPrice && remainingSlots > 0;
+  return isAvailable ? earlyBirdPrice : listPrice;
 }
 
 export function getTripGalleryPhotos(trip) {

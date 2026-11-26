@@ -79,6 +79,10 @@ model Trip {
   price                Int      @default(0)
   currency             String   @default("INR")
   earlyBirdPrice       Int?
+  /// Total early-bird seats for this trip (admin-editable; default 3).
+  earlyBirdSlots       Int      @default(3)
+  /// How many early-bird seats have already been claimed via bookings.
+  earlyBirdSlotsUsed   Int      @default(0)
   singleSupplement     Int?
   singleOccupancyPrice Int?
   soldOut              Boolean  @default(false)
@@ -142,6 +146,8 @@ model Booking {
   productinfo  String
   /// Full trip price (early bird or list) at booking time.
   amount       Decimal              @db.Decimal(12, 2)
+  /// True when this booking consumed an early-bird slot.
+  usedEarlyBird Boolean             @default(false)
   /// Sum of successful installment payments.
   amountPaid   Decimal              @default(0) @db.Decimal(12, 2)
   paid         Boolean              @default(false)

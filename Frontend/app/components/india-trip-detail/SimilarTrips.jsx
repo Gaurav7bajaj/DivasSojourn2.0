@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useMemo, useRef } from "react";
+import {
+  earlyBirdOfferLine as formatEarlyBirdOfferLine,
+  earlyBirdRemainingLine as formatEarlyBirdRemainingLine,
+  resolveEarlyBird,
+} from "@/app/lib/earlyBird";
 import UpcomingTripCard from "../upcoming/UpcomingTripCard";
 import { formatDepartureRange } from "./tripDetailUtils";
 
@@ -18,26 +23,31 @@ export default function SimilarTrips({ trips = [], basePath = "/india-trips", cu
       return Math.abs(aTime - currentTime) - Math.abs(bTime - currentTime);
     });
 
-    return sorted.slice(0, 8).map((trip) => ({
-      id: trip.id,
-      title: trip.title,
-      slug: trip.slug,
-      shortName: trip.shortName,
-      image: trip.image,
-      destination: trip.destination,
-      country: trip.country,
-      region: trip.region,
-      duration: { nights: trip.nights, days: trip.days },
-      pickupLocation: trip.pickupLocation,
-      dropLocation: trip.dropLocation,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      batches: 1,
-      originalPrice: trip.earlyBirdPrice ? trip.price : null,
-      currentPrice: trip.earlyBirdPrice || trip.price || 0,
-      soldOut: trip.soldOut,
-      datesLabel: formatDepartureRange(trip.startDate, trip.endDate, trip.dates),
-    }));
+    return sorted.slice(0, 8).map((trip) => {
+      const earlyBird = resolveEarlyBird(trip);
+      return {
+        id: trip.id,
+        title: trip.title,
+        slug: trip.slug,
+        shortName: trip.shortName,
+        image: trip.image,
+        destination: trip.destination,
+        country: trip.country,
+        region: trip.region,
+        duration: { nights: trip.nights, days: trip.days },
+        pickupLocation: trip.pickupLocation,
+        dropLocation: trip.dropLocation,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        batches: 1,
+        originalPrice: earlyBird.isAvailable ? earlyBird.listPrice : null,
+        currentPrice: earlyBird.displayPrice,
+        earlyBirdOfferLine: formatEarlyBirdOfferLine(earlyBird),
+        earlyBirdRemainingLine: formatEarlyBirdRemainingLine(earlyBird),
+        soldOut: trip.soldOut,
+        datesLabel: formatDepartureRange(trip.startDate, trip.endDate, trip.dates),
+      };
+    });
   }, [trips, currentTrip]);
 
   if (!cards.length) return null;

@@ -142,6 +142,8 @@ export type Trip = {
   price: number;
   currency: string;
   earlyBirdPrice?: number;
+  earlyBirdSlots: number;
+  earlyBirdSlotsUsed: number;
   singleSupplement?: number;
   singleOccupancyPrice?: number;
   soldOut?: boolean;
@@ -184,6 +186,8 @@ export type TripCreateInput = {
   price?: number;
   currency?: string;
   earlyBirdPrice?: number | null;
+  earlyBirdSlots?: number | null;
+  earlyBirdSlotsUsed?: number | null;
   singleSupplement?: number | null;
   singleOccupancyPrice?: number | null;
   soldOut?: boolean;
@@ -226,6 +230,13 @@ export type UpcomingTripCard = {
   currentPrice: number;
   description: string;
   soldOut?: boolean;
+  earlyBirdPrice?: number | null;
+  earlyBirdSlots?: number;
+  earlyBirdSlotsUsed?: number;
+  earlyBirdRemaining?: number;
+  earlyBirdAvailable?: boolean;
+  earlyBirdOfferLine?: string | null;
+  earlyBirdRemainingLine?: string | null;
 };
 
 /** Compact nav / destination card shape */

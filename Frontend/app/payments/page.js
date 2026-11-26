@@ -82,9 +82,25 @@ export default async function PaymentsPage() {
         shortName: true,
         price: true,
         earlyBirdPrice: true,
+        earlyBirdSlots: true,
+        earlyBirdSlotsUsed: true,
       },
     });
-    trips = rows.filter((t) => (t.earlyBirdPrice ?? t.price) > 0);
+    trips = rows
+      .map((t) => {
+        const remaining = Math.max(0, (t.earlyBirdSlots ?? 3) - (t.earlyBirdSlotsUsed ?? 0));
+        const earlyAvailable =
+          t.earlyBirdPrice != null &&
+          t.earlyBirdPrice > 0 &&
+          t.earlyBirdPrice < t.price &&
+          remaining > 0;
+        return {
+          ...t,
+          earlyBirdPrice: earlyAvailable ? t.earlyBirdPrice : null,
+          earlyBirdRemaining: remaining,
+        };
+      })
+      .filter((t) => (t.earlyBirdPrice ?? t.price) > 0);
   } catch (error) {
     console.error("Payments page trip load failed", error);
   }

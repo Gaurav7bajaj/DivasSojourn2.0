@@ -123,6 +123,8 @@ export async function createTrip(input: TripCreateInput): Promise<Trip> {
           price: input.price ?? 0,
           currency: input.currency || "INR",
           earlyBirdPrice: input.earlyBirdPrice ?? null,
+          earlyBirdSlots: input.earlyBirdSlots ?? 3,
+          earlyBirdSlotsUsed: input.earlyBirdSlotsUsed ?? 0,
           singleSupplement: input.singleSupplement ?? null,
           singleOccupancyPrice: input.singleOccupancyPrice ?? null,
           soldOut: input.soldOut ?? false,
@@ -191,6 +193,9 @@ export async function updateTrip(id: string, input: TripUpdateInput): Promise<Tr
       price: input.price,
       currency: input.currency,
       earlyBirdPrice: input.earlyBirdPrice === undefined ? undefined : input.earlyBirdPrice,
+      earlyBirdSlots: input.earlyBirdSlots === undefined ? undefined : input.earlyBirdSlots,
+      earlyBirdSlotsUsed:
+        input.earlyBirdSlotsUsed === undefined ? undefined : input.earlyBirdSlotsUsed,
       singleSupplement: input.singleSupplement === undefined ? undefined : input.singleSupplement,
       singleOccupancyPrice:
         input.singleOccupancyPrice === undefined ? undefined : input.singleOccupancyPrice,

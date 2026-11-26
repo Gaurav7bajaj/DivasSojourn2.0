@@ -86,8 +86,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const amountInr = trip.earlyBirdPrice ?? trip.price;
-    if (!amountInr || amountInr <= 0) {
+    if (!trip.price || trip.price <= 0) {
       return NextResponse.json({ error: "Trip has no payable amount." }, { status: 400 });
     }
 
@@ -99,22 +98,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const total = roundMoney(Number(amountInr));
-    const productinfo = sanitizeProductInfo(
-      `${trip.shortName || trip.title} booking`,
-    );
-
-    const plan = buildInstallmentPlan({
-      destination: trip.destination,
-      totalAmount: total,
-      startDateIso: trip.startDate,
-    });
-
-    const nextDue = plan.find((row) => row.dueNow) || plan[0];
-    const payNowAmount = nextDue ? formatAmount(nextDue.amountDue) : formatAmount(total);
-    const requiresFullPayment = daysLeft < FULL_PAYMENT_WITHIN_DAYS;
-
     const booking = await prisma.$transaction(async (tx) => {
+      // Atomically claim an early-bird slot when available.
+      let usedEarlyBird = false;
+      let amountInr = trip.price;
+      if (
+        trip.earlyBirdPrice != null &&
+        trip.earlyBirdPrice > 0 &&
+        trip.earlyBirdPrice < trip.price
+      ) {
+        const claimed = await tx.trip.updateMany({
+          where: {
+            id: trip.id,
+            earlyBirdSlotsUsed: { lt: trip.earlyBirdSlots },
+          },
+          data: { earlyBirdSlotsUsed: { increment: 1 } },
+        });
+        if (claimed.count === 1) {
+          usedEarlyBird = true;
+          amountInr = trip.earlyBirdPrice;
+        }
+      }
+
+      const total = roundMoney(Number(amountInr));
+      const productinfo = sanitizeProductInfo(
+        `${trip.shortName || trip.title} booking`,
+      );
+      const plan = buildInstallmentPlan({
+        destination: trip.destination,
+        totalAmount: total,
+        startDateIso: trip.startDate,
+      });
+
       const created = await tx.booking.create({
         data: {
           travelerId: account.id,
@@ -127,6 +142,7 @@ export async function POST(request: Request) {
           productinfo,
           amount: new Prisma.Decimal(formatAmount(total)),
           amountPaid: new Prisma.Decimal(0),
+          usedEarlyBird,
         },
       });
 
@@ -142,16 +158,25 @@ export async function POST(request: Request) {
         })),
       });
 
-      return created;
+      return { created, total, plan, usedEarlyBird, productinfo };
     });
 
+    const total = booking.total;
+    const plan = booking.plan;
+    const productinfo = booking.productinfo;
+    const nextDue = plan.find((row) => row.dueNow) || plan[0];
+    const payNowAmount = nextDue ? formatAmount(nextDue.amountDue) : formatAmount(total);
+    const requiresFullPayment = daysLeft < FULL_PAYMENT_WITHIN_DAYS;
+
+    const created = booking.created;
+
     const installments = await prisma.bookingInstallment.findMany({
-      where: { bookingId: booking.id },
+      where: { bookingId: created.id },
       orderBy: { sortOrder: "asc" },
     });
 
     void sendEnquiryNotificationEmail({
-      id: booking.id,
+      id: created.id,
       name: firstname,
       email,
       phone,
@@ -165,6 +190,7 @@ export async function POST(request: Request) {
         `Slug: ${trip.slug}`,
         `Total: ₹${formatAmount(total)}`,
         `Pay now: ₹${payNowAmount}`,
+        `Early bird: ${booking.usedEarlyBird ? "yes" : "no"}`,
         `Passenger: ${firstname}`,
         `Phone: ${phone}`,
         `Email: ${email}`,
@@ -173,13 +199,14 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      bookingId: booking.id,
+      bookingId: created.id,
       amount: formatAmount(total),
       payNowAmount,
       requiresFullPayment,
       daysUntilDeparture: daysLeft,
-      productinfo: booking.productinfo,
-      tripTitle: booking.tripTitle,
+      usedEarlyBird: booking.usedEarlyBird,
+      productinfo,
+      tripTitle: created.tripTitle,
       installments: installments.map((row) => ({
         id: row.id,
         stage: row.stage,

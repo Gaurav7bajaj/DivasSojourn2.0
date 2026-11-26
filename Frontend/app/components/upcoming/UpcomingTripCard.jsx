@@ -99,22 +99,34 @@ export default function UpcomingTripCard({
           </div>
 
           <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-            <div className="min-w-0 rounded-full bg-[#E8E8E8] px-3 py-1.5">
-              {!trip.currentPrice ? (
-                <p className="text-xs font-black text-[#1A1A1A]">Coming soon</p>
-              ) : (
-                <>
-                  {trip.originalPrice ? (
-                    <p className="text-[10px] font-bold text-[#B54848] line-through">
-                      {formatDualPrice(trip.originalPrice)}
+            <div className="min-w-0">
+              <div className="rounded-full bg-[#E8E8E8] px-3 py-1.5">
+                {!trip.currentPrice ? (
+                  <p className="text-xs font-black text-[#1A1A1A]">Coming soon</p>
+                ) : (
+                  <>
+                    {trip.originalPrice && trip.originalPrice > trip.currentPrice ? (
+                      <p className="text-[10px] font-bold text-[#B54848] line-through">
+                        {formatDualPrice(trip.originalPrice)}
+                      </p>
+                    ) : null}
+                    <p className="text-xs font-black text-[#1A1A1A]">
+                      {formatDualPrice(trip.currentPrice)}
+                      <span className="ml-1 text-[10px] font-semibold text-[#777777]">Onwards</span>
                     </p>
-                  ) : null}
-                  <p className="text-xs font-black text-[#1A1A1A]">
-                    {formatDualPrice(trip.currentPrice)}
-                    <span className="ml-1 text-[10px] font-semibold text-[#777777]">Onwards</span>
-                  </p>
-                </>
-              )}
+                  </>
+                )}
+              </div>
+              {trip.earlyBirdOfferLine ? (
+                <p className="mt-1.5 text-[10px] font-bold leading-snug text-[#8B7355]">
+                  {trip.earlyBirdOfferLine}
+                </p>
+              ) : null}
+              {trip.earlyBirdRemainingLine ? (
+                <p className="mt-0.5 text-[10px] font-bold leading-snug text-[#8B7355]">
+                  {trip.earlyBirdRemainingLine}
+                </p>
+              ) : null}
             </div>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1A1A1A] text-white transition group-hover:bg-[#D4AF37] group-hover:text-[#1A1A1A]">
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -198,7 +210,7 @@ function DarkCard({ trip, href, priority, badgeLabel }) {
           </p>
 
           <div className="mt-auto flex items-end justify-between gap-4 border-t border-white/8 pt-4">
-            <div>
+            <div className="min-w-0">
               {!trip.currentPrice ? (
                 <p className="font-[family-name:var(--font-dm-sans)] text-[22px] font-bold text-[#D6AE3C]">
                   Coming soon
@@ -216,6 +228,16 @@ function DarkCard({ trip, href, priority, badgeLabel }) {
                   <p className="font-[family-name:var(--font-dm-sans)] text-[13px] text-[#C9C3B6]">
                     ${usdFormatter.format(inrToUsd(trip.currentPrice))} · per person
                   </p>
+                  {trip.earlyBirdOfferLine ? (
+                    <p className="mt-2 font-[family-name:var(--font-dm-sans)] text-[12px] font-semibold leading-snug text-[#D6AE3C]">
+                      {trip.earlyBirdOfferLine}
+                    </p>
+                  ) : null}
+                  {trip.earlyBirdRemainingLine ? (
+                    <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[12px] font-semibold leading-snug text-[#D6AE3C]">
+                      {trip.earlyBirdRemainingLine}
+                    </p>
+                  ) : null}
                 </>
               )}
             </div>

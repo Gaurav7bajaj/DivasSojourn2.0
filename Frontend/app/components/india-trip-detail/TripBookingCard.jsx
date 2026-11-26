@@ -4,10 +4,14 @@ import Link from "next/link";
 import { ArrowRight, Check, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
+  earlyBirdOfferLine,
+  earlyBirdRemainingLine,
+  resolveEarlyBird,
+} from "@/app/lib/earlyBird";
+import {
   formatInr,
   formatUsdApprox,
   getDepartures,
-  getDisplayPrice,
 } from "./tripDetailUtils";
 
 export default function TripBookingCard({ trip }) {
@@ -17,7 +21,10 @@ export default function TripBookingCard({ trip }) {
   const [callbackOpen, setCallbackOpen] = useState(false);
 
   const selected = departures.find((d) => d.id === selectedId) || firstAvailable;
-  const price = getDisplayPrice(trip);
+  const earlyBird = useMemo(() => resolveEarlyBird(trip), [trip]);
+  const price = earlyBird.displayPrice;
+  const offerLine = earlyBirdOfferLine(earlyBird);
+  const remainingLine = earlyBirdRemainingLine(earlyBird);
   const paymentsPath = `/payments?trip=${encodeURIComponent(trip.slug)}${
     selected?.startDate ? `&date=${encodeURIComponent(selected.startDate)}` : ""
   }`;
@@ -37,6 +44,11 @@ export default function TripBookingCard({ trip }) {
           </p>
           {price > 0 ? (
             <>
+              {earlyBird.isAvailable && earlyBird.listPrice > price ? (
+                <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[16px] text-[#8F897D] line-through">
+                  ₹{formatInr(earlyBird.listPrice)}
+                </p>
+              ) : null}
               <p className="mt-1 font-[family-name:var(--font-playfair)] text-[44px] font-semibold leading-none text-[#FBF8F1]">
                 ₹{formatInr(price)}
               </p>
@@ -46,6 +58,16 @@ export default function TripBookingCard({ trip }) {
               <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[13px] text-[#8F897D]">
                 ≈ ${formatUsdApprox(price)} · twin sharing
               </p>
+              {offerLine ? (
+                <p className="mt-3 font-[family-name:var(--font-dm-sans)] text-[13px] font-semibold leading-snug text-[#D6AE3C]">
+                  {offerLine}
+                </p>
+              ) : null}
+              {remainingLine ? (
+                <p className="mt-1 font-[family-name:var(--font-dm-sans)] text-[13px] font-semibold leading-snug text-[#D6AE3C]">
+                  {remainingLine}
+                </p>
+              ) : null}
             </>
           ) : (
             <p className="mt-2 font-[family-name:var(--font-playfair)] text-[36px] font-semibold text-[#D6AE3C]">

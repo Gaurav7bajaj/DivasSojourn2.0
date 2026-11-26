@@ -12,6 +12,9 @@ type TripOption = {
   shortName?: string;
   price: number;
   earlyBirdPrice?: number | null;
+  earlyBirdSlots?: number | null;
+  earlyBirdSlotsUsed?: number | null;
+  earlyBirdRemaining?: number | null;
   destination?: string;
 };
 
@@ -90,7 +93,9 @@ export default function EasebuzzCheckoutForm({ trips }: Props) {
   );
 
   const displayTotal = selected
-    ? selected.earlyBirdPrice ?? selected.price
+    ? selected.earlyBirdPrice != null && selected.earlyBirdPrice > 0
+      ? selected.earlyBirdPrice
+      : selected.price
     : null;
 
   async function onCreateBooking(event: FormEvent) {

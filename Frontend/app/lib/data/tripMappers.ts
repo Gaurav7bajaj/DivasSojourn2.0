@@ -1,4 +1,9 @@
 import type { Prisma } from "@prisma/client";
+import {
+  earlyBirdOfferLine,
+  earlyBirdRemainingLine,
+  resolveEarlyBird,
+} from "../earlyBird";
 import type {
   Trip,
   TripAccommodation,
@@ -119,6 +124,8 @@ type PrismaTripRow = {
   price: number;
   currency: string;
   earlyBirdPrice: number | null;
+  earlyBirdSlots: number;
+  earlyBirdSlotsUsed: number;
   singleSupplement: number | null;
   singleOccupancyPrice: number | null;
   soldOut: boolean;
@@ -164,6 +171,8 @@ export function toTrip(row: PrismaTripRow): Trip {
     price: row.price,
     currency: row.currency,
     earlyBirdPrice: row.earlyBirdPrice ?? undefined,
+    earlyBirdSlots: row.earlyBirdSlots ?? 3,
+    earlyBirdSlotsUsed: row.earlyBirdSlotsUsed ?? 0,
     singleSupplement: row.singleSupplement ?? undefined,
     singleOccupancyPrice: row.singleOccupancyPrice ?? undefined,
     soldOut: row.soldOut,
@@ -188,6 +197,7 @@ export function toTrip(row: PrismaTripRow): Trip {
 export function toUpcomingTripCard(trip: Trip): UpcomingTripCard {
   const pickup = (trip.pickupLocation || "").trim();
   const drop = (trip.dropLocation || "").trim();
+  const earlyBird = resolveEarlyBird(trip);
   // Trip.dates is a free-text field; we cannot reliably expand multi-batch
   // departures yet, so batches stay at 1 unless we later add structured data.
   return {
@@ -207,10 +217,17 @@ export function toUpcomingTripCard(trip: Trip): UpcomingTripCard {
     endDate: trip.endDate,
     extraDates: [],
     batches: 1,
-    originalPrice: trip.earlyBirdPrice ? trip.price : null,
-    currentPrice: trip.earlyBirdPrice || trip.price,
+    originalPrice: earlyBird.isAvailable ? earlyBird.listPrice : null,
+    currentPrice: earlyBird.displayPrice,
     description: trip.overview,
     soldOut: trip.soldOut,
+    earlyBirdPrice: earlyBird.earlyBirdPrice,
+    earlyBirdSlots: earlyBird.totalSlots,
+    earlyBirdSlotsUsed: earlyBird.usedSlots,
+    earlyBirdRemaining: earlyBird.remainingSlots,
+    earlyBirdAvailable: earlyBird.isAvailable,
+    earlyBirdOfferLine: earlyBirdOfferLine(earlyBird),
+    earlyBirdRemainingLine: earlyBirdRemainingLine(earlyBird),
   };
 }
 
@@ -233,7 +250,7 @@ export function toTripNavItem(trip: Trip): TripNavItem {
       ...base,
       name: trip.shortName,
       subtitle: trip.title,
-      startingPrice: trip.earlyBirdPrice || trip.price,
+      startingPrice: resolveEarlyBird(trip).displayPrice,
       duration: `${trip.days} days`,
       badge: trip.status === "upcoming" ? "Upcoming" : "Past",
     };

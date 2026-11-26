@@ -56,23 +56,37 @@ export async function POST(request: Request, { params }: Params) {
     }
 
     const now = new Date();
-    const [updated] = await prisma.$transaction([
-      prisma.booking.update({
+    const updated = await prisma.$transaction(async (tx) => {
+      const cancelled = await tx.booking.update({
         where: { id: booking.id },
         data: {
           cancelledAt: now,
           cancelReason: reason,
           travelerId: booking.travelerId || session.travelerId,
         },
-      }),
-      prisma.bookingInstallment.updateMany({
+      });
+
+      await tx.bookingInstallment.updateMany({
         where: {
           bookingId: booking.id,
           status: { in: [InstallmentStatus.UPCOMING, InstallmentStatus.DUE] },
         },
         data: { status: InstallmentStatus.WAIVED },
-      }),
-    ]);
+      });
+
+      // Free the early-bird slot if this booking had claimed one.
+      if (booking.usedEarlyBird && booking.tripId) {
+        await tx.trip.updateMany({
+          where: {
+            id: booking.tripId,
+            earlyBirdSlotsUsed: { gt: 0 },
+          },
+          data: { earlyBirdSlotsUsed: { decrement: 1 } },
+        });
+      }
+
+      return cancelled;
+    });
 
     const tripTitle =
       booking.tripTitle || booking.trip?.title || booking.tripSlug || "Trip";

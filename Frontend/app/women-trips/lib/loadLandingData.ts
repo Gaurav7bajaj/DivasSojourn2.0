@@ -59,7 +59,16 @@ async function resolveTrip(slug: WomenTripSlug): Promise<WomenTripCard> {
   try {
     const trip = await getTripBySlug(slug);
     if (trip) {
-      const priceFrom = trip.earlyBirdPrice || trip.price;
+      const remaining = Math.max(
+        0,
+        (trip.earlyBirdSlots ?? 3) - (trip.earlyBirdSlotsUsed ?? 0),
+      );
+      const earlyAvailable =
+        trip.earlyBirdPrice != null &&
+        trip.earlyBirdPrice > 0 &&
+        trip.earlyBirdPrice < trip.price &&
+        remaining > 0;
+      const priceFrom = earlyAvailable ? trip.earlyBirdPrice! : trip.price;
       const country = deriveCountryLabel(trip) || fallback.country;
       return {
         slug,
