@@ -45,6 +45,8 @@ export function parseTripPayload(raw: string): TripCreateInput | { error: string
       price: toNum(data.price) ?? 0,
       currency: data.currency ? String(data.currency) : "INR",
       earlyBirdPrice: toNum(data.earlyBirdPrice) ?? null,
+      earlyBirdSlots: Math.max(0, toNum(data.earlyBirdSlots) ?? 3),
+      earlyBirdSlotsUsed: Math.max(0, toNum(data.earlyBirdSlotsUsed) ?? 0),
       singleSupplement: toNum(data.singleSupplement) ?? null,
       singleOccupancyPrice: toNum(data.singleOccupancyPrice) ?? null,
       soldOut: Boolean(data.soldOut),
