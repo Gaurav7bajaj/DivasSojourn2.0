@@ -29,6 +29,12 @@ prisma/dev.db-journal
 *.db
 *.db-journal
 
+# local DB dump/restore artifacts (may contain prod data)
+.db-migrate/*.dump
+.db-migrate/*.sql
+.db-migrate/bin/
+.db-migrate/csv/
+
 # uploaded admin images (Phase 1 local storage)
 public/uploads/**
 !public/uploads/.gitkeep

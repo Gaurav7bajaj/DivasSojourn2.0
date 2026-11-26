@@ -208,6 +208,15 @@ export default function TermsConditionPage() {
         </ol>
       </LegalSection>
 
+      <LegalSection title="Early Bird Offers & Discounts">
+        <p>
+          Early Bird offers and discounts are at the sole discretion of the
+          Company and may be withdrawn or modified at any time without prior
+          notice, irrespective of the number of slots previously advertised or
+          communicated.
+        </p>
+      </LegalSection>
+
       <LegalSection title="Tour Guidelines">
         <p>
           On payment of the balance amount in full you will receive your
